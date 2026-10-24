@@ -716,7 +716,24 @@
     });
     body.appendChild(st);
     body.appendChild(el('<div class="section-title">Audio</div>'));
-    body.appendChild(el('<p class="note card">No sound or music files exist in the Prologue asset folder, so the game is silent. No external audio was added.</p>'));
+    const snd = el(`<button class="toggle"><span style="text-align:left">Sound effects<small>Lightning skill sounds</small></span><i class="switch${s.sound !== false ? ' on' : ''}"></i></button>`);
+    snd.onclick = () => { s.sound = s.sound === false; if (!s.sound) G.sfxStopAll(); else G.sfx('strike', { minGap: 0 }); G.save(); ui.renderPanel(); };
+    body.appendChild(snd);
+    const vol = el(`<div class="toggle"><label for="sfx-vol" style="flex:1">Volume <small>${Math.round((s.sfxVolume == null ? 0.8 : s.sfxVolume) * 100)}%</small></label><input id="sfx-vol" type="range" min="0" max="100" step="5" value="${Math.round((s.sfxVolume == null ? 0.8 : s.sfxVolume) * 100)}" style="flex:1.4"></div>`);
+    const r = vol.querySelector('input');
+    r.addEventListener('input', () => { s.sfxVolume = +r.value / 100; vol.querySelector('small').textContent = r.value + '%'; });
+    r.addEventListener('change', () => { G.sfx('strike', { minGap: 0 }); G.save(); });
+    body.appendChild(vol);
+    const vrow = el('<div class="toggle" style="flex-wrap:wrap"><span style="text-align:left;flex:1 1 100%">Hero voice<small>Shouts when using skills, grunts when hit. Tap to hear a sample.</small></span><div class="voice-pick"></div></div>');
+    [['warrior', 'Warrior'], ['protagonist', 'Protagonist'], ['off', 'Off']].forEach(([id, label]) => {
+      const cur = s.voice || 'warrior';
+      vrow.querySelector('.voice-pick').appendChild(btn(label, 'small' + (cur === id ? ' primary' : ''), () => {
+        s.voice = id; G.save(); ui.renderPanel();
+        if (id !== 'off') G.voice('light', { minGap: 0 });
+      }));
+    });
+    body.appendChild(vrow);
+    body.appendChild(el(`<p class="note">${esc(G.SFX_CREDITS)} There is no music yet.</p>`));
     body.appendChild(el('<div class="section-title">Controls</div>'));
     body.appendChild(el(`<p class="note card">Touch: drag the left side to move, tap ATK to attack (hold to keep swinging), skill buttons to cast, HP/MP to drink potions.<br>
       Keyboard: WASD / arrows move · Space or J attack · 1–4 skills · 5 or R ultimate · Q / E potions · Esc pause · I bag · C hero · K skills · L quests.</p>`));

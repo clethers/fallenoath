@@ -360,3 +360,7 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
 .bar-preview .sslot.ult { border-color: #f2cd73; }
 .slot-pick { display: flex; align-items: center; gap: 6px; margin-top: 10px; flex-wrap: wrap; }
 .slot-pick .btn { min-width: 40px; }
+input[type="range"] { touch-action: pan-x; accent-color: var(--gold); }
+
+.voice-pick { display: flex; gap: 6px; flex: 1 1 100%; margin-top: 8px; }
+.voice-pick .btn { flex: 1; }

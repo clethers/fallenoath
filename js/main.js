@@ -195,6 +195,8 @@
 
   // ------------------------------------------------------------ boot
   resize();
+  G.loadSfx();
+  G.preloadVoices();
   G.loadAssets((f) => {
     $('load-fill').style.width = Math.round(f * 100) + '%';
     $('load-text').textContent = 'Loading assets… ' + Math.round(f * 100) + '%';

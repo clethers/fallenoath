@@ -15,7 +15,7 @@
   let uid = Date.now() % 100000;
   const newId = () => 'i' + (uid++).toString(36) + Math.floor(Math.random() * 1e4).toString(36);
 
-  G.defaultSettings = () => ({ damageNumbers: true, screenShake: true, autoAttack: true, leftHanded: false, reducedEffects: false });
+  G.defaultSettings = () => ({ damageNumbers: true, screenShake: true, autoAttack: true, leftHanded: false, reducedEffects: false, sound: true, sfxVolume: 0.8, voice: 'warrior' });
 
   G.newProfile = function () {
     return {
@@ -390,7 +390,11 @@
     if (raw.shop && Array.isArray(raw.shop.stock)) p.shop.stock = raw.shop.stock.map(sanitizeItem).filter((i) => i && i.kind === 'gear').slice(0, 6);
     if (raw.stats) Object.keys(p.stats).forEach((k) => (p.stats[k] = Math.floor(num(raw.stats[k], 0, 0, 1e9))));
     p.settings = G.defaultSettings();
-    if (raw.settings) Object.keys(p.settings).forEach((k) => { if (typeof raw.settings[k] === 'boolean') p.settings[k] = raw.settings[k]; });
+    if (raw.settings) Object.keys(p.settings).forEach((k) => {
+      if (typeof p.settings[k] === 'boolean' && typeof raw.settings[k] === 'boolean') p.settings[k] = raw.settings[k];
+      if (typeof p.settings[k] === 'number') p.settings[k] = num(raw.settings[k], p.settings[k], 0, 1);
+      if (k === 'voice' && ['warrior', 'protagonist', 'off'].includes(raw.settings[k])) p.settings[k] = raw.settings[k];
+    });
     if (!(raw.v >= 2)) p.settings.autoAttack = true; // v2: auto-attack became the default
     p.created = num(raw.created, Date.now(), 0, 1e15);
     p.gm = raw.gm === true;

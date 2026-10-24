@@ -14,7 +14,7 @@ Every image the game uses was unpacked from the archives in the `Prologue` folde
 | `Thunder Effect 02.rar` | Thunder Strike (13 frames, 64×64), Thunder Splash (14 frames, 48×48), with and without blur | strips | **Thunder Strike skill** |
 | `Pixel fire asset pack v1.2.zip` | 7 colours × 20 animated fire groups (8 frames each) + .aseprite sources | strips 16–32 × 32–48 | **Burn status**, torches (red / blue / purple) |
 
-**Not present in the folder:** audio of any kind, item/equipment icons, fonts, UI frame art. Gear is therefore shown as text cards with rarity colours. The game has no sound, and Settings says so instead of showing a volume control. Fonts are system fonts.
+**Not present in the original packs:** audio (two free sound packs were added later, see *Sound effects* below), item/equipment icons, fonts, UI frame art. Gear is therefore shown as text cards with rarity colours. The game has no sound, and Settings says so instead of showing a volume control. Fonts are system fonts.
 
 **Present but not used:** `TX Player.png` (placeholder blocks), `Scene Overview.png` (a preview render, not a game asset), the Unity package, the `.aseprite` files, the Knight's JUMP frames, and the Gigapack effects not listed below.
 
@@ -87,3 +87,52 @@ The basic sword attack uses `Impacts/symmetrical_impact_001_small_yellow`, and c
 * Stone floor (TX Tileset Stone Ground): plain tiles at rows 10–11 and 14–15 (cols 0–5) and (8–9, 6–7); riveted tiles for variety; 96×96 slabs as floor decals.
 * Walls: `TX Tileset Wall` long wall front (31,191,130×66) for the top and bottom edges, thin edge strips for the sides; `TX Struct` wall blocks and arches in the Ruins.
 * Props and plants are drawn from the "with Shadow" atlases. Coordinates are in `js/assets.js` (`PROPS`).
+
+## Sound effects
+
+Dev added two free packs to `Prologue\Audio`. The game uses MP3 copies stored in `assets/audio/`, keeping each pack's folder name.
+
+| Pack | License | What was done to the files |
+|---|---|---|
+| Lightning Magic SFX Pack, free version (Hove Audio) | Royalty-free (itch.io listing) | Selected files converted to MP3 and processed for punch: leading silence trimmed, tails shortened to 0.7–1.7 s, a low-end (70 Hz) and presence (3.5 kHz) EQ boost, compression and limiting, and peaks set around −1.5 dB. Strikes also play at a slightly random pitch. The 37 s charge was cut to a 1.3 s clip. |
+| Elemental Magic: Lightning Attacks, free pack © 2024 Last Day Dreaming | CC BY-ND 4.0 (credit shown in Settings; the pack PDF is included) | Format conversion to MP3 only. The audio is not edited. |
+
+| Game event | Sound |
+|---|---|
+| Flash Draw stance / Iai Focus ready | LDD `EM_LIGHT_CAST_02_S` |
+| Flash-dash start (Flash Draw, Sixfold, Godspeed, ultimate) | LDD `EM_LIGHT_LAUNCH_01` |
+| Each cut and chained flash | Hove `strike_08/13/16/21/26` (random) |
+| Flash Draw delayed cut, counter, end of ultimate | Hove `strike_full_28`, layered with LDD `EM_LIGHT_IMPACT_01` on the big hits |
+| Sixfold burst, Thunder Sheath counter | LDD `EM_LIGHT_IMPACT_01` |
+| Godspeed finisher | Hove `combo_28` |
+| Thunder Sovereign charge / blast | Hove `charge_short` + LDD `EM_LIGHT_CAST_01_L` / Hove `combo_08` |
+| Blink Step | Hove `cast_01` |
+| Thunder Sheath stance (loops until hit or timeout) | LDD `EM_LIGHT_HOLD_5s` |
+| Knight boss lightning | Hove strikes |
+| Hero enters an area | Hove `charge_short`, then `strike_full_28` |
+| Enemy spawns | Hove `cast_01` played low and slow (throttled across a wave) |
+| Boss spawns | Hove `combo_28` + LDD `EM_LIGHT_IMPACT_01` |
+
+There are no sword, enemy, UI or music sounds yet, because the packs contain only lightning sounds. Settings has a sound on/off switch and a volume slider.
+
+## Hero voices
+
+Dev added two free voice packs. You pick one hero voice in **Settings → Hero voice** (Warrior, Protagonist or Off), so two actors are never mixed in one hero. Clips are trimmed of silence, peak-matched and converted to mono MP3 in `assets/audio/Warrior Voice Pack/` and `assets/audio/Male protagonist/`.
+
+| Pack | License |
+|---|---|
+| Warrior Voice Pack (John Carroll) | CC0, per the itch.io listing (reselling the raw clips is not allowed) |
+| RPG Male Vocal, "Male protagonist" (Konakuma) | Free to use and edit; credit requested (shown in Settings) |
+
+| Moment | Warrior | Protagonist |
+|---|---|---|
+| Flash Draw, Sixfold Flash start, about 22% of sword swings that have a target | lightattack1–4, attack1–4 | hiyah 1–3, grunt ra 1–3, kick, punch |
+| Godspeed Rush start and finisher | heavyattack1–4 | grunt uoe 1–3, grunt wa, hiyah 4 |
+| Thunder Sovereign charge | heavyattack2/4, angry1–2 | hiyah 4, grunt ra 4–5 |
+| Thunder Sheath stance | defend1–2 | JP "N" |
+| Counter, about 35% of sword crits | crit1–3 | grunt kwa, grunt ra 4, hiyah 2 |
+| Blink Step | hup1–3, hut1–2 | jump 1–3 |
+| Taking damage (45% chance, at most once every 1.2 s) | hit1–5 | ouch, ow, JP itai 1–2, grunt oof 1–2 |
+| Death | death1–2 | pained death 1–2, JP shimatta |
+
+Only one voice line plays at a time, so lines never pile up.

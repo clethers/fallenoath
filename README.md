@@ -36,6 +36,7 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 | `index.html` | Screens, HUD, panels |
 | `css/style.css` | Portrait-first responsive styling, safe areas, touch controls |
 | `js/assets.js` | Verified asset paths, sprite atlas coordinates, loader |
+| `js/audio.js` | Lightning sound effects and hero voice lines (`<audio>` pools, volume, mute, voice choice) |
 | `js/data.js` | **All balance and content:** player stats, skills, enemies, areas, items, quests |
 | `js/state.js` | Profile, derived stats, inventory/equipment, XP, quests, save/load and validation |
 | `js/world.js` | Builds each area from the tilesets (ground, paths, props, colliders) |
@@ -45,7 +46,7 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 
 ## Known limitations
 
-* The folder contains no audio, so the game is silent.
+* Sound covers the lightning skills only, using two free packs: Hove Audio's Lightning Magic SFX Pack (free version) and Last Day Dreaming's "Elemental Magic: Lightning Attacks" (CC BY-ND 4.0, credited in Settings). Hero voice shouts come from John Carroll's Warrior Voice Pack (CC0) or Konakuma's RPG Male Vocal, chosen in Settings. There are no sword-swing, enemy, UI or music sounds yet.
 * The folder contains no item icons, so gear is shown as text cards with rarity colours.
 * The Adventurer pack has no hurt or death animation. The player flashes when hit and fades out with a skull-smoke effect on death.
 * There are only two regular enemy sprites (Orc and Soldier). Variety comes from scale, stats and behaviour (Grunt, Brute, Warlord; ranged Archer).
@@ -53,4 +54,4 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 
 ## Repository contents
 
-This repository holds the game code plus only the asset files the game actually loads (108 images), kept at their original pack paths under `assets/`. The licenses that came with the art packs are included. The full original packs (zip/rar), and the downloaded audio packs that the game doesn't use yet, stay in the local Prologue folder.
+The repository holds the game code plus only the files the game actually loads, kept at their original pack paths under `assets/`: 108 images and the lightning sound effects in `assets/audio/`. The licenses that came with the packs are included. The full original packs stay in the local Prologue folder.

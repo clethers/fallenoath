@@ -121,6 +121,8 @@
     };
     run.map.props.forEach((pr) => pr.torch && fx(run, pr.torch, pr.x, pr.y - 30, { loop: true, fps: 10 }));
     fx(run, 'warp', run.player.x, run.player.y - 14, { important: true });
+    G.sfx('charge', { vol: 0.7, minGap: 0 }); // hero spawn: charge-up into the area
+    setTimeout(() => { if (game.run === run) G.sfx('strikeBig', { vol: 0.7, minGap: 0 }); }, 320);
     game.run = run;
     game.paused = false;
     G.ui.onRunStart(run);
@@ -160,6 +162,9 @@
     G.collide(run.map, e, e.r);
     run.enemies.push(e);
     fx(run, 'spawnSmoke', e.x, e.y - 8, { scale: e.boss ? 1.6 : 1 });
+    // enemy spawn: low, soft whoosh (throttled so a whole wave doesn't stack); bosses arrive with a thunderclap
+    if (e.boss) { G.sfx('finisher', { minGap: 0 }); G.sfx('impact', { minGap: 0 }); }
+    else G.sfx('spawn', { vol: 0.45, minGap: 220, rate: 0.75 });
     if (e.boss) { run.boss = e; G.ui.bossBar(e); }
     return e;
   }
@@ -272,10 +277,12 @@
     pl.hp -= r.dmg;
     pl.invuln = 0.35; pl.flash = 0.25; pl.lastHit = run.time;
     text(run, pl.x, pl.y - 34, String(r.dmg), '#ff6b6b');
+    if (pl.hp > 0) G.voice('hurt', { chance: 0.45, minGap: 1200, vol: 0.8 });
     fx(run, o.fx || 'hitPlayer', pl.x, pl.y - 14, { scale: 0.8 });
     if (G.profile.settings.screenShake) run.shake = Math.max(run.shake, o.shake || 2);
     if (pl.hp <= 0) {
       pl.hp = 0; pl.dead = true; pl.state = 'dead';
+      G.voice('death', { minGap: 0, vol: 1 });
       run.phase = 'defeat'; run.endT = 0;
       G.profile.stats.deaths++;
       fx(run, 'gameOver', pl.x, pl.y - 40, { important: true, scale: 1 });
@@ -352,6 +359,7 @@
     }
     pl.state = 'attack';
     pl.combo = (pl.combo + 1) % 2;
+    if (t) G.voice('light', { chance: 0.22, minGap: 1100, vol: 0.75 });
     pl.animT = 0; pl.hitDone = false;
     pl.atkDur = 0.5 / pl.stats.atkSpeed;
     pl.atkFps = 0; pl.skillSwing = false;
@@ -369,7 +377,7 @@
         const dealt = damageEnemy(run, e, r.dmg, { crit: r.crit, knock: 10 });
         fx(run, r.crit ? 'hitCrit' : 'hit', e.x, e.y - 10 * e.def.scale, { scale: r.crit ? 0.7 : 0.8 });
         swordHitPassives(run, e, dealt);
-        if (r.crit) run.hitStop = Math.max(run.hitStop || 0, 0.04);
+        if (r.crit) { run.hitStop = Math.max(run.hitStop || 0, 0.04); G.voice('crit', { chance: 0.35, minGap: 900 }); }
         hitAny = true;
       }
     }
@@ -545,6 +553,9 @@
     if (!pr) return;
     pl.parry = null; pl.castLock = 0;
     if (pr.fxRef) pr.fxRef.dur = 0.0001;
+    if (pr.snd) pr.snd.stop();
+    G.sfx('impact'); G.sfx('strikeBig', { vol: 0.8 });
+    G.voice('crit', { minGap: 0 });
     text(run, pl.x, pl.y - 40, 'COUNTER', '#ffe066', true);
     fx(run, 'sparkBurst', pl.x, pl.y - 14, { scale: 0.9 });
     hitStop(run, 0.08);
@@ -593,12 +604,15 @@
       case 'flashdraw': {
         pl.castLock = sk.stance;
         swing(run, 0, 0.6, false);
+        G.sfx('stance', { vol: 0.6 });
+        G.voice('light', { minGap: 0 });
         fx(run, 'chargeUp', pl.x, pl.y - 16, { follow: pl, offY: -16, scale: 0.6, fps: 40 });
         schedule(run, sk.stance, () => {
           if (game.run !== run) return;
           const a = aimAngle();
           const sx = pl.x, sy = pl.y;
           splashYB(run, sx, sy, 1);
+          G.sfx('launch', { vol: 0.7 });
           pl.flashing = true;
           flashLeg(run, sx + Math.cos(a) * sk.dashLen, sy + Math.sin(a) * sk.dashLen, sk.dashTime, null, () => {
             pl.flashing = false;
@@ -606,8 +620,10 @@
             const victims = enemiesOnLine(run, sx, sy, pl.x, pl.y, sk.width);
             schedule(run, sk.delay, () => {
               if (game.run !== run) return;
+              if (victims.length) { G.sfx('strikeBig'); G.sfx('impact', { vol: 0.8 }); }
               victims.forEach((e) => {
                 if (e.dead) return;
+                G.sfx('strike', { vol: 0.6, minGap: 60 });
                 fx(run, 'slashGold', e.x, bodyY(e), { rot: a, scale: 1, fps: 24 });
                 strikeYB(run, e.x, e.y, 1.1);
                 hitOne(run, e, mult * focus.bonus, { crit: focus.crit, knock: 18, stop: 0.06 });
@@ -626,6 +642,8 @@
         pl.flashing = true;
         pl.invuln = Math.max(pl.invuln, n * sk.segTime + 0.4);
         fx(run, 'auraDark', pl.x, pl.y - 14, { scale: 0.9, fps: 26 });
+        G.sfx('launch', { vol: 0.7 });
+        G.voice(key === 'godspeed' ? 'heavy' : 'light', { minGap: 0 });
         const leg = () => {
           if (game.run !== run) return;
           const t = nextFlashTarget(run, pl, sk.radius, cut);
@@ -636,6 +654,7 @@
           swing(run, left % 2, 3, false);
           flashLeg(run, tx, ty, sk.segTime, (e) => {
             cut.add(e); last = e;
+            G.sfx('strike', { vol: 0.5, minGap: 55, rate: key === 'godspeed' ? 1.15 : 1 });
             fx(run, 'slashGold', e.x, bodyY(e), { rot: a, scale: 0.9, fps: 26 });
             fx(run, 'thunderSplashDark', e.x, e.y - 6, { scale: 1, fps: 26 });
             hitOne(run, e, mult * focus.bonus, { crit: focus.crit, knock: 8, stop: 0.03 });
@@ -647,11 +666,14 @@
             schedule(run, 0.12, () => {
               if (game.run !== run) return;
               cut.forEach((e) => { if (!e.dead) splashYB(run, e.x, e.y, 1); });
+              if (cut.size) G.sfx('impact', { vol: 0.7 });
               shake(run, 3);
             });
           } else {
             const f = last && !last.dead ? last : nearestEnemy(run, pl, 80);
             const fxp = f || pl;
+            G.sfx('finisher'); G.sfx('impact');
+            G.voice('heavy', { minGap: 0 });
             fx(run, 'boltDark', fxp.x + 4, fxp.y - 50, { scale: 1.2, fps: 18, important: true });
             strikeYB(run, fxp.x, fxp.y, 1.6, { important: true });
             fx(run, 'sparkBurst', fxp.x, fxp.y - 14, { scale: 1.1 });
@@ -672,6 +694,8 @@
         const mv = Math.hypot(G.input.mx, G.input.my);
         if (mv > 0.3) a = Math.atan2(G.input.my, G.input.mx); // steer with the joystick
         const ox = pl.x, oy = pl.y;
+        G.sfx('whoosh', { vol: 0.8 });
+        G.voice('dodge', { minGap: 0 });
         fx(run, 'burstDark', ox, oy - 12, { scale: 1.1, fps: 26 });
         fx(run, 'thunderSplashDark', ox, oy - 6, { scale: 1.3, fps: 26 });
         hitArea(run, ox, oy, sk.radius, mult, null, { knock: 16, stop: 0.03 });
@@ -692,6 +716,8 @@
         pl.state = 'idle';
         fx(run, 'chargeUp', pl.x, pl.y - 16, { follow: pl, offY: -16, scale: 0.7, fps: 30 });
         pl.parry.fxRef = fx(run, 'auraDark', pl.x, pl.y - 14, { follow: pl, offY: -14, loop: true, dur: win, scale: 1.1, fps: 22 });
+        pl.parry.snd = G.sfx('hold', { loop: true, vol: 0.8, minGap: 0 });
+        G.voice('stance', { minGap: 0, vol: 0.7 });
         break;
       }
       // ---- Ultimate: one enormous flash, then a column of black & yellow lightning along the path
@@ -700,12 +726,15 @@
         swing(run, 0, 0.8, false);
         fx(run, 'chargeUp', pl.x, pl.y - 20, { follow: pl, offY: -20, scale: 1.4, fps: 30 });
         fx(run, 'auraDark', pl.x, pl.y - 14, { follow: pl, offY: -14, loop: true, dur: sk.windup, scale: 1.5, fps: 24 });
+        G.sfx('charge'); G.sfx('castLong', { vol: 0.5 });
+        G.voice('ult', { minGap: 0, vol: 1 });
         G.ui.banner(sk.name, '');
         schedule(run, sk.windup, () => {
           if (game.run !== run) return;
           const a = aimAngle();
           const sx = pl.x, sy = pl.y;
           fx(run, 'lightBurst', sx, sy - 16, { scale: 1, important: true });
+          G.sfx('launch', { vol: 0.9 });
           pl.flashing = true;
           flashLeg(run, sx + Math.cos(a) * sk.dashLen, sy + Math.sin(a) * sk.dashLen, sk.dashTime, null, () => {
             pl.flashing = false;
@@ -714,7 +743,9 @@
             const hitSet = new Set();
             const steps = Math.max(3, Math.round(len / 24));
             hitStop(run, 0.12);
+            G.sfx('ultBlast'); G.sfx('impact'); G.sfx('strikeBig', { vol: 0.9 });
             for (let i = 0; i <= steps; i++) schedule(run, 0.05 + i * 0.035, () => {
+              G.sfx('strike', { vol: 0.75, minGap: 85 });
               if (game.run !== run) return;
               const x = sx + ((ex - sx) * i) / steps, y = sy + ((ey - sy) * i) / steps;
               fx(run, 'boltDark', x + 4, y - 50, { scale: 1.05, fps: 18, important: true });
@@ -727,7 +758,7 @@
               });
               shake(run, 6);
             });
-            schedule(run, 0.1 + steps * 0.035, () => { if (game.run !== run) return; fx(run, 'lightBurst', ex, ey - 16, { scale: 1.3, important: true }); shake(run, 9); });
+            schedule(run, 0.1 + steps * 0.035, () => { if (game.run !== run) return; fx(run, 'lightBurst', ex, ey - 16, { scale: 1.3, important: true }); G.sfx('strikeBig', { minGap: 0 }); G.sfx('impact', { minGap: 0 }); shake(run, 9); });
           }, 16);
         });
         break;
@@ -762,6 +793,7 @@
       if (pl.parry.t <= 0) {
         const k = pl.parry.key;
         pl.cds[k] = Math.min(pl.cds[k] || 0, G.SKILLS[k].missCd);
+        if (pl.parry.snd) pl.parry.snd.stop();
         pl.parry = null;
       }
     }
@@ -773,6 +805,7 @@
         pl.focusT = (pl.focusT || 0) + dt;
         if (pl.focusT >= G.SKILLS.iaifocus.focusTime) {
           pl.focused = true;
+          G.sfx('stance', { vol: 0.35 });
           fx(run, 'chargeUp', pl.x, pl.y - 18, { follow: pl, offY: -18, scale: 0.55, fps: 30 });
           pl.focusFx = fx(run, 'sparkle', pl.x, pl.y - 40, { follow: pl, offY: -40, loop: true, scale: 0.6, fps: 14 });
         }
@@ -976,6 +1009,7 @@
       h.t += dt;
       if (h.t >= h.delay) {
         fx(run, h.fx, h.x, h.y - 50, { scale: 0.9, fps: 18 });
+        G.sfx('strike', { vol: 0.55, minGap: 70 });
         if (dist(h, run.player) < h.radius + run.player.r) damagePlayer(run, h.mult, h.src, { shake: 4, fx: 'hitArrow' });
         run.hazards.splice(i, 1);
       }
@@ -1094,6 +1128,7 @@
   };
 
   game.exitToHub = function () {
+    G.sfxStopAll && G.sfxStopAll();
     game.run = null;
     game.paused = false;
     G.ui.bossBar(null);
