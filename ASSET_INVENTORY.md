@@ -31,8 +31,8 @@ Every image the game uses was unpacked from the archives in the `Prologue` folde
 ## Skill tree → effect mapping (black & yellow flash swordsman)
 
 The hero is a flash swordsman whose lightning comes in two colours:
-- **Yellow:** Thunder Effect 02 "wo blur" strikes and splashes, plus the yellow spark, charge-up, impact and light-burst effects.
-- **Black:** existing lightning sheets darkened at load time. Each sheet is redrawn with a near-black overlay on its own pixels (`dark: true` entries in `js/assets.js`). No new art is drawn. The darkened sheets are Thunderstrike/Thunder splash *w blur*, `Lightning/lightning_strike_001_large_violet`, `lightning_burst_002_large_violet` and `lightning_aura_002_large_blue`.
+- **Yellow:** Thunder Effect 02 "wo blur" strikes and splashes, plus the yellow spark, charge-up, impact and light-burst effects. The Thunder Effect 02 sheets are pale cream and some Gigapack sheets have white or blue streaks, so these are gold-tinted at load time (`warm` entries: multiply with gold for pale sheets, a luminosity blend for blue ones). Skill icons get the same treatment through CSS filters: gold, or black with a gold rim.
+- **Black:** existing lightning sheets darkened at load time. Each sheet is redrawn with a near-black overlay on its own pixels (`dark: true` entries in `js/assets.js`). Each darkened sheet also gets a 1 px yellow outline (a yellow copy stamped one pixel around before the black core is drawn), so black bolts read crisply instead of as flat blobs. No new art is drawn. The darkened sheets are Thunderstrike/Thunder splash *w blur*, `Lightning/lightning_strike_001_large_violet`, `lightning_burst_002_large_violet` and `lightning_aura_002_large_blue`.
 
 There are 8 skills: 6 actives and 2 passives. You choose which 4 actives sit on the action bar, and the ultimate has its own 5th button. Skill names are original. Every dash plays the Adventurer's own ATTACK 2 frames, drawn faint for the "flash" look.
 
@@ -54,7 +54,7 @@ There are 8 skills: 6 actives and 2 passives. You choose which 4 actives sit on 
 - Skill numbers are electric blue, crits are larger and gold, and numbers landing in the same spot stack upward.
 - Stunned enemies show a STUN label.
 
-The basic sword attack uses `Impacts/symmetrical_impact_001_small_yellow`, and crits use `symmetrical_impact_006_small_yellow`.
+The basic sword attack uses `Impacts/symmetrical_impact_001_small_yellow` plus a gold-tinted `Impacts/directional_impact_002_small_white` slash fan along the swing; crits use `symmetrical_impact_006_small_yellow` (gold-tinted). Every flash-dash starts with a gold-tinted `Sci-fi/scifi_muzzle_flash_003_large_yellow` burst pointing along the dash, and the dash trail is lighter (a yellow splash every step, a black burst every third). Stunned enemies show the stun aura gold-tinted. To keep big combos readable, only a few copies of each effect play at once (for example 3 spark bursts, 6 black splashes); big moments bypass the cap.
 
 ## Enemy, boss and feedback effects
 
@@ -90,18 +90,22 @@ The basic sword attack uses `Impacts/symmetrical_impact_001_small_yellow`, and c
 
 ## Sound effects
 
-Dev added two free packs to `Prologue\Audio`. The game uses MP3 copies stored in `assets/audio/`, keeping each pack's folder name.
+Three free packs are in `Prologue\Audio` (Dev added the two lightning packs; the Hove sword pack was downloaded from its itch.io page with Dev's go-ahead). The game uses MP3 copies stored in `assets/audio/`, keeping each pack's folder name.
 
 | Pack | License | What was done to the files |
 |---|---|---|
 | Lightning Magic SFX Pack, free version (Hove Audio) | Royalty-free (itch.io listing) | Selected files converted to MP3 and processed for punch: leading silence trimmed, tails shortened to 0.7–1.7 s, a low-end (70 Hz) and presence (3.5 kHz) EQ boost, compression and limiting, and peaks set around −1.5 dB. Strikes also play at a slightly random pitch. The 37 s charge was cut to a 1.3 s clip. |
-| Elemental Magic: Lightning Attacks, free pack © 2024 Last Day Dreaming | CC BY-ND 4.0 (credit shown in Settings; the pack PDF is included) | Format conversion to MP3 only. The audio is not edited. |
+| Elemental Magic: Lightning Attacks, free pack © 2024 Last Day Dreaming | CC BY-ND 4.0 (credit shown in Settings; the pack PDF is included) | Format conversion to MP3 only. The audio is not edited; it is balanced against the other packs with in-game volume only. |
+| Sword Combat Sound Effects Pack, free version (Hove Audio) | Royalty-free (itch.io listing; the author says no credit is needed, credited in Settings anyway) | Two whooshes (`slash_07/26`) and three blade stabs with whoosh (`slashhit_01/11/17`), plus `spawn_poof` (whoosh 26 reversed, pitched down 22%, low-passed at 2.6 kHz): 0.2 s of leading silence trimmed, tails cut to 0.4–0.55 s, light compression, peaks set around −2 dB. Folders named `w:...` were renamed `with ...` for Windows. |
 
 | Game event | Sound |
 |---|---|
 | Flash Draw stance / Iai Focus ready | LDD `EM_LIGHT_CAST_02_S` |
 | Flash-dash start (Flash Draw, Sixfold, Godspeed, ultimate) | LDD `EM_LIGHT_LAUNCH_01` |
-| Each cut and chained flash | Hove `strike_08/13/16/21/26` (random) |
+| Each cut and chained flash | Hove `strike_08/13/16/21/26` (random), layered with a sword `slashhit` |
+| Every sword swing (auto-attack) | Sword `slash_07/26` (random pitch) |
+| Sword swing that connects | Sword `slashhit_01/11/17` |
+| Flash Draw / ultimate dash, Sheath counter, ultimate blast | Sword `slash` / `slashhit` under the lightning |
 | Flash Draw delayed cut, counter, end of ultimate | Hove `strike_full_28`, layered with LDD `EM_LIGHT_IMPACT_01` on the big hits |
 | Sixfold burst, Thunder Sheath counter | LDD `EM_LIGHT_IMPACT_01` |
 | Godspeed finisher | Hove `combo_28` |
@@ -109,15 +113,15 @@ Dev added two free packs to `Prologue\Audio`. The game uses MP3 copies stored in
 | Blink Step | Hove `cast_01` |
 | Thunder Sheath stance (loops until hit or timeout) | LDD `EM_LIGHT_HOLD_5s` |
 | Knight boss lightning | Hove strikes |
-| Hero enters an area | Hove `charge_short`, then `strike_full_28` |
-| Enemy spawns | Hove `cast_01` played low and slow (throttled across a wave) |
-| Boss spawns | Hove `combo_28` + LDD `EM_LIGHT_IMPACT_01` |
+| Enemy spawns | Sword pack whoosh 26 reversed, pitched down and low-passed into a dusty "poof" (`spawn_poof`), started 0.1 s in so its peak lands on the fullest smoke frame (0.33 s); throttled across a wave |
+| Boss spawns | Hove `combo_28` (started 0.4 s in) + LDD `EM_LIGHT_IMPACT_01` timed to the smoke peak |
+| Hero enters an area | Hove `strike_full_28` cut to 0.55 s (`spawn_crack`, the crack without the rumble tail), timed so it peaks on the warp's brightest frame (0.4 s) |
 
-There are no sword, enemy, UI or music sounds yet, because the packs contain only lightning sounds. Settings has a sound on/off switch and a volume slider.
+The mix puts lightning hits on top, blade sounds just under them, and swings, cues and spawns underneath. There are no enemy, UI or music sounds yet. Settings has a sound on/off switch and a volume slider.
 
 ## Hero voices
 
-Dev added two free voice packs. You pick one hero voice in **Settings → Hero voice** (Warrior, Protagonist or Off), so two actors are never mixed in one hero. Clips are trimmed of silence, peak-matched and converted to mono MP3 in `assets/audio/Warrior Voice Pack/` and `assets/audio/Male protagonist/`.
+Dev added two free voice packs. You pick one hero voice in **Settings → Hero voice** (Warrior, Protagonist or Off), so two actors are never mixed in one hero. Clips are trimmed of silence and long breath tails, lightly compressed, levelled to the same loudness (about −17 dB RMS, peaks under −2 dB) and converted to mono MP3 in `assets/audio/Warrior Voice Pack/` and `assets/audio/Male protagonist/`.
 
 | Pack | License |
 |---|---|
@@ -126,13 +130,15 @@ Dev added two free voice packs. You pick one hero voice in **Settings → Hero v
 
 | Moment | Warrior | Protagonist |
 |---|---|---|
-| Flash Draw, Sixfold Flash start, about 22% of sword swings that have a target | lightattack1–4, attack1–4 | hiyah 1–3, grunt ra 1–3, kick, punch |
+| Flash Draw, Sixfold Flash start, about 10% of sword swings that have a target (at most once every 2.6 s) | lightattack1–4, attack1–4 | hiyah 1–3, grunt ra 1–3, kick, punch |
 | Godspeed Rush start and finisher | heavyattack1–4 | grunt uoe 1–3, grunt wa, hiyah 4 |
 | Thunder Sovereign charge | heavyattack2/4, angry1–2 | hiyah 4, grunt ra 4–5 |
 | Thunder Sheath stance | defend1–2 | JP "N" |
 | Counter, about 35% of sword crits | crit1–3 | grunt kwa, grunt ra 4, hiyah 2 |
 | Blink Step | hup1–3, hut1–2 | jump 1–3 |
 | Taking damage (45% chance, at most once every 1.2 s) | hit1–5 | ouch, ow, JP itai 1–2, grunt oof 1–2 |
+
+The same voice line never plays twice in a row.
 | Death | death1–2 | pained death 1–2, JP shimatta |
 
 Only one voice line plays at a time, so lines never pile up.

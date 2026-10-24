@@ -6,6 +6,8 @@
        trimmed, shortened tails, low-end/presence EQ, compressed + limited for punch)
      • Elemental Magic: Lightning Attacks [Free Pack] © 2024 Last Day Dreaming,
        CC BY-ND 4.0 (format conversion only — not edited)
+     • Sword Combat Sound Effects Pack Free Version — Hove Audio (royalty free;
+       slash whooshes + blade hits, trimmed and levelled)
    Uses plain <audio> elements so it also works when index.html is opened
    straight from disk.
    ========================================================================= */
@@ -16,19 +18,27 @@
   const L = 'assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/';
 
   // key -> one or more files (a random one plays), base volume
+  const S = 'assets/audio/Sword Combat SFX Pack Free Version/';
+  // base volumes are a mix: lightning hits on top, swings and cues underneath.
+  // (LDD files can't be edited under their licence, so they are levelled here instead.)
   G.SFX = {
-    strike: { src: [H + 'strike_08.mp3', H + 'strike_13.mp3', H + 'strike_16.mp3', H + 'strike_21.mp3', H + 'strike_26.mp3'], vol: 0.9, vary: 0.08 },
-    strikeBig: { src: [H + 'strike_full_28.mp3'], vol: 1 },
+    strike: { src: [H + 'strike_08.mp3', H + 'strike_13.mp3', H + 'strike_16.mp3', H + 'strike_21.mp3', H + 'strike_26.mp3'], vol: 0.8, vary: 0.08 },
+    strikeBig: { src: [H + 'strike_full_28.mp3'], vol: 0.9 },
+    heroSpawn: { src: [H + 'spawn_crack.mp3'], vol: 0.75 }, // strike_full_28 cut to 0.55 s: the crack without the rumble
     finisher: { src: [H + 'combo_28.mp3'], vol: 1 },
     ultBlast: { src: [H + 'combo_08.mp3'], vol: 1 },
-    charge: { src: [H + 'charge_short.mp3'], vol: 0.8 },
-    whoosh: { src: [H + 'cast_01.mp3'], vol: 0.85 },
-    spawn: { src: [H + 'cast_01.mp3'], vol: 0.8, vary: 0.06 },
-    stance: { src: [L + 'EM_LIGHT_CAST_02_S.mp3'], vol: 0.6 },
+    charge: { src: [H + 'charge_short.mp3'], vol: 0.9 },
+    whoosh: { src: [H + 'cast_01.mp3'], vol: 0.6 },
+    stance: { src: [L + 'EM_LIGHT_CAST_02_S.mp3'], vol: 0.85 },
     castLong: { src: [L + 'EM_LIGHT_CAST_01_L.mp3'], vol: 0.7 },
-    launch: { src: [L + 'EM_LIGHT_LAUNCH_01.mp3'], vol: 0.7 },
+    launch: { src: [L + 'EM_LIGHT_LAUNCH_01.mp3'], vol: 1 },
     impact: { src: [L + 'EM_LIGHT_IMPACT_01.mp3'], vol: 1 },
     hold: { src: [L + 'EM_LIGHT_HOLD_5s.mp3'], vol: 0.9 },
+    // sword: Hove Audio "Sword Combat Sound Effects Pack" (free) - trimmed, tightened, peak-levelled
+    slash: { src: [S + 'slash_07.mp3', S + 'slash_26.mp3'], vol: 0.75, vary: 0.1 },
+    slashHit: { src: [S + 'slashhit_01.mp3', S + 'slashhit_11.mp3', S + 'slashhit_17.mp3'], vol: 0.7, vary: 0.07 },
+    // mob spawn: Hove whoosh 26 reversed, pitched down and darkened -> a dusty "poof" that swells into the smoke burst
+    spawn: { src: [S + 'spawn_poof.mp3'], vol: 0.85, vary: 0.08 },
   };
   // ---- hero voices: two voice actors, picked in Settings (never mixed in one hero)
   const W = 'assets/audio/Warrior Voice Pack/';
@@ -61,7 +71,7 @@
   };
   const VOICE_GAIN = 0.6; // hero voices sit under the lightning effects
   const vpools = {};
-  let voiceNow = null, voiceLast = 0;
+  let voiceNow = null, voiceLast = 0, voiceLastSrc = null;
   G.voice = function (kind, o) {
     o = o || {};
     const s = settings(), vol = master();
@@ -73,7 +83,10 @@
     if (now - voiceLast < (o.minGap == null ? 250 : o.minGap)) return;
     const list = set[kind];
     if (!list || !list.length) return;
-    const src = list[Math.floor(Math.random() * list.length)];
+    // never the same line twice in a row
+    let src = list[Math.floor(Math.random() * list.length)];
+    if (list.length > 1) while (src === voiceLastSrc) src = list[Math.floor(Math.random() * list.length)];
+    voiceLastSrc = src;
     let a = vpools[src];
     if (!a) { a = vpools[src] = new Audio(); a.preload = 'auto'; a.src = src.startsWith('data:') ? src : encodeURI(src); }
     try {
@@ -91,7 +104,7 @@
     })));
   };
 
-  G.SFX_CREDITS = 'Sound: Lightning Magic SFX Pack (free) by Hove Audio · "Elemental Magic: Lightning Attacks" © 2024 Last Day Dreaming, CC BY-ND 4.0 · Hero voices: Warrior Voice Pack by John Carroll (CC0) and RPG Male Vocal "Male protagonist" by Konakuma.';
+  G.SFX_CREDITS = 'Sound: Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free) by Hove Audio · "Elemental Magic: Lightning Attacks" © 2024 Last Day Dreaming, CC BY-ND 4.0 · Hero voices: Warrior Voice Pack by John Carroll (CC0) and RPG Male Vocal "Male protagonist" by Konakuma.';
 
   const POOL = 4;
   const pools = {};
@@ -128,7 +141,7 @@
     const a = list.find((x) => x.paused || x.ended) || list[0];
     try {
       a.loop = !!o.loop;
-      a.currentTime = 0;
+      a.currentTime = o.offset || 0; // offset: start partway in so the clip's peak lands on a visual beat
       a.volume = Math.max(0, Math.min(1, def.vol * (o.vol == null ? 1 : o.vol) * vol));
       a.playbackRate = (o.rate || 1) * (def.vary ? 1 + (Math.random() * 2 - 1) * def.vary : 1); // slight pitch variety
       const p = a.play();

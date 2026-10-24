@@ -12,8 +12,8 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 | | Touch | Keyboard |
 |---|---|---|
 | Move | Drag anywhere on the lower-left side (floating joystick) | WASD / arrow keys |
-| Attack | ATK button (hold to keep swinging) | Space or J |
-| Skills 1–4 + ultimate | Skill buttons around ATK, ultimate on the gold-rimmed button | 1, 2, 3, 4 · 5 or R |
+| Attack | Automatic when an enemy, crate or pot is in reach (steer away to stop) | Automatic, or Space / J |
+| Skills 1–4 + ultimate | Large gold-rimmed ultimate in the thumb spot, skills 1–4 arcing around it | 1, 2, 3, 4 · 5 or R |
 | Potions | HP / MP buttons | Q / E |
 | Menus | Top buttons: Hero, Bag, Skills, Quests, Map, Settings; II pauses | C, I, K, L; Esc pauses |
 
@@ -46,7 +46,7 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 
 ## Known limitations
 
-* Sound covers the lightning skills only, using two free packs: Hove Audio's Lightning Magic SFX Pack (free version) and Last Day Dreaming's "Elemental Magic: Lightning Attacks" (CC BY-ND 4.0, credited in Settings). Hero voice shouts come from John Carroll's Warrior Voice Pack (CC0) or Konakuma's RPG Male Vocal, chosen in Settings. There are no sword-swing, enemy, UI or music sounds yet.
+* Sound covers the hero's sword and lightning skills, using three free packs: Hove Audio's Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free versions) and Last Day Dreaming's "Elemental Magic: Lightning Attacks" (CC BY-ND 4.0, credited in Settings). Hero voice shouts come from John Carroll's Warrior Voice Pack (CC0) or Konakuma's RPG Male Vocal, chosen in Settings. There are no enemy, UI or music sounds yet.
 * The folder contains no item icons, so gear is shown as text cards with rarity colours.
 * The Adventurer pack has no hurt or death animation. The player flashes when hit and fades out with a skull-smoke effect on death.
 * There are only two regular enemy sprites (Orc and Soldier). Variety comes from scale, stats and behaviour (Grunt, Brute, Warlord; ranged Archer).

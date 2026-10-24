@@ -159,25 +159,25 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
 .act { pointer-events: auto; position: absolute; border-radius: 50%; border: 2px solid rgba(255,230,190,.35); background: rgba(24,20,26,.78); padding: 0; overflow: hidden;
   box-shadow: 0 3px 0 rgba(0,0,0,.6); touch-action: none; }
 .act:active, .act.pressed { transform: scale(.94); }
-.act.attack { width: 84px; height: 84px; right: 16px; bottom: 16px; background: radial-gradient(circle at 40% 35%, #b04a36, #6a2216);
-  border-color: #f0a070; font-weight: 900; font-size: 18px; letter-spacing: 1px; }
+/* no attack button (auto-attack): the ultimate sits in the thumb spot, skills arc around it */
 .act.skill { width: 58px; height: 58px; }
-.act.skill[data-slot="0"] { right: 115px; bottom: 12px; }
-.act.skill[data-slot="1"] { right: 104px; bottom: 73px; }
-.act.skill[data-slot="2"] { right: 59px; bottom: 111px; }
-.act.skill[data-slot="3"] { right: 1px; bottom: 111px; }
+.act.skill[data-slot="0"] { right: 137px; bottom: 19px; }
+.act.skill[data-slot="1"] { right: 121px; bottom: 78px; }
+.act.skill[data-slot="2"] { right: 78px; bottom: 121px; }
+.act.skill[data-slot="3"] { right: 19px; bottom: 137px; }
 .act .ico { position: absolute; inset: 0; background-repeat: no-repeat; image-rendering: pixelated; }
 .act .cd { position: absolute; inset: 0; border-radius: 50%; font-style: normal; display: grid; place-items: center; font-weight: 800; font-size: 15px;
   text-shadow: 0 1px 2px #000; pointer-events: none; }
 .act small { position: absolute; bottom: 3px; left: 0; right: 0; text-align: center; font-size: 9px; font-weight: 800; color: #9cc8ff; text-shadow: 0 1px 1px #000; }
 .act.skill.empty { opacity: .35; }
-.act.skill.nomp .ico { filter: grayscale(1) brightness(.6); }
-.act.potion { width: 44px; height: 44px; font-size: 11px; font-weight: 800; }
-.act.skill[data-slot="4"] { width: 64px; height: 64px; right: 24px; bottom: 176px; }
-.act.potion.hp { right: 166px; bottom: 132px; border-color: #e07a6a; }
-.act.potion.mp { right: 110px; bottom: 172px; border-color: #6a9ae0; }
+.ico, .skill-ico { filter: var(--icof, none); }
+.act.skill.nomp .ico { filter: var(--icof, none) grayscale(1) brightness(.6); }
+.act.potion { width: 42px; height: 42px; font-size: 11px; font-weight: 800; }
+.act.skill[data-slot="4"] { width: 76px; height: 76px; right: 10px; bottom: 10px; }
+.act.potion.hp { right: 88px; bottom: 53px; border-color: #e07a6a; }
+.act.potion.mp { right: 53px; bottom: 88px; border-color: #6a9ae0; }
 .act.potion small { color: #fff; bottom: 2px; font-size: 9px; }
-.act.potion span { position: relative; top: -3px; }
+.act.potion span { position: relative; top: -3px; display: inline-block; }
 #hud.lefty .joyzone { left: auto; right: 0; }
 #hud.lefty .actions { right: auto; left: calc(10px + var(--safe-l)); transform: scaleX(-1); }
 #hud.lefty .actions .act > * { transform: scaleX(-1); }

@@ -34,12 +34,19 @@
 
   // ================================================================ effects
   // Plays an existing effect sprite sheet; never synthesises artwork.
+  const FX_CAP = { sparkBurst: 3, thunderSplashDark: 6, thunderSplash: 7, burstDark: 4, slashGold: 4, flashKick: 2, hit: 3, slashArc: 2 };
   function fx(run, key, x, y, o) {
     const d = G.FX[key];
     o = o || {};
     if (!d || !d.ok || !run) return null;
     const p = G.profile && G.profile.settings;
     if (p && p.reducedEffects && !o.loop && !o.important && run.effects.length > 14) return null;
+    // declutter: cap how many copies of one effect play at once (big moments pass `important`)
+    if (!o.loop && !o.important) {
+      const cap = FX_CAP[key] || 8;
+      let n = 0;
+      for (const f of run.effects) if (f.key === key && ++n >= cap) return null;
+    }
     const e = { key, d, x, y, t: 0, fps: o.fps || 15, scale: o.scale || 1, loop: !!o.loop, dur: o.dur || 0, follow: o.follow || null,
       offX: o.offX || 0, offY: o.offY || 0, flip: !!o.flip, alpha: o.alpha == null ? 1 : o.alpha, ground: !!o.ground, rot: o.rot || 0, screen: !!o.screen };
     run.effects.push(e);
@@ -121,8 +128,8 @@
     };
     run.map.props.forEach((pr) => pr.torch && fx(run, pr.torch, pr.x, pr.y - 30, { loop: true, fps: 10 }));
     fx(run, 'warp', run.player.x, run.player.y - 14, { important: true });
-    G.sfx('charge', { vol: 0.7, minGap: 0 }); // hero spawn: charge-up into the area
-    setTimeout(() => { if (game.run === run) G.sfx('strikeBig', { vol: 0.7, minGap: 0 }); }, 320);
+    // hero spawn: one short thunder crack on the warp's brightest frame (#6 of 12 at 15fps = 0.4s); the clip peaks 0.25s in
+    schedule(run, 0.15, () => G.sfx('heroSpawn', { minGap: 0 }));
     game.run = run;
     game.paused = false;
     G.ui.onRunStart(run);
@@ -163,8 +170,13 @@
     run.enemies.push(e);
     fx(run, 'spawnSmoke', e.x, e.y - 8, { scale: e.boss ? 1.6 : 1 });
     // enemy spawn: low, soft whoosh (throttled so a whole wave doesn't stack); bosses arrive with a thunderclap
-    if (e.boss) { G.sfx('finisher', { minGap: 0 }); G.sfx('impact', { minGap: 0 }); }
-    else G.sfx('spawn', { vol: 0.45, minGap: 220, rate: 0.75 });
+    // synced to the smoke burst: its fullest frame is #5 of 10 at 15fps (0.33s), when the enemy starts fading in.
+    // spawn_poof peaks 0.42s into the clip; starting 0.1s in puts the peak at ~0.33s.
+    // Bosses: combo_28 (peak 0.73s) starts 0.4s in, and the thunderclap impact lands on the burst peak.
+    if (e.boss) {
+      G.sfx('finisher', { minGap: 0, offset: 0.4 });
+      schedule(run, 0.31, () => G.sfx('impact', { minGap: 0 }));
+    } else G.sfx('spawn', { vol: 0.6, minGap: 200, offset: 0.1 });
     if (e.boss) { run.boss = e; G.ui.bossBar(e); }
     return e;
   }
@@ -359,7 +371,8 @@
     }
     pl.state = 'attack';
     pl.combo = (pl.combo + 1) % 2;
-    if (t) G.voice('light', { chance: 0.22, minGap: 1100, vol: 0.75 });
+    G.sfx('slash', { vol: t ? 0.8 : 0.55, minGap: 90 });
+    if (t) G.voice('light', { chance: 0.1, minGap: 2600, vol: 0.7 });
     pl.animT = 0; pl.hitDone = false;
     pl.atkDur = 0.5 / pl.stats.atkSpeed;
     pl.atkFps = 0; pl.skillSwing = false;
@@ -385,6 +398,10 @@
     for (const pr of run.map.props) {
       if (!pr.breakable || pr.dead) continue;
       if (Math.hypot(pr.x - hx, pr.y - 6 - hy) < 22) breakProp(run, pr);
+    }
+    if (hitAny) {
+      G.sfx('slashHit', { minGap: 70 });
+      fx(run, 'slashArc', hx + v[0] * 4, hy - 2 + v[1] * 4, { rot: DIRA[pl.dir] + Math.PI / 2, scale: pl.combo ? 1.05 : 0.9, fps: 26, flip: !!pl.combo });
     }
     if (hitAny && G.profile.settings.screenShake) run.shake = Math.max(run.shake, 1.2);
   }
@@ -512,10 +529,15 @@
       thunderStepProc(run);
       onEnd && onEnd();
     }, (x, y, i) => {
-      if (i % 2) fx(run, 'burstDark', x, y - 10, { scale: 0.7, fps: 26 });
-      else fx(run, 'thunderSplash', x, y - 8, { scale: 0.8, fps: 26 });
+      // lighter trail: a yellow spark every step, a black burst every third
+      if (i % 3 === 1) fx(run, 'burstDark', x, y - 10, { scale: 0.6, fps: 28 });
+      else fx(run, 'thunderSplash', x, y - 8, { scale: 0.7, fps: 28 });
     });
-    if (pl.dash) pl.dash.step = trailStep || 18;
+    if (pl.dash) {
+      pl.dash.step = trailStep || 18;
+      // departure burst pointing along the flash
+      fx(run, 'flashKick', pl.x + Math.cos(pl.dash.a) * 18, pl.y - 10 + Math.sin(pl.dash.a) * 18, { rot: pl.dash.a, scale: 0.8, fps: 30 });
+    }
   }
   function thunderStepProc(run) {
     const r = pRank('thunderstep'), pl = run.player;
@@ -556,6 +578,7 @@
     if (pr.snd) pr.snd.stop();
     G.sfx('impact'); G.sfx('strikeBig', { vol: 0.8 });
     G.voice('crit', { minGap: 0 });
+    schedule(run, 0.07, () => G.sfx('slashHit', { minGap: 0, rate: 0.95 }));
     text(run, pl.x, pl.y - 40, 'COUNTER', '#ffe066', true);
     fx(run, 'sparkBurst', pl.x, pl.y - 14, { scale: 0.9 });
     hitStop(run, 0.08);
@@ -613,6 +636,7 @@
           const sx = pl.x, sy = pl.y;
           splashYB(run, sx, sy, 1);
           G.sfx('launch', { vol: 0.7 });
+          G.sfx('slash', { minGap: 0, rate: 1.1 });
           pl.flashing = true;
           flashLeg(run, sx + Math.cos(a) * sk.dashLen, sy + Math.sin(a) * sk.dashLen, sk.dashTime, null, () => {
             pl.flashing = false;
@@ -620,7 +644,7 @@
             const victims = enemiesOnLine(run, sx, sy, pl.x, pl.y, sk.width);
             schedule(run, sk.delay, () => {
               if (game.run !== run) return;
-              if (victims.length) { G.sfx('strikeBig'); G.sfx('impact', { vol: 0.8 }); }
+              if (victims.length) { G.sfx('strikeBig'); G.sfx('impact', { vol: 0.8 }); G.sfx('slashHit', { minGap: 0 }); }
               victims.forEach((e) => {
                 if (e.dead) return;
                 G.sfx('strike', { vol: 0.6, minGap: 60 });
@@ -655,6 +679,7 @@
           flashLeg(run, tx, ty, sk.segTime, (e) => {
             cut.add(e); last = e;
             G.sfx('strike', { vol: 0.5, minGap: 55, rate: key === 'godspeed' ? 1.15 : 1 });
+            G.sfx('slashHit', { vol: 0.75, minGap: 50, rate: key === 'godspeed' ? 1.12 : 1 });
             fx(run, 'slashGold', e.x, bodyY(e), { rot: a, scale: 0.9, fps: 26 });
             fx(run, 'thunderSplashDark', e.x, e.y - 6, { scale: 1, fps: 26 });
             hitOne(run, e, mult * focus.bonus, { crit: focus.crit, knock: 8, stop: 0.03 });
@@ -735,6 +760,7 @@
           const sx = pl.x, sy = pl.y;
           fx(run, 'lightBurst', sx, sy - 16, { scale: 1, important: true });
           G.sfx('launch', { vol: 0.9 });
+          G.sfx('slash', { minGap: 0, rate: 0.85 });
           pl.flashing = true;
           flashLeg(run, sx + Math.cos(a) * sk.dashLen, sy + Math.sin(a) * sk.dashLen, sk.dashTime, null, () => {
             pl.flashing = false;
@@ -743,7 +769,7 @@
             const hitSet = new Set();
             const steps = Math.max(3, Math.round(len / 24));
             hitStop(run, 0.12);
-            G.sfx('ultBlast'); G.sfx('impact'); G.sfx('strikeBig', { vol: 0.9 });
+            G.sfx('ultBlast'); G.sfx('impact'); G.sfx('strikeBig', { vol: 0.9 }); G.sfx('slashHit', { minGap: 0, rate: 0.85 });
             for (let i = 0; i <= steps; i++) schedule(run, 0.05 + i * 0.035, () => {
               G.sfx('strike', { vol: 0.75, minGap: 85 });
               if (game.run !== run) return;
@@ -1190,14 +1216,14 @@
           if (pl.state !== 'run') { pl.state = 'run'; }
         } else if (pl.state === 'run') { pl.state = 'idle'; pl.animT = 0; }
         let wantAttack = inp.attack;
-        if (!wantAttack && p.settings.autoAttack) {
+        if (!wantAttack) {
           // auto-attack the nearest enemy in melee reach, unless the player is steering away from it (retreating)
           const near = nearestEnemy(run, pl, 36);
           if (near) {
             const dx = near.x - pl.x, dy = near.y - pl.y, d = Math.hypot(dx, dy) || 1;
             const away = mv > 0.15 && (inp.mx * dx + inp.my * dy) / (d * Math.min(1, mv)) < -0.3;
             if (!away) wantAttack = true;
-          }
+          } else if (mv < 0.15 && run.map.props.some((pr) => pr.breakable && !pr.dead && dist(pr, pl) < 24)) wantAttack = true;
         }
         if (wantAttack && game.canAct() && !pl.spin) startAttack(run);
       }

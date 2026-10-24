@@ -162,7 +162,7 @@
       b.classList.toggle('ult', i === G.ULT_SLOT);
       if (key) {
         const sk = G.SKILLS[key];
-        ico.setAttribute('style', G.fxIconStyle(sk.icon[0], sk.icon[1], 56));
+        ico.setAttribute('style', G.fxIconStyle(sk.icon[0], sk.icon[1], 56, sk.icon[2]));
         b.querySelector('small').textContent = sk.mp + ' MP';
         b.setAttribute('aria-label', sk.name);
       } else { ico.removeAttribute('style'); b.querySelector('small').textContent = ''; }
@@ -501,14 +501,14 @@
     const p = G.profile;
     if (!p.path) G.choosePath(p, 'storm'); // the hero is a lightning swordsman
     const path = G.PATHS[p.path];
-    body.appendChild(el(`<div class="path-head" style="--pc:${path.color}"><div class="skill-ico big" style='${G.fxIconStyle(path.icon[0], path.icon[1], 58)}'></div>
+    body.appendChild(el(`<div class="path-head" style="--pc:${path.color}"><div class="skill-ico big" style='${G.fxIconStyle(path.icon[0], path.icon[1], 58, path.icon[2])}'></div>
       <div class="grow"><div class="path-name">${esc(path.name)}</div><div class="note">${esc(path.element)} · Skill points: <b style="color:var(--gold-2)">${p.skillPoints}</b> (1 per level)</div></div></div>`));
     // action bar preview: 4 chosen skills + ultimate
     G.fixSlots(p);
     const bar = el('<div class="bar-preview"></div>');
     [0, 1, 2, 3, G.ULT_SLOT].forEach((i) => {
       const k = G.barSkill(p, i);
-      const sl = el(`<div class="sslot${k ? ' filled' : ''}${i === G.ULT_SLOT ? ' ult' : ''}">${k ? `<i class="ico" style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], 52)}'></i>` : ''}<b>${i === G.ULT_SLOT ? 'ULT' : i + 1}</b></div>`);
+      const sl = el(`<div class="sslot${k ? ' filled' : ''}${i === G.ULT_SLOT ? ' ult' : ''}">${k ? `<i class="ico" style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], 52, G.SKILLS[k].icon[2])}'></i>` : ''}<b>${i === G.ULT_SLOT ? 'ULT' : i + 1}</b></div>`);
       if (k) sl.title = G.SKILLS[k].name;
       bar.appendChild(sl);
     });
@@ -537,7 +537,7 @@
       const n = document.createElement('button');
       n.className = `node ${state}${sk.ult ? ' ult' : ''}${sk.kind === 'passive' ? ' passive' : ''}${!block ? ' can' : ''}`;
       n.style.left = l.x + '%'; n.style.top = l.y + '%';
-      n.innerHTML = `<i class="ico" style='${G.fxIconStyle(sk.icon[0], sk.icon[1], sk.ult ? 74 : 60)}'></i><b class="rk">${rank}/${G.SKILL_MAX_RANK}</b>` +
+      n.innerHTML = `<i class="ico" style='${G.fxIconStyle(sk.icon[0], sk.icon[1], sk.ult ? 74 : 60, sk.icon[2])}'></i><b class="rk">${rank}/${G.SKILL_MAX_RANK}</b>` +
         `<span class="nlabel">${esc(sk.name)}${sk.unlock > p.level ? `<em>Lv ${sk.unlock}</em>` : ''}</span>`;
       n.setAttribute('aria-label', sk.name + ', rank ' + rank);
       n.onclick = () => skillSheet(k);
@@ -551,7 +551,7 @@
     const p = G.profile, sk = G.SKILLS[k], rank = p.skills[k] || 0, card = $('sheet-card');
     const block = G.skillBlock(p, k);
     card.innerHTML = '';
-    card.appendChild(el(`<div><div class="row"><div class="skill-ico" style='${G.fxIconStyle(sk.icon[0], sk.icon[1], 54)}'></div><div class="grow">
+    card.appendChild(el(`<div><div class="row"><div class="skill-ico" style='${G.fxIconStyle(sk.icon[0], sk.icon[1], 54, sk.icon[2])}'></div><div class="grow">
       <h4>${esc(sk.name)}</h4><div class="rar muted">${sk.ult ? 'Ultimate' : sk.kind === 'passive' ? 'Passive' : 'Active'} · Rank ${rank}/${G.SKILL_MAX_RANK} · Unlocks at Lv ${sk.unlock}</div></div></div>
       <p class="note" style="font-size:14px;color:var(--ink)">${esc(sk.desc)}</p>
       <div class="lines">${skillNumbers(k, Math.max(1, rank)).map((t) => `<div>${t}</div>`).join('')}${rank > 0 && rank < G.SKILL_MAX_RANK ? `<div class="cmp-up">Next rank: ${skillNumbers(k, rank + 1)[0] || ''}</div>` : ''}</div>
@@ -700,7 +700,6 @@
     const opts = [
       ['damageNumbers', 'Damage numbers', 'Floating numbers for damage and healing'],
       ['screenShake', 'Screen shake', 'Camera shake on heavy hits'],
-      ['autoAttack', 'Auto-attack', 'Swing automatically at enemies in reach (pauses while you run away)'],
       ['leftHanded', 'Left-handed controls', 'Swap the joystick and action buttons'],
       ['reducedEffects', 'Reduced effects', 'Limit simultaneous effects on slower devices'],
     ];
@@ -735,7 +734,7 @@
     body.appendChild(vrow);
     body.appendChild(el(`<p class="note">${esc(G.SFX_CREDITS)} There is no music yet.</p>`));
     body.appendChild(el('<div class="section-title">Controls</div>'));
-    body.appendChild(el(`<p class="note card">Touch: drag the left side to move, tap ATK to attack (hold to keep swinging), skill buttons to cast, HP/MP to drink potions.<br>
+    body.appendChild(el(`<p class="note card">Touch: drag the left side to move. Your hero attacks automatically when enemies (or crates and pots) are in reach; steer away to stop. Tap skill buttons to cast, HP/MP to drink potions.<br>
       Keyboard: WASD / arrows move · Space or J attack · 1–4 skills · 5 or R ultimate · Q / E potions · Esc pause · I bag · C hero · K skills · L quests.</p>`));
     if (G.profile) {
       body.appendChild(el('<div class="section-title">Progress</div>'));

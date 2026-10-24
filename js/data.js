@@ -33,7 +33,7 @@
   // existing effect sheets of that element (keys refer to G.FX). Damage multipliers are of skill power.
   G.PATHS = {
     storm: {
-      name: 'Storm Blade', element: 'Black & Yellow Lightning', color: '#f2cf4a', icon: ['thunderStrike', 6],
+      name: 'Storm Blade', element: 'Black & Yellow Lightning', color: '#f2cf4a', icon: ['thunderStrike', 6, 'gold'],
       desc: 'A flash swordsman: draw, vanish in a streak of yellow and black lightning, and enemies fall a beat later.',
       actives: ['flashdraw', 'sixfold', 'blinkstep', 'godspeed', 'sheath', 'sovereign'], passives: ['iaifocus', 'thunderstep'],
     },
@@ -50,28 +50,28 @@
   // Flash-swordsman kit (original names). Yellow = Thunder Effect 02 + yellow sparks/impacts;
   // black = the same lightning sheets darkened at load (FX keys ending in "Dark").
   G.SKILLS = {
-    flashdraw: { path: 'storm', kind: 'active', slot: 'a0', name: 'Flash Draw', unlock: 1, mp: 12, cd: 3.5, icon: ['slashGold', 2], move: 'flash',
+    flashdraw: { path: 'storm', kind: 'active', slot: 'a0', name: 'Flash Draw', unlock: 1, mp: 12, cd: 3.5, icon: ['slashGold', 2, 'gold'], move: 'flash',
       stance: 0.12, dashLen: 110, dashTime: 0.1, delay: 0.2, mult: 2.0, perRank: 0.3, width: 18,
       fx: 'chargeUp (stance), thunderSplash + black splash (trail), thunderStrike + black strike, slashGold (delayed cuts)',
       desc: 'A brief stance, then a near-instant straight dash-slash. Everything on the line is cut a beat after you pass.' },
-    sixfold: { path: 'storm', kind: 'active', slot: 'a1', req: 'flashdraw', name: 'Sixfold Flash', unlock: 3, mp: 22, cd: 9, icon: ['thunderSplash', 5], move: 'flash',
+    sixfold: { path: 'storm', kind: 'active', slot: 'a1', req: 'flashdraw', name: 'Sixfold Flash', unlock: 3, mp: 22, cd: 9, icon: ['thunderSplash', 5, 'gold'], move: 'flash',
       flashes: 6, segTime: 0.07, radius: 130, mult: 0.9, perRank: 0.12,
       fx: 'slashGold, thunderSplash, black splash/burst', desc: 'Six rapid flashes zig-zagging between nearby enemies, cutting each one you pass through.' },
-    godspeed: { path: 'storm', kind: 'active', slot: 'a2', req: 'thunderstep', name: 'Godspeed Rush', unlock: 6, mp: 32, cd: 13, icon: ['thunderStrike', 8], move: 'flash',
+    godspeed: { path: 'storm', kind: 'active', slot: 'a2', req: 'thunderstep', name: 'Godspeed Rush', unlock: 6, mp: 32, cd: 13, icon: ['thunderStrike', 8, 'dark'], move: 'flash',
       flashes: 8, segTime: 0.05, radius: 150, mult: 1.0, perRank: 0.15, finisher: 2.4, stun: 1.2,
       fx: 'slashGold, black burst, thunderStrike + black bolt (finisher)', desc: 'Eight even faster flashes, finished by a huge yellow-and-black thunder strike that stuns.' },
-    sovereign: { path: 'storm', kind: 'active', slot: 'a3', req: 'godspeed', ult: true, name: 'Thunder Sovereign', unlock: 10, mp: 60, cd: 40, icon: ['bossBolt', 3], move: 'flash',
+    sovereign: { path: 'storm', kind: 'active', slot: 'a3', req: 'godspeed', ult: true, name: 'Thunder Sovereign', unlock: 10, mp: 60, cd: 40, icon: ['bossBolt', 3, 'dark'], move: 'flash',
       windup: 0.4, dashLen: 230, dashTime: 0.18, mult: 4.2, perRank: 0.5, width: 40, stun: 1.5,
       fx: 'chargeUp, black aura, black bolts + thunderStrike columns, lightBurst', desc: 'ULTIMATE. Charge, then one enormous flash across the field that leaves a towering column of black and yellow lightning along the whole path.' },
-    iaifocus: { path: 'storm', kind: 'passive', slot: 'p0', req: 'flashdraw', name: 'Iai Focus', unlock: 2, icon: ['chargeUp', 6],
+    iaifocus: { path: 'storm', kind: 'passive', slot: 'p0', req: 'flashdraw', name: 'Iai Focus', unlock: 2, icon: ['chargeUp', 6, 'gold'],
       focusTime: 0.8, bonus: 0.15, desc: 'Stand still to build focus. Your next Flash skill always crits and deals +15% damage per rank.' },
-    blinkstep: { path: 'storm', kind: 'active', slot: 'b0', req: 'iaifocus', name: 'Blink Step', unlock: 4, mp: 8, cd: 4, icon: ['thunderSplash', 4], move: 'flash',
+    blinkstep: { path: 'storm', kind: 'active', slot: 'b0', req: 'iaifocus', name: 'Blink Step', unlock: 4, mp: 8, cd: 4, icon: ['thunderSplash', 4, 'dark'], move: 'flash',
       dist: 75, dashTime: 0.08, mult: 0.6, perRank: 0.15, cdPerRank: 0.4, radius: 30,
       fx: 'black burst (vanish), thunderSplash (arrive), black splash', desc: 'Vanish in a short evasive flash away from danger, untouchable while moving. Black lightning bursts where you stood.' },
-    sheath: { path: 'storm', kind: 'active', slot: 'b1', req: 'blinkstep', name: 'Thunder Sheath', unlock: 7, mp: 15, cd: 10, icon: ['chargeUp', 9], move: 'flash',
+    sheath: { path: 'storm', kind: 'active', slot: 'b1', req: 'blinkstep', name: 'Thunder Sheath', unlock: 7, mp: 15, cd: 10, icon: ['chargeUp', 9, 'dark'], move: 'flash',
       window: 0.6, perRankWindow: 0.1, mult: 2.6, perRank: 0.35, range: 150, missCd: 3,
       fx: 'black aura + chargeUp (stance), slashGold + thunderStrike/black strike (counter)', desc: 'A parry stance. If anything strikes you, you take no damage and flash-counter the attacker with a guaranteed crit. Missing shortens the cooldown.' },
-    thunderstep: { path: 'storm', kind: 'passive', slot: 'p1', req: 'sixfold', name: 'Thunder Step', unlock: 5, icon: ['sparkBurst', 4],
+    thunderstep: { path: 'storm', kind: 'passive', slot: 'p1', req: 'sixfold', name: 'Thunder Step', unlock: 5, icon: ['sparkBurst', 4, 'gold'],
       cdr: 0.15, mp: 1, desc: 'Every flash-dash shortens your skill cooldowns by 0.15s and restores 1 MP per rank.' },
   };
   G.SKILL_ORDER = Object.keys(G.SKILLS);

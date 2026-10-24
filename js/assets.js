@@ -131,7 +131,7 @@
   const FX = {
     // combat hits
     hit: gp('Impacts', 'symmetrical_impact_001', 'small_yellow', 48, 48, 7),
-    hitCrit: gp('Impacts', 'symmetrical_impact_006', 'small_yellow', 80, 80, 8),
+    hitCrit: Object.assign(gp('Impacts', 'symmetrical_impact_006', 'small_yellow', 80, 80, 8), { warm: 'lum' }),
     hitPlayer: gp('Impacts', 'symmetrical_impact_002', 'small_blue', 48, 48, 10),
     hitArrow: gp('Impacts', 'directional_impact_001', 'small_blue', 32, 32, 7),
     hitLunge: gp('Impacts', 'directional_impact_002', 'large_white', 140, 50, 7),
@@ -149,7 +149,7 @@
     deathMark: gp('Fantasy Spells', 'spell_death_001', 'large_red', 64, 64, 50),
     // statuses (looping)
     statusPoison: gp('Fantasy Spells', 'status_poison_001', 'small_green', 48, 48, 24),
-    statusStun: gp('Lightning', 'lightning_aura_002', 'small_blue', 48, 48, 16),
+    statusStun: Object.assign(gp('Lightning', 'lightning_aura_002', 'small_blue', 48, 48, 16), { warm: 'lum' }),
     sparkle: gp('Fantasy Spells', 'status_sparkling_001', 'small_yellow', 48, 48, 24),
     // world / feedback
     spawnSmoke: gp('Smoke Bursts', 'symmetrical_smoke_burst_001', 'large_brown', 64, 64, 10),
@@ -175,12 +175,14 @@
     slashBlue: gp('Impacts', 'directional_impact_001', 'large_blue', 64, 64, 7),
     slashGold: gp('Impacts', 'directional_impact_004', 'large_yellow', 80, 80, 5),
     impactBig: gp('Impacts', 'symmetrical_impact_003', 'large_yellow', 96, 96, 7),
+    slashArc: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { warm: 'mul' }), // basic sword hit (fan points up at rot 0)
+    flashKick: Object.assign(gp('Sci-fi', 'scifi_muzzle_flash_003', 'large_yellow', 96, 48, 8), { warm: 'mul' }), // flash-step departure burst (points right)
     // elemental skill-tree effects
     lbolt1: gp('Lightning', 'lightning_burst_001', 'large_violet', 64, 64, 8),
     lbolt2: gp('Lightning', 'lightning_burst_002', 'large_violet', 64, 64, 9),
     staticAura: gp('Lightning', 'lightning_aura_002', 'large_blue', 96, 96, 16),
     chargeUp: gp('Sci-fi', 'scifi_charge_up_001', 'large_yellow', 96, 96, 12),
-    sparkBurst: gp('Sci-fi', 'scifi_spark_burst_001', 'large_yellow', 128, 128, 12),
+    sparkBurst: Object.assign(gp('Sci-fi', 'scifi_spark_burst_001', 'large_yellow', 128, 128, 12), { warm: 'mul' }),
     bigBoom: gp('Explosions', 'epic_explosion_002', 'large_yellow', 192, 192, 15),
     ringBoom: gp('Explosions', 'symmetrical_explosion_004', 'large_orange', 96, 96, 12),
     smallBoom: gp('Explosions', 'stylized_explosion_001', 'large_yellow', 96, 96, 9),
@@ -198,8 +200,8 @@
     burstDark: Object.assign(gp('Lightning', 'lightning_burst_002', 'large_violet', 64, 64, 9), { dark: true }),
     auraDark: Object.assign(gp('Lightning', 'lightning_aura_002', 'large_blue', 96, 96, 16), { dark: true }),
     // Thunder Effect 02 (strips)
-    thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13 },
-    thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14 },
+    thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, warm: 'mul' },
+    thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14, warm: 'mul' },
     // Pixel fire asset pack (8-frame strips)
     burn: { src: P.fire + 'fire asset red/Group 4 - 3/Group 4 - 3.png', fw: 16, fh: 32, n: 8 },
     torch: { src: P.fire + 'fire asset red/Group 5 - 2/Group 5 - 2.png', fw: 32, fh: 48, n: 8 },
@@ -261,15 +263,44 @@
       });
       Object.keys(FX).forEach((k) => {
         let im = images['fx:' + k];
+        // gold tint for the black & yellow kit: 'mul' warms pale/white sheets, 'lum' recolours blue ones
+        if (im && FX[k].warm) {
+          const c = document.createElement('canvas');
+          c.width = im.width; c.height = im.height;
+          const g = c.getContext('2d');
+          if (FX[k].warm === 'lum') {
+            g.fillStyle = '#ffc93a'; g.fillRect(0, 0, c.width, c.height);
+            g.globalCompositeOperation = 'luminosity'; g.drawImage(im, 0, 0);
+          } else {
+            g.drawImage(im, 0, 0);
+            g.globalCompositeOperation = 'multiply'; g.fillStyle = '#ffdd55'; g.fillRect(0, 0, c.width, c.height);
+          }
+          g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0); // keep the original shape/alpha
+          images['fx:' + k] = im = c;
+        }
         // "black lightning": an existing sheet redrawn with a near-black overlay on its own pixels
         if (im && FX[k].dark) {
           const c = document.createElement('canvas');
           c.width = im.width; c.height = im.height;
           const g = c.getContext('2d');
-          g.drawImage(im, 0, 0);
-          g.globalCompositeOperation = 'source-atop';
-          g.fillStyle = 'rgba(12,9,4,0.86)';
-          g.fillRect(0, 0, c.width, c.height);
+          // 1) a yellow copy, stamped 1px around in 8 directions -> crisp yellow outline
+          const y = document.createElement('canvas');
+          y.width = im.width; y.height = im.height;
+          const yg = y.getContext('2d');
+          yg.drawImage(im, 0, 0);
+          yg.globalCompositeOperation = 'source-atop';
+          yg.fillStyle = '#ffd23f';
+          yg.fillRect(0, 0, y.width, y.height);
+          for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]]) g.drawImage(y, dx, dy);
+          // 2) the near-black core on top (compositing only, so it also works from file://)
+          const d = document.createElement('canvas');
+          d.width = im.width; d.height = im.height;
+          const dg = d.getContext('2d');
+          dg.drawImage(im, 0, 0);
+          dg.globalCompositeOperation = 'source-atop';
+          dg.fillStyle = 'rgba(12,9,4,0.9)';
+          dg.fillRect(0, 0, d.width, d.height);
+          g.drawImage(d, 0, 0);
           images['fx:' + k] = im = c;
         }
         FX[k].ok = !!im;
@@ -280,7 +311,12 @@
   };
 
   // URL usable in CSS/IMG for UI icons (a single effect frame shown via background-position)
-  G.fxIconStyle = function (fxKey, frame, size) {
+  // tone: 'gold' warms any sheet to the kit's yellow, 'dark' makes black lightning with a gold rim (CSS filters, see --icof)
+  const ICON_TONE = {
+    gold: 'sepia(1) saturate(3.2) hue-rotate(-6deg) brightness(1.08)',
+    dark: 'brightness(0.12) drop-shadow(1px 0 0 #ffd23f) drop-shadow(-1px 0 0 #ffd23f) drop-shadow(0 1px 0 #ffd23f) drop-shadow(0 -1px 0 #ffd23f)',
+  };
+  G.fxIconStyle = function (fxKey, frame, size, tone) {
     const d = FX[fxKey];
     if (!d) return '';
     const cols = d.cols || Math.max(1, Math.round(d.n));
@@ -290,6 +326,7 @@
     const im = images['fx:' + fxKey];
     const W = im ? im.width : d.fw * d.n, H = im ? im.height : d.fh;
     return `background-image:url("${encodeURI(d.src)}");background-size:${W * s}px ${H * s}px;` +
-      `background-position:${-cx * d.fw * s + (size - d.fw * s) / 2}px ${-cy * d.fh * s + (size - d.fh * s) / 2}px;`;
+      `background-position:${-cx * d.fw * s + (size - d.fw * s) / 2}px ${-cy * d.fh * s + (size - d.fh * s) / 2}px;` +
+      (ICON_TONE[tone] ? `--icof:${ICON_TONE[tone]};` : '');
   };
 })();

@@ -29,7 +29,6 @@
     input.joy.id = null; input.joy.x = 0; input.joy.y = 0;
     $('joy').classList.remove('on');
     $('joy-knob').style.transform = '';
-    $('btn-attack').classList.remove('pressed');
   };
   function keyVector() {
     const k = input.keys;
@@ -76,13 +75,7 @@
   zone.addEventListener('pointerup', joyEnd);
   zone.addEventListener('pointercancel', joyEnd);
 
-  // attack button (hold)
-  const atk = $('btn-attack');
-  atk.addEventListener('pointerdown', (e) => { e.preventDefault(); atk.setPointerCapture(e.pointerId); input.attack = true; atk.classList.add('pressed'); });
-  const atkEnd = () => { input.attack = false; atk.classList.remove('pressed'); };
-  atk.addEventListener('pointerup', atkEnd);
-  atk.addEventListener('pointercancel', atkEnd);
-  atk.addEventListener('lostpointercapture', atkEnd);
+  // no attack button: auto-attack swings at anything in reach (Space / J still swing on a keyboard)
 
   document.querySelectorAll('.act.skill').forEach((b) => b.addEventListener('pointerdown', (e) => { e.preventDefault(); G.game.castSkill(+b.dataset.slot); }));
   $('btn-hp').addEventListener('pointerdown', (e) => { e.preventDefault(); G.game.usePotion('hp'); });
