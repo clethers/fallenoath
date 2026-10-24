@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#17151b">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <title>Fallen Oath — Prologue</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div id="app">
+    <canvas id="view"></canvas>
+
+    <!-- Loading -->
+    <section id="screen-loading" class="screen active">
+      <div class="load-box">
+        <h1 class="logo">Fallen Oath</h1>
+        <p class="sub">Prologue</p>
+        <div class="loadbar"><i id="load-fill"></i></div>
+        <p id="load-text" class="muted">Loading assets…</p>
+      </div>
+    </section>
+
+    <!-- Title -->
+    <section id="screen-title" class="screen">
+      <div class="title-top">
+        <h1 class="logo">Fallen Oath</h1>
+        <p class="sub">Prologue</p>
+      </div>
+      <div class="title-menu">
+        <button class="btn primary" id="btn-continue">Continue</button>
+        <button class="btn" id="btn-new">New Game</button>
+        <button class="btn gm" id="btn-gm">GM Account <small>max level · test build</small></button>
+        <button class="btn ghost" id="btn-title-settings">Settings</button>
+      </div>
+      <p class="title-foot muted" id="title-foot"></p>
+    </section>
+
+    <!-- Hub / world map -->
+    <section id="screen-hub" class="screen">
+      <header class="hub-top">
+        <div class="plate">
+          <div class="lv" id="hub-lv">1</div>
+          <div class="plate-info">
+            <div class="plate-name"><span id="hub-name">Adventurer</span> <b class="gm-tag" id="hub-gm" hidden>GM</b></div>
+            <div class="bar xp"><i id="hub-xp"></i></div>
+            <div class="tiny muted" id="hub-xp-text"></div>
+          </div>
+        </div>
+        <div class="gold" id="hub-gold">0</div>
+      </header>
+      <h2 class="hub-title">World Map</h2>
+      <div class="area-list" id="area-list"></div>
+      <nav class="hub-nav">
+        <button class="nav-btn" data-open="hero"><span>Hero</span><b class="badge" id="badge-hero"></b></button>
+        <button class="nav-btn" data-open="bag"><span>Bag</span></button>
+        <button class="nav-btn" data-open="skills"><span>Skills</span><b class="badge" id="badge-skills"></b></button>
+        <button class="nav-btn" data-open="quests"><span>Quests</span><b class="badge" id="badge-quests"></b></button>
+        <button class="nav-btn" data-open="shop"><span>Merchant</span></button>
+        <button class="nav-btn" data-open="settings"><span>Settings</span></button>
+      </nav>
+    </section>
+
+    <!-- In-game HUD -->
+    <section id="hud" class="screen">
+      <header class="hud-top">
+        <div class="plate">
+          <div class="lv" id="hud-lv">1</div>
+          <div class="plate-info">
+            <div class="bar hp"><i id="hud-hp"></i><span id="hud-hp-text"></span></div>
+            <div class="bar mp"><i id="hud-mp"></i><span id="hud-mp-text"></span></div>
+            <div class="bar xp thin"><i id="hud-xp"></i></div>
+          </div>
+        </div>
+        <div class="hud-right">
+          <div class="gold" id="hud-gold">0</div>
+          <button class="icon-btn" id="btn-pause" aria-label="Pause">II</button>
+        </div>
+      </header>
+      <nav class="hud-menu">
+        <button data-open="hero">Hero<b class="badge" id="hbadge-hero"></b></button>
+        <button data-open="bag">Bag</button>
+        <button data-open="skills">Skills<b class="badge" id="hbadge-skills"></b></button>
+        <button data-open="quests">Quests<b class="badge" id="hbadge-quests"></b></button>
+        <button data-open="map">Map</button>
+        <button data-open="settings">Settings</button>
+      </nav>
+      <div class="tracker" id="tracker"></div>
+      <div class="buffs" id="buffs"></div>
+      <div class="bossbar" id="bossbar" hidden>
+        <div class="boss-name" id="boss-name"></div>
+        <div class="bar boss"><i id="boss-fill"></i></div>
+      </div>
+      <div class="banner" id="banner"><b></b><span></span></div>
+
+      <div class="joyzone" id="joyzone"><div class="joy" id="joy"><i id="joy-knob"></i></div></div>
+      <div class="actions" id="actions">
+        <button class="act attack" id="btn-attack" aria-label="Attack"><span>ATK</span></button>
+        <button class="act skill" data-slot="0"><i class="ico"></i><em class="cd"></em><small></small></button>
+        <button class="act skill" data-slot="1"><i class="ico"></i><em class="cd"></em><small></small></button>
+        <button class="act skill" data-slot="2"><i class="ico"></i><em class="cd"></em><small></small></button>
+        <button class="act skill" data-slot="3"><i class="ico"></i><em class="cd"></em><small></small></button>
+        <button class="act skill ult" data-slot="4"><i class="ico"></i><em class="cd"></em><small></small></button>
+        <button class="act potion hp" id="btn-hp"><span>HP</span><small id="hp-count">0</small></button>
+        <button class="act potion mp" id="btn-mp"><span>MP</span><small id="mp-count">0</small></button>
+      </div>
+    </section>
+
+    <!-- Modal panels -->
+    <div id="modal" class="modal" hidden>
+      <div class="panel" role="dialog" aria-modal="true">
+        <header class="panel-head">
+          <h3 id="panel-title"></h3>
+          <button class="icon-btn close" id="panel-close" aria-label="Close">✕</button>
+        </header>
+        <div class="tabs" id="panel-tabs"></div>
+        <div class="panel-body" id="panel-body"></div>
+      </div>
+    </div>
+
+    <!-- Item / confirm sheet (above panels) -->
+    <div id="sheet" class="sheet" hidden><div class="sheet-card" id="sheet-card"></div></div>
+
+    <div id="toasts" class="toasts"></div>
+    <div id="rotate-hint" class="rotate-hint">Best played in portrait — rotate your device.</div>
+  </div>
+
+  <script src="js/assets.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/world.js"></script>
+  <script src="js/game.js"></script>
+  <script src="js/ui.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
