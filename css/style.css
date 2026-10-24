@@ -182,6 +182,23 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
 #hud.lefty .actions { right: auto; left: calc(10px + var(--safe-l)); transform: scaleX(-1); }
 #hud.lefty .actions .act > * { transform: scaleX(-1); }
 
+/* ---------- class select */
+#screen-class { background: radial-gradient(120% 60% at 50% 0%, #2c2433, var(--bg) 70%); z-index: 5; flex-direction: column; padding: calc(16px + var(--safe-t)) 16px calc(16px + var(--safe-b)); gap: 12px; overflow-y: auto; touch-action: pan-y; }
+.class-top { display: flex; align-items: center; gap: 12px; }
+.class-title { margin: 0; font-family: var(--serif); color: var(--gold-2); font-size: 24px; }
+.class-list { display: grid; gap: 14px; }
+.class-card { position: relative; display: grid; grid-template-columns: 96px 1fr; gap: 12px; padding: 14px; border-radius: 14px;
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cc) 16%, var(--panel)), var(--panel)); border: 2px solid color-mix(in srgb, var(--cc) 55%, #000); text-align: left; }
+.class-card .hero { width: 96px; height: 96px; border-radius: 10px; background: radial-gradient(circle at 50% 70%, color-mix(in srgb, var(--cc) 30%, #4a4252), #1b1720 75%); image-rendering: pixelated; display: block; }
+.class-card h3 { margin: 0; font-family: var(--serif); font-size: 21px; color: var(--cc); }
+.class-card .el { font-size: 12px; color: var(--muted); margin: 2px 0 6px; }
+.class-card p { margin: 0 0 8px; font-size: 13px; line-height: 1.35; }
+.class-card .sig { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 10px; }
+.class-card .sig span { display: flex; align-items: center; gap: 4px; font-size: 11px; font-weight: 700; padding: 3px 7px 3px 3px; border-radius: 999px; background: #0006; border: 1px solid color-mix(in srgb, var(--cc) 40%, #000); }
+.class-card .sig i { width: 20px; height: 20px; border-radius: 50%; background-color: #000a; background-repeat: no-repeat; image-rendering: pixelated; filter: var(--icof, none); }
+.class-card .btn { grid-column: 1 / -1; background: linear-gradient(color-mix(in srgb, var(--cc) 75%, #000), color-mix(in srgb, var(--cc) 40%, #000)); border-color: var(--cc); color: #fff; }
+.class-card .tag { position: absolute; top: 10px; right: 12px; font-size: 10px; font-weight: 800; letter-spacing: 1px; color: var(--cc); }
+
 /* ---------- modal panels */
 .modal { position: absolute; inset: 0; z-index: 20; background: rgba(6,5,8,.62); display: flex; align-items: flex-end; justify-content: center;
   padding-top: calc(28px + var(--safe-t)); }

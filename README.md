@@ -29,6 +29,17 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 * **Quests:** 10 quests (kill, collect Orc Tusks, break props, clear areas, defeat bosses, reach a level, reach Endless wave 10). Rewards are claimed in the Journal.
 * **Save:** automatic (after every area, menu change and every 15 s). Saves are checked on load, and a damaged save is backed up rather than crashing the game. Settings → Reset deletes the save after you confirm.
 
+## Classes
+
+| Class | Status | Spec |
+|---|---|---|
+| Storm Blade (black & yellow lightning samurai) | Locked v1, 2026-10-24 | [`classes/storm-blade/SPEC.md`](classes/storm-blade/SPEC.md) |
+| Shadow Monarch (purple & black shadow, inspired by Sung Jinwoo) | v1, not locked yet | [`classes/shadow-monarch/SPEC.md`](classes/shadow-monarch/SPEC.md) |
+
+New Game and the GM account both start on a class screen. Each save has one class.
+
+Run `node tools/check-class-lock.js` before pushing. It needs no browser or packages, and it fails if any locked class's numbers, skill code or asset files changed. New classes register their skill code through `G.game.classSkills[pathId]` instead of editing a locked block.
+
 ## Code layout
 
 | File | Purpose |
@@ -46,7 +57,7 @@ A portrait mobile action RPG in plain HTML, CSS and vanilla JavaScript. All art 
 
 ## Known limitations
 
-* Sound covers the hero's sword and lightning skills, using three free packs: Hove Audio's Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free versions) and Last Day Dreaming's "Elemental Magic: Lightning Attacks" (CC BY-ND 4.0, credited in Settings). Hero voice shouts come from John Carroll's Warrior Voice Pack (CC0) or Konakuma's RPG Male Vocal, chosen in Settings. There are no enemy, UI or music sounds yet.
+* Sound covers the hero's sword and lightning skills, using four free packs: Hove Audio's Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free versions), Last Day Dreaming's "Elemental Magic: Lightning Attacks" (CC BY-ND 4.0, credited in Settings), and Willosuna's Magic Spells SFX Lite for the Shadow Monarch. Hero voice shouts come from John Carroll's Warrior Voice Pack (CC0) or Konakuma's RPG Male Vocal, chosen in Settings. There are no enemy, UI or music sounds yet.
 * The folder contains no item icons, so gear is shown as text cards with rarity colours.
 * The Adventurer pack has no hurt or death animation. The player flashes when hit and fades out with a skull-smoke effect on death.
 * There are only two regular enemy sprites (Orc and Soldier). Variety comes from scale, stats and behaviour (Grunt, Brute, Warlord; ranged Archer).

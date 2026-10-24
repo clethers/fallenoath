@@ -127,9 +127,15 @@
       clearT: 0, chestOpened: false, banner: null, timers: [], zones: [],
     };
     run.map.props.forEach((pr) => pr.torch && fx(run, pr.torch, pr.x, pr.y - 30, { loop: true, fps: 10 }));
+    if (G.profile.path === 'shadow') { // the Shadow Monarch steps out of a shadow portal (portal sound peaks 0.15s in, the portal at ~0.33s)
+      fx(run, 'portalVoid', run.player.x, run.player.y - 14, { important: true });
+      fx(run, 'shadowMist', run.player.x, run.player.y - 6, { scale: 1.2 });
+      schedule(run, 0.18, () => G.sfx('shPortal', { minGap: 0, vol: 0.8 }));
+    } else {
     fx(run, 'warp', run.player.x, run.player.y - 14, { important: true });
     // hero spawn: one short thunder crack on the warp's brightest frame (#6 of 12 at 15fps = 0.4s); the clip peaks 0.25s in
     schedule(run, 0.15, () => G.sfx('heroSpawn', { minGap: 0 }));
+    }
     game.run = run;
     game.paused = false;
     G.ui.onRunStart(run);
@@ -205,6 +211,7 @@
     if (e.dead || e.state === 'spawn') return 0;
     o = o || {};
     let dmg = amount;
+    if (e.status.vuln) dmg = Math.round(dmg * (1 + e.status.vuln.amt));
     if (e.block > 0) { dmg = Math.max(1, Math.round(dmg * 0.15)); text(run, e.x, e.y - 50, 'BLOCKED', '#9fd0ff'); }
     e.hp -= dmg;
     e.flash = 0.12;
@@ -222,7 +229,7 @@
 
   function killEnemy(run, e) {
     if (e.dead) return;
-    e.dead = true; e.hp = 0; e.state = 'dead'; e.stateT = 0; setAnim(e, 'death');
+    e.dead = true; e.hp = 0; e.state = 'dead'; e.stateT = 0; setAnim(e, 'death'); e.deadAt = run.time;
     Object.values(e.status).forEach((s) => s.fx && (s.fx.dur = 0.0001));
     e.status = {};
     if (e.rewarded) return;
@@ -381,7 +388,7 @@
   function resolvePlayerHit(run) {
     const pl = run.player, v = DIRV[pl.dir];
     const hx = pl.x + v[0] * 14, hy = pl.y - 4 + v[1] * 12;
-    const mult = pl.combo ? 1.15 : 1;
+    const mult = (pl.combo ? 1.15 : 1) * (pl.stats.basicMult || 1);
     let hitAny = false;
     for (const e of run.enemies) {
       if (e.dead || e.state === 'spawn') continue;
@@ -401,7 +408,7 @@
     }
     if (hitAny) {
       G.sfx('slashHit', { minGap: 70 });
-      fx(run, 'slashArc', hx + v[0] * 4, hy - 2 + v[1] * 4, { rot: DIRA[pl.dir] + Math.PI / 2, scale: pl.combo ? 1.05 : 0.9, fps: 26, flip: !!pl.combo });
+      fx(run, G.profile.path === 'shadow' ? 'shadowArc' : 'slashArc', hx + v[0] * 4, hy - 2 + v[1] * 4, { rot: DIRA[pl.dir] + Math.PI / 2, scale: pl.combo ? 1.05 : 0.9, fps: 26, flip: !!pl.combo });
     }
     if (hitAny && G.profile.settings.screenShake) run.shake = Math.max(run.shake, 1.2);
   }
@@ -445,6 +452,7 @@
     return true;
   };
 
+  // ==== LOCKED: Storm Blade class v1 (spec: classes/storm-blade/SPEC.md, check: node tools/check-class-lock.js) ====
   // ---------------------------------------------------------------- skills (lightning sword arts)
   const rankOf = (k) => (G.profile.skills[k] || 0);
   const pRank = (k) => G.passiveRank(G.profile, k);
@@ -607,6 +615,13 @@
     const sk = G.SKILLS[key], rank = rankOf(key);
     if ((pl.cds[key] || 0) > 0 || pl.castLock > 0 || pl.dash || pl.flashing) return false;
     if (pl.mp < sk.mp) { G.ui.toast('Not enough MP', 'warn'); return false; }
+    // other classes plug in through game.classSkills[path] (defined below the locked block)
+    if (sk.path !== 'storm') {
+      const cls = game.classSkills[sk.path];
+      if (!cls || !cls.cast) return false;
+      pl.mp -= sk.mp; pl.cds[key] = sk.cd;
+      return cls.cast(run, key, sk, rank, classKit) !== false;
+    }
     const near = nearestEnemy(run, pl, sk.radius || 150);
     if ((key === 'sixfold' || key === 'godspeed') && !near) { G.ui.toast('No enemy in range', 'warn'); return false; }
     pl.mp -= sk.mp;
@@ -837,7 +852,19 @@
         }
       } else if (!still && !pl.focused) pl.focusT = 0;
     }
+    for (const id in game.classSkills) { const c = game.classSkills[id]; if (c.update) c.update(run, dt, classKit); }
   }
+  // ==== END LOCKED: Storm Blade class v1 ====
+
+  // ---- plug-in point for the next classes: register game.classSkills[pathId] = { cast(run, key, sk, rank, kit), update(run, dt, kit) }
+  // kit gives class code the same building blocks Storm Blade uses, so new classes never need to edit the locked block.
+  game.classSkills = {};
+  const classKit = {
+    fx: (run, key, x, y, o) => fx(run, key, x, y, o), schedule, shake, hitStop, hitOne, hitArea, stun, swing, startDash, flashLeg,
+    nearestEnemy, enemiesNear, enemiesOnLine, enemiesInFront, frontPoint, skillMult, power, bodyY, faceToward, alive,
+    rank: rankOf, passiveRank: pRank, DIRV, DIRA,
+    drawSheet, damageEnemy, applyStatus, text, rollDamage, dist, setAnim, resolvePlayerHit,
+  };
 
   // hook kept for sword hits (no on-hit passives in this kit)
   function swordHitPassives() {}
@@ -847,9 +874,11 @@
     const s = e.status[kind];
     if (kind === 'stun' && e.boss) o.t *= 0.4;
     if (s) { s.t = Math.max(s.t, o.t); if (o.dps) s.dps = Math.max(s.dps, o.dps); return; }
-    if (kind === 'stun') text(run, e.x, e.y - 22 * e.def.scale - 8, 'STUN', '#9fe0ff');
+    if (kind === 'stun' && !o.label) text(run, e.x, e.y - 22 * e.def.scale - 8, 'STUN', '#9fe0ff');
+    if (o.label) text(run, e.x, e.y - 22 * e.def.scale - 8, o.label, o.labelColor || '#c9a6ff');
     const st = Object.assign({ tick: 0.5 }, o);
-    const fxKey = kind === 'burn' ? 'burn' : kind === 'poison' ? 'statusPoison' : 'statusStun';
+    if (o.noFx) { e.status[kind] = st; return; }
+    const fxKey = o.fxKey || (kind === 'burn' ? 'burn' : kind === 'poison' ? 'statusPoison' : 'statusStun');
     const h = (e.def.ay - 40) * e.def.scale * 0.5 + 10 * e.def.scale;
     st.fx = fx(run, fxKey, e.x, e.y, { loop: true, follow: e, offY: kind === 'burn' ? -10 * e.def.scale : -h - 6, scale: kind === 'burn' ? 0.8 * Math.min(1.6, e.def.scale) : 0.6, fps: 12 });
     e.status[kind] = st;
@@ -902,6 +931,13 @@
     if (e.dead) return;
     if (e.block > 0) e.block -= dt;
     if (e.status.stun) { setAnim(e, 'hurt'); if (e.animT * 14 >= 3) e.animT = 0; return; }
+    if (e.status.fear && !e.boss && e.state !== 'attack') { // Bloodlust: run away from the hero
+      const a = Math.atan2(e.y - pl.y, e.x - pl.x);
+      e.x += Math.cos(a) * e.def.speed * 0.8 * dt; e.y += Math.sin(a) * e.def.speed * 0.8 * dt;
+      G.collide(run.map, e, e.r);
+      e.face = Math.cos(a) >= 0 ? 1 : -1; setAnim(e, 'walk');
+      return;
+    }
     e.cdT -= dt;
     e.special -= dt;
     const slow = e.status.poison ? 1 - (e.status.poison.slow || 0) : 1;
@@ -1333,6 +1369,7 @@
     for (const e of run.enemies) if (!e.removed) list.push({ y: e.y, t: 1, o: e });
     for (const d of run.drops) list.push({ y: d.y, t: 3, o: d });
     if (run.player) list.push({ y: run.player.y, t: 2, o: run.player });
+    for (const id in game.classSkills) { const c = game.classSkills[id]; if (c.drawables) c.drawables(run, list); } // {y, t: 5, draw(ctx)}
     list.sort((a, b) => a.y - b.y);
     const pl = run.player;
     for (const it of list) {
@@ -1346,6 +1383,7 @@
         G.drawProp(ctx, pr.key, pr.x, pr.y, alpha);
       } else if (it.t === 1) drawEnemy(ctx, it.o, run);
       else if (it.t === 2) drawPlayer(ctx, it.o, run);
+      else if (it.t === 5) it.draw(ctx);
     }
 
     // projectiles (arrow pixels cut from the Soldier attack sheet)
@@ -1369,13 +1407,14 @@
     ctx.globalAlpha = 1;
   };
 
+  function heroTint() { const p = G.profile && G.PATHS[G.profile.path]; return p ? p.heroTint : null; }
   function drawPlayer(ctx, pl, run) {
     if (pl.dead && run.endT > 0.6) return;
     if (pl.spin || pl.dash) { // sword techniques reuse the hero's own attack frames
       const k = 'adv_' + (pl.spin ? 'atk1_' : 'atk2_') + pl.dir;
       const n = (G.SHEETS[k] && G.SHEETS[k].n) || 8;
       const f = pl.spin ? 2 + (Math.floor(run.time * 30) % 3) : Math.min(n - 1, 1 + Math.floor((pl.dash.t / pl.dash.dur) * 4));
-      drawSheet(ctx, k, f, pl.x, pl.y, 46, 57, 1, false, pl.dash ? (pl.flashing ? 0.35 : 0.85) : 1);
+      drawSheet(ctx, G.tintedSheet(k, heroTint()), f, pl.x, pl.y, 46, 57, 1, false, pl.dash ? (pl.flashing ? 0.35 : 0.85) : 1);
       return;
     }
     const key = playerSheet(pl);
@@ -1387,7 +1426,7 @@
     let alpha = 1;
     if (pl.dead) alpha = Math.max(0, 1 - run.endT * 1.6);
     else if (pl.flash > 0 && Math.floor(pl.flash * 30) % 2 === 0) alpha = 0.45;
-    drawSheet(ctx, key, frame, pl.x, pl.y, 46, 57, 1, false, alpha);
+    drawSheet(ctx, G.tintedSheet(key, heroTint()), frame, pl.x, pl.y, 46, 57, 1, false, alpha);
   }
 
   function drawEnemy(ctx, e, run) {
@@ -1398,10 +1437,11 @@
     let alpha = 1;
     if (e.state === 'spawn') alpha = Math.max(0, (e.stateT - 0.2) / 0.25);
     if (e.state === 'dead') alpha = Math.max(0, 1 - Math.max(0, e.stateT - 0.8) / 0.4);
-    drawSheet(ctx, ai.key, frame, e.x, e.y, e.def.ax, e.def.ay, e.def.scale, e.face < 0, alpha);
+    const ly = e.y - (e.liftY || 0);
+    drawSheet(ctx, ai.key, frame, e.x, ly, e.def.ax, e.def.ay, e.def.scale, e.face < 0, alpha);
     if (e.flash > 0 && e.state !== 'dead') { // hit flash: the enemy's own sprite drawn again additively (brightens it)
       ctx.globalCompositeOperation = 'lighter';
-      drawSheet(ctx, ai.key, frame, e.x, e.y, e.def.ax, e.def.ay, e.def.scale, e.face < 0, Math.min(1, e.flash / 0.12) * 0.85 * alpha);
+      drawSheet(ctx, ai.key, frame, e.x, ly, e.def.ax, e.def.ay, e.def.scale, e.face < 0, Math.min(1, e.flash / 0.12) * 0.85 * alpha);
       ctx.globalCompositeOperation = 'source-over';
     }
     // health bar (interface element) for regular enemies

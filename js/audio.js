@@ -19,6 +19,7 @@
 
   // key -> one or more files (a random one plays), base volume
   const S = 'assets/audio/Sword Combat SFX Pack Free Version/';
+  const M = 'assets/audio/Magic Spells SFX Lite/';
   // base volumes are a mix: lightning hits on top, swings and cues underneath.
   // (LDD files can't be edited under their licence, so they are levelled here instead.)
   G.SFX = {
@@ -37,6 +38,17 @@
     // sword: Hove Audio "Sword Combat Sound Effects Pack" (free) - trimmed, tightened, peak-levelled
     slash: { src: [S + 'slash_07.mp3', S + 'slash_26.mp3'], vol: 0.75, vary: 0.1 },
     slashHit: { src: [S + 'slashhit_01.mp3', S + 'slashhit_11.mp3', S + 'slashhit_17.mp3'], vol: 0.7, vary: 0.07 },
+    // Shadow Monarch: Willosuna "Magic Spells SFX Lite" (royalty free, no attribution required) - trimmed and peak-levelled
+    shShadow: { src: [M + 'shadow.mp3'], vol: 0.8 },
+    shSummon: { src: [M + 'summon.mp3'], vol: 0.85 },
+    shTeleport: { src: [M + 'teleport.mp3'], vol: 0.8 },
+    shPortal: { src: [M + 'portal.mp3'], vol: 0.85 },
+    shDebuff: { src: [M + 'debuff.mp3'], vol: 0.85 },
+    shLift: { src: [M + 'timewarp.mp3'], vol: 0.7 },
+    shSlam: { src: [M + 'slam.mp3'], vol: 1 },
+    shBlast: { src: [M + 'blast.mp3'], vol: 0.8, vary: 0.06 },
+    shCharge: { src: [M + 'charge.mp3'], vol: 0.8 },
+    shRune: { src: [M + 'rune.mp3'], vol: 0.6 },
     // mob spawn: Hove whoosh 26 reversed, pitched down and darkened -> a dusty "poof" that swells into the smoke burst
     spawn: { src: [S + 'spawn_poof.mp3'], vol: 0.85, vary: 0.08 },
   };
@@ -104,7 +116,7 @@
     })));
   };
 
-  G.SFX_CREDITS = 'Sound: Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free) by Hove Audio · "Elemental Magic: Lightning Attacks" © 2024 Last Day Dreaming, CC BY-ND 4.0 · Hero voices: Warrior Voice Pack by John Carroll (CC0) and RPG Male Vocal "Male protagonist" by Konakuma.';
+  G.SFX_CREDITS = 'Sound: Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free) by Hove Audio · "Elemental Magic: Lightning Attacks" © 2024 Last Day Dreaming, CC BY-ND 4.0 · Hero voices: Warrior Voice Pack by John Carroll (CC0) and RPG Male Vocal "Male protagonist" by Konakuma. Shadow Monarch spells: Magic Spells SFX Lite by Willosuna.';
 
   const POOL = 4;
   const pools = {};

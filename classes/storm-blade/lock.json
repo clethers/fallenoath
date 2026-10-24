@@ -1,0 +1,790 @@
+{
+ "def": {
+  "name": "Storm Blade",
+  "path": "storm",
+  "fx": [
+   "thunderStrike",
+   "thunderSplash",
+   "thunderStrikeDark",
+   "thunderSplashDark",
+   "boltDark",
+   "burstDark",
+   "auraDark",
+   "slashGold",
+   "slashArc",
+   "flashKick",
+   "sparkBurst",
+   "chargeUp",
+   "lightBurst",
+   "sparkle",
+   "hit",
+   "hitCrit",
+   "statusStun",
+   "warp",
+   "spawnSmoke"
+  ],
+  "sfx": [
+   "strike",
+   "strikeBig",
+   "heroSpawn",
+   "finisher",
+   "ultBlast",
+   "charge",
+   "whoosh",
+   "stance",
+   "castLong",
+   "launch",
+   "impact",
+   "hold",
+   "slash",
+   "slashHit",
+   "spawn"
+  ],
+  "voiceKinds": [
+   "name",
+   "light",
+   "heavy",
+   "ult",
+   "crit",
+   "dodge",
+   "stance",
+   "hurt",
+   "death"
+  ]
+ },
+ "snapshot": {
+  "data": {
+   "path": {
+    "name": "Storm Blade",
+    "element": "Black & Yellow Lightning",
+    "color": "#f2cf4a",
+    "icon": [
+     "thunderStrike",
+     6,
+     "gold"
+    ],
+    "desc": "A flash swordsman: draw, vanish in a streak of yellow and black lightning, and enemies fall a beat later.",
+    "actives": [
+     "flashdraw",
+     "sixfold",
+     "blinkstep",
+     "godspeed",
+     "sheath",
+     "sovereign"
+    ],
+    "passives": [
+     "iaifocus",
+     "thunderstep"
+    ]
+   },
+   "skills": {
+    "flashdraw": {
+     "path": "storm",
+     "kind": "active",
+     "slot": "a0",
+     "name": "Flash Draw",
+     "unlock": 1,
+     "mp": 12,
+     "cd": 3.5,
+     "icon": [
+      "slashGold",
+      2,
+      "gold"
+     ],
+     "move": "flash",
+     "stance": 0.12,
+     "dashLen": 110,
+     "dashTime": 0.1,
+     "delay": 0.2,
+     "mult": 2,
+     "perRank": 0.3,
+     "width": 18,
+     "fx": "chargeUp (stance), thunderSplash + black splash (trail), thunderStrike + black strike, slashGold (delayed cuts)",
+     "desc": "A brief stance, then a near-instant straight dash-slash. Everything on the line is cut a beat after you pass."
+    },
+    "sixfold": {
+     "path": "storm",
+     "kind": "active",
+     "slot": "a1",
+     "req": "flashdraw",
+     "name": "Sixfold Flash",
+     "unlock": 3,
+     "mp": 22,
+     "cd": 9,
+     "icon": [
+      "thunderSplash",
+      5,
+      "gold"
+     ],
+     "move": "flash",
+     "flashes": 6,
+     "segTime": 0.07,
+     "radius": 130,
+     "mult": 0.9,
+     "perRank": 0.12,
+     "fx": "slashGold, thunderSplash, black splash/burst",
+     "desc": "Six rapid flashes zig-zagging between nearby enemies, cutting each one you pass through."
+    },
+    "blinkstep": {
+     "path": "storm",
+     "kind": "active",
+     "slot": "b0",
+     "req": "iaifocus",
+     "name": "Blink Step",
+     "unlock": 4,
+     "mp": 8,
+     "cd": 4,
+     "icon": [
+      "thunderSplash",
+      4,
+      "dark"
+     ],
+     "move": "flash",
+     "dist": 75,
+     "dashTime": 0.08,
+     "mult": 0.6,
+     "perRank": 0.15,
+     "cdPerRank": 0.4,
+     "radius": 30,
+     "fx": "black burst (vanish), thunderSplash (arrive), black splash",
+     "desc": "Vanish in a short evasive flash away from danger, untouchable while moving. Black lightning bursts where you stood."
+    },
+    "godspeed": {
+     "path": "storm",
+     "kind": "active",
+     "slot": "a2",
+     "req": "thunderstep",
+     "name": "Godspeed Rush",
+     "unlock": 6,
+     "mp": 32,
+     "cd": 13,
+     "icon": [
+      "thunderStrike",
+      8,
+      "dark"
+     ],
+     "move": "flash",
+     "flashes": 8,
+     "segTime": 0.05,
+     "radius": 150,
+     "mult": 1,
+     "perRank": 0.15,
+     "finisher": 2.4,
+     "stun": 1.2,
+     "fx": "slashGold, black burst, thunderStrike + black bolt (finisher)",
+     "desc": "Eight even faster flashes, finished by a huge yellow-and-black thunder strike that stuns."
+    },
+    "sheath": {
+     "path": "storm",
+     "kind": "active",
+     "slot": "b1",
+     "req": "blinkstep",
+     "name": "Thunder Sheath",
+     "unlock": 7,
+     "mp": 15,
+     "cd": 10,
+     "icon": [
+      "chargeUp",
+      9,
+      "dark"
+     ],
+     "move": "flash",
+     "window": 0.6,
+     "perRankWindow": 0.1,
+     "mult": 2.6,
+     "perRank": 0.35,
+     "range": 150,
+     "missCd": 3,
+     "fx": "black aura + chargeUp (stance), slashGold + thunderStrike/black strike (counter)",
+     "desc": "A parry stance. If anything strikes you, you take no damage and flash-counter the attacker with a guaranteed crit. Missing shortens the cooldown."
+    },
+    "sovereign": {
+     "path": "storm",
+     "kind": "active",
+     "slot": "a3",
+     "req": "godspeed",
+     "ult": true,
+     "name": "Thunder Sovereign",
+     "unlock": 10,
+     "mp": 60,
+     "cd": 40,
+     "icon": [
+      "bossBolt",
+      3,
+      "dark"
+     ],
+     "move": "flash",
+     "windup": 0.4,
+     "dashLen": 230,
+     "dashTime": 0.18,
+     "mult": 4.2,
+     "perRank": 0.5,
+     "width": 40,
+     "stun": 1.5,
+     "fx": "chargeUp, black aura, black bolts + thunderStrike columns, lightBurst",
+     "desc": "ULTIMATE. Charge, then one enormous flash across the field that leaves a towering column of black and yellow lightning along the whole path."
+    },
+    "iaifocus": {
+     "path": "storm",
+     "kind": "passive",
+     "slot": "p0",
+     "req": "flashdraw",
+     "name": "Iai Focus",
+     "unlock": 2,
+     "icon": [
+      "chargeUp",
+      6,
+      "gold"
+     ],
+     "focusTime": 0.8,
+     "bonus": 0.15,
+     "desc": "Stand still to build focus. Your next Flash skill always crits and deals +15% damage per rank."
+    },
+    "thunderstep": {
+     "path": "storm",
+     "kind": "passive",
+     "slot": "p1",
+     "req": "sixfold",
+     "name": "Thunder Step",
+     "unlock": 5,
+     "icon": [
+      "sparkBurst",
+      4,
+      "gold"
+     ],
+     "cdr": 0.15,
+     "mp": 1,
+     "desc": "Every flash-dash shortens your skill cooldowns by 0.15s and restores 1 MP per rank."
+    }
+   },
+   "tree": [
+    {
+     "slot": "a0",
+     "x": 50,
+     "y": 7
+    },
+    {
+     "slot": "p0",
+     "x": 18,
+     "y": 29
+    },
+    {
+     "slot": "a1",
+     "x": 82,
+     "y": 29
+    },
+    {
+     "slot": "b0",
+     "x": 18,
+     "y": 51
+    },
+    {
+     "slot": "p1",
+     "x": 82,
+     "y": 51
+    },
+    {
+     "slot": "b1",
+     "x": 18,
+     "y": 73
+    },
+    {
+     "slot": "a2",
+     "x": 82,
+     "y": 73
+    },
+    {
+     "slot": "a3",
+     "x": 50,
+     "y": 93
+    }
+   ],
+   "ultSlot": 4,
+   "fx": {
+    "thunderStrike": {
+     "src": "assets/Thunder Effect 02/Thunder Strike/Thunderstrike wo blur.png",
+     "fw": 64,
+     "fh": 64,
+     "n": 13,
+     "dark": false,
+     "warm": "mul"
+    },
+    "thunderSplash": {
+     "src": "assets/Thunder Effect 02/Thunder Splash/Thunder splash wo blur.png",
+     "fw": 48,
+     "fh": 48,
+     "n": 14,
+     "dark": false,
+     "warm": "mul"
+    },
+    "thunderStrikeDark": {
+     "src": "assets/Thunder Effect 02/Thunder Strike/Thunderstrike w blur.png",
+     "fw": 64,
+     "fh": 64,
+     "n": 13,
+     "dark": true,
+     "warm": false
+    },
+    "thunderSplashDark": {
+     "src": "assets/Thunder Effect 02/Thunder Splash/Thunder splash w blur.png",
+     "fw": 48,
+     "fh": 48,
+     "n": 14,
+     "dark": true,
+     "warm": false
+    },
+    "boltDark": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_strike_001/lightning_strike_001_large_violet/spritesheet.png",
+     "fw": 128,
+     "fh": 128,
+     "n": 7,
+     "dark": true,
+     "warm": false
+    },
+    "burstDark": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_burst_002/lightning_burst_002_large_violet/spritesheet.png",
+     "fw": 64,
+     "fh": 64,
+     "n": 9,
+     "dark": true,
+     "warm": false
+    },
+    "auraDark": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_aura_002/lightning_aura_002_large_blue/spritesheet.png",
+     "fw": 96,
+     "fh": 96,
+     "n": 16,
+     "dark": true,
+     "warm": false
+    },
+    "slashGold": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/directional_impact_004/directional_impact_004_large_yellow/spritesheet.png",
+     "fw": 80,
+     "fh": 80,
+     "n": 5,
+     "dark": false,
+     "warm": false
+    },
+    "slashArc": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/directional_impact_002/directional_impact_002_small_white/spritesheet.png",
+     "fw": 70,
+     "fh": 25,
+     "n": 7,
+     "dark": false,
+     "warm": "mul"
+    },
+    "flashKick": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_muzzle_flash_003/scifi_muzzle_flash_003_large_yellow/spritesheet.png",
+     "fw": 96,
+     "fh": 48,
+     "n": 8,
+     "dark": false,
+     "warm": "mul"
+    },
+    "sparkBurst": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_spark_burst_001/scifi_spark_burst_001_large_yellow/spritesheet.png",
+     "fw": 128,
+     "fh": 128,
+     "n": 12,
+     "dark": false,
+     "warm": "mul"
+    },
+    "chargeUp": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_charge_up_001/scifi_charge_up_001_large_yellow/spritesheet.png",
+     "fw": 96,
+     "fh": 96,
+     "n": 12,
+     "dark": false,
+     "warm": false
+    },
+    "lightBurst": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Magic Bursts/round_light_burst_001/round_light_burst_001_large_yellow/spritesheet.png",
+     "fw": 256,
+     "fh": 144,
+     "n": 9,
+     "dark": false,
+     "warm": false
+    },
+    "sparkle": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Fantasy Spells/status_sparkling_001/status_sparkling_001_small_yellow/spritesheet.png",
+     "fw": 48,
+     "fh": 48,
+     "n": 24,
+     "dark": false,
+     "warm": false
+    },
+    "hit": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/symmetrical_impact_001/symmetrical_impact_001_small_yellow/spritesheet.png",
+     "fw": 48,
+     "fh": 48,
+     "n": 7,
+     "dark": false,
+     "warm": false
+    },
+    "hitCrit": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/symmetrical_impact_006/symmetrical_impact_006_small_yellow/spritesheet.png",
+     "fw": 80,
+     "fh": 80,
+     "n": 8,
+     "dark": false,
+     "warm": "lum"
+    },
+    "statusStun": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_aura_002/lightning_aura_002_small_blue/spritesheet.png",
+     "fw": 48,
+     "fh": 48,
+     "n": 16,
+     "dark": false,
+     "warm": "lum"
+    },
+    "warp": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_warp_003/scifi_warp_003_large_blue/spritesheet.png",
+     "fw": 128,
+     "fh": 128,
+     "n": 12,
+     "dark": false,
+     "warm": false
+    },
+    "spawnSmoke": {
+     "src": "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Smoke Bursts/symmetrical_smoke_burst_001/symmetrical_smoke_burst_001_large_brown/spritesheet.png",
+     "fw": 64,
+     "fh": 64,
+     "n": 10,
+     "dark": false,
+     "warm": false
+    }
+   },
+   "sfx": {
+    "strike": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/strike_08.mp3",
+      "assets/audio/Lightning Magic SFX Pack Free Version/strike_13.mp3",
+      "assets/audio/Lightning Magic SFX Pack Free Version/strike_16.mp3",
+      "assets/audio/Lightning Magic SFX Pack Free Version/strike_21.mp3",
+      "assets/audio/Lightning Magic SFX Pack Free Version/strike_26.mp3"
+     ],
+     "vol": 0.8,
+     "vary": 0.08
+    },
+    "strikeBig": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/strike_full_28.mp3"
+     ],
+     "vol": 0.9,
+     "vary": 0
+    },
+    "heroSpawn": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/spawn_crack.mp3"
+     ],
+     "vol": 0.75,
+     "vary": 0
+    },
+    "finisher": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/combo_28.mp3"
+     ],
+     "vol": 1,
+     "vary": 0
+    },
+    "ultBlast": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/combo_08.mp3"
+     ],
+     "vol": 1,
+     "vary": 0
+    },
+    "charge": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/charge_short.mp3"
+     ],
+     "vol": 0.9,
+     "vary": 0
+    },
+    "whoosh": {
+     "src": [
+      "assets/audio/Lightning Magic SFX Pack Free Version/cast_01.mp3"
+     ],
+     "vol": 0.6,
+     "vary": 0
+    },
+    "stance": {
+     "src": [
+      "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_CAST_02_S.mp3"
+     ],
+     "vol": 0.85,
+     "vary": 0
+    },
+    "castLong": {
+     "src": [
+      "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_CAST_01_L.mp3"
+     ],
+     "vol": 0.7,
+     "vary": 0
+    },
+    "launch": {
+     "src": [
+      "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_LAUNCH_01.mp3"
+     ],
+     "vol": 1,
+     "vary": 0
+    },
+    "impact": {
+     "src": [
+      "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_IMPACT_01.mp3"
+     ],
+     "vol": 1,
+     "vary": 0
+    },
+    "hold": {
+     "src": [
+      "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_HOLD_5s.mp3"
+     ],
+     "vol": 0.9,
+     "vary": 0
+    },
+    "slash": {
+     "src": [
+      "assets/audio/Sword Combat SFX Pack Free Version/slash_07.mp3",
+      "assets/audio/Sword Combat SFX Pack Free Version/slash_26.mp3"
+     ],
+     "vol": 0.75,
+     "vary": 0.1
+    },
+    "slashHit": {
+     "src": [
+      "assets/audio/Sword Combat SFX Pack Free Version/slashhit_01.mp3",
+      "assets/audio/Sword Combat SFX Pack Free Version/slashhit_11.mp3",
+      "assets/audio/Sword Combat SFX Pack Free Version/slashhit_17.mp3"
+     ],
+     "vol": 0.7,
+     "vary": 0.07
+    },
+    "spawn": {
+     "src": [
+      "assets/audio/Sword Combat SFX Pack Free Version/spawn_poof.mp3"
+     ],
+     "vol": 0.85,
+     "vary": 0.08
+    }
+   },
+   "voices": {
+    "warrior": {
+     "name": "Warrior (John Carroll)",
+     "light": [
+      "assets/audio/Warrior Voice Pack/lightattack1.mp3",
+      "assets/audio/Warrior Voice Pack/lightattack2.mp3",
+      "assets/audio/Warrior Voice Pack/lightattack3.mp3",
+      "assets/audio/Warrior Voice Pack/lightattack4.mp3",
+      "assets/audio/Warrior Voice Pack/attack1.mp3",
+      "assets/audio/Warrior Voice Pack/attack2.mp3",
+      "assets/audio/Warrior Voice Pack/attack3.mp3",
+      "assets/audio/Warrior Voice Pack/attack4.mp3"
+     ],
+     "heavy": [
+      "assets/audio/Warrior Voice Pack/heavyattack1.mp3",
+      "assets/audio/Warrior Voice Pack/heavyattack2.mp3",
+      "assets/audio/Warrior Voice Pack/heavyattack3.mp3",
+      "assets/audio/Warrior Voice Pack/heavyattack4.mp3"
+     ],
+     "ult": [
+      "assets/audio/Warrior Voice Pack/heavyattack2.mp3",
+      "assets/audio/Warrior Voice Pack/heavyattack4.mp3",
+      "assets/audio/Warrior Voice Pack/angry1.mp3",
+      "assets/audio/Warrior Voice Pack/angry2.mp3"
+     ],
+     "crit": [
+      "assets/audio/Warrior Voice Pack/crit1.mp3",
+      "assets/audio/Warrior Voice Pack/crit2.mp3",
+      "assets/audio/Warrior Voice Pack/crit3.mp3"
+     ],
+     "dodge": [
+      "assets/audio/Warrior Voice Pack/hup1.mp3",
+      "assets/audio/Warrior Voice Pack/hup2.mp3",
+      "assets/audio/Warrior Voice Pack/hup3.mp3",
+      "assets/audio/Warrior Voice Pack/hut1.mp3",
+      "assets/audio/Warrior Voice Pack/hut2.mp3"
+     ],
+     "stance": [
+      "assets/audio/Warrior Voice Pack/defend1.mp3",
+      "assets/audio/Warrior Voice Pack/defend2.mp3"
+     ],
+     "hurt": [
+      "assets/audio/Warrior Voice Pack/hit1.mp3",
+      "assets/audio/Warrior Voice Pack/hit2.mp3",
+      "assets/audio/Warrior Voice Pack/hit3.mp3",
+      "assets/audio/Warrior Voice Pack/hit4.mp3",
+      "assets/audio/Warrior Voice Pack/hit5.mp3"
+     ],
+     "death": [
+      "assets/audio/Warrior Voice Pack/death1.mp3",
+      "assets/audio/Warrior Voice Pack/death2.mp3"
+     ]
+    },
+    "protagonist": {
+     "name": "Protagonist (Konakuma)",
+     "light": [
+      "assets/audio/Male protagonist/hiyah_1.mp3",
+      "assets/audio/Male protagonist/hiyah_2.mp3",
+      "assets/audio/Male protagonist/hiyah_3.mp3",
+      "assets/audio/Male protagonist/grunt_ra_1.mp3",
+      "assets/audio/Male protagonist/grunt_ra_2.mp3",
+      "assets/audio/Male protagonist/grunt_ra_3.mp3",
+      "assets/audio/Male protagonist/kick_1.mp3",
+      "assets/audio/Male protagonist/kick_2.mp3",
+      "assets/audio/Male protagonist/punch_1.mp3",
+      "assets/audio/Male protagonist/punch_2.mp3"
+     ],
+     "heavy": [
+      "assets/audio/Male protagonist/grunt_uoe_1.mp3",
+      "assets/audio/Male protagonist/grunt_uoe_2.mp3",
+      "assets/audio/Male protagonist/grunt_uoe_3.mp3",
+      "assets/audio/Male protagonist/grunt_wa_1.mp3",
+      "assets/audio/Male protagonist/hiyah_4.mp3"
+     ],
+     "ult": [
+      "assets/audio/Male protagonist/hiyah_4.mp3",
+      "assets/audio/Male protagonist/grunt_ra_4.mp3",
+      "assets/audio/Male protagonist/grunt_ra_5.mp3"
+     ],
+     "crit": [
+      "assets/audio/Male protagonist/grunt_kwa.mp3",
+      "assets/audio/Male protagonist/grunt_ra_4.mp3",
+      "assets/audio/Male protagonist/hiyah_2.mp3"
+     ],
+     "dodge": [
+      "assets/audio/Male protagonist/jump_1.mp3",
+      "assets/audio/Male protagonist/jump_2.mp3",
+      "assets/audio/Male protagonist/jump_3.mp3"
+     ],
+     "stance": [
+      "assets/audio/Male protagonist/jp_n_1.mp3"
+     ],
+     "hurt": [
+      "assets/audio/Male protagonist/ouch_1.mp3",
+      "assets/audio/Male protagonist/ow_1.mp3",
+      "assets/audio/Male protagonist/jp_itai_1.mp3",
+      "assets/audio/Male protagonist/jp_itai_2.mp3",
+      "assets/audio/Male protagonist/grunt_oof_1.mp3",
+      "assets/audio/Male protagonist/grunt_oof_2.mp3"
+     ],
+     "death": [
+      "assets/audio/Male protagonist/pained_death_1.mp3",
+      "assets/audio/Male protagonist/pained_death_2.mp3",
+      "assets/audio/Male protagonist/jp_shimatta_1.mp3"
+     ]
+    }
+   }
+  },
+  "code": {
+   "hash": "fb733432bd0d34d0",
+   "lines": 401
+  },
+  "assets": {
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Fantasy Spells/status_sparkling_001/status_sparkling_001_small_yellow/spritesheet.png": "f38d840d98753c17",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/directional_impact_002/directional_impact_002_small_white/spritesheet.png": "8cca1e17ffaaf35f",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/directional_impact_004/directional_impact_004_large_yellow/spritesheet.png": "5606e491d97b08ba",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/symmetrical_impact_001/symmetrical_impact_001_small_yellow/spritesheet.png": "d23e9304801d42e8",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Impacts/symmetrical_impact_006/symmetrical_impact_006_small_yellow/spritesheet.png": "c0f5867b7bb2a259",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_aura_002/lightning_aura_002_large_blue/spritesheet.png": "de96da6d62160a48",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_aura_002/lightning_aura_002_small_blue/spritesheet.png": "adea6814396b6835",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_burst_002/lightning_burst_002_large_violet/spritesheet.png": "5478c52aa2ec1481",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Lightning/lightning_strike_001/lightning_strike_001_large_violet/spritesheet.png": "5b9c9a88053914a5",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Magic Bursts/round_light_burst_001/round_light_burst_001_large_yellow/spritesheet.png": "bc0ebb7066f66d79",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_charge_up_001/scifi_charge_up_001_large_yellow/spritesheet.png": "28900418219a8f49",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_muzzle_flash_003/scifi_muzzle_flash_003_large_yellow/spritesheet.png": "bbe80287c0d6723a",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_spark_burst_001/scifi_spark_burst_001_large_yellow/spritesheet.png": "767a6084f7d76a5c",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Sci-fi/scifi_warp_003/scifi_warp_003_large_blue/spritesheet.png": "a18b54d1138dfabb",
+   "assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/Smoke Bursts/symmetrical_smoke_burst_001/symmetrical_smoke_burst_001_large_brown/spritesheet.png": "65ac8393fa11dfbe",
+   "assets/Thunder Effect 02/Thunder Splash/Thunder splash w blur.png": "47081918d8cc9a93",
+   "assets/Thunder Effect 02/Thunder Splash/Thunder splash wo blur.png": "89be036ecfabb3f5",
+   "assets/Thunder Effect 02/Thunder Strike/Thunderstrike w blur.png": "81d9092e50ee0e55",
+   "assets/Thunder Effect 02/Thunder Strike/Thunderstrike wo blur.png": "f8a49cbe949622b1",
+   "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_CAST_01_L.mp3": "68b4ead785830201",
+   "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_CAST_02_S.mp3": "fff825a728b14c78",
+   "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_HOLD_5s.mp3": "73862f4b6426cd16",
+   "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_IMPACT_01.mp3": "59f4e8a98e8527dc",
+   "assets/audio/LDD - Elemental Magic - Lightning Attacks [Free Pack]/EM_LIGHT_LAUNCH_01.mp3": "a257e990d8ac7dc6",
+   "assets/audio/Lightning Magic SFX Pack Free Version/cast_01.mp3": "8cc0af0f9fbfde48",
+   "assets/audio/Lightning Magic SFX Pack Free Version/charge_short.mp3": "d3d696ca4107cf50",
+   "assets/audio/Lightning Magic SFX Pack Free Version/combo_08.mp3": "326d1cf1ec7a5f15",
+   "assets/audio/Lightning Magic SFX Pack Free Version/combo_28.mp3": "9d7264e4a10d3b12",
+   "assets/audio/Lightning Magic SFX Pack Free Version/spawn_crack.mp3": "0b1efb9673ac7201",
+   "assets/audio/Lightning Magic SFX Pack Free Version/strike_08.mp3": "1e4e1996ecbaf6b7",
+   "assets/audio/Lightning Magic SFX Pack Free Version/strike_13.mp3": "bc4d2f48aee0fb6e",
+   "assets/audio/Lightning Magic SFX Pack Free Version/strike_16.mp3": "6c528c08debb557b",
+   "assets/audio/Lightning Magic SFX Pack Free Version/strike_21.mp3": "5ade13c529c03d64",
+   "assets/audio/Lightning Magic SFX Pack Free Version/strike_26.mp3": "53e1b015d4b6bdb9",
+   "assets/audio/Lightning Magic SFX Pack Free Version/strike_full_28.mp3": "275ab0db0c3feb99",
+   "assets/audio/Male protagonist/grunt_kwa.mp3": "0245e1a10f1bedc0",
+   "assets/audio/Male protagonist/grunt_oof_1.mp3": "989d816ae45ae023",
+   "assets/audio/Male protagonist/grunt_oof_2.mp3": "10e13e7501cf23a2",
+   "assets/audio/Male protagonist/grunt_ra_1.mp3": "8030428bd32dc413",
+   "assets/audio/Male protagonist/grunt_ra_2.mp3": "054cc3a02280804c",
+   "assets/audio/Male protagonist/grunt_ra_3.mp3": "757ea6afa7934baf",
+   "assets/audio/Male protagonist/grunt_ra_4.mp3": "2214744cc4e988a9",
+   "assets/audio/Male protagonist/grunt_ra_5.mp3": "66fbad1795783eb9",
+   "assets/audio/Male protagonist/grunt_uoe_1.mp3": "b8b140614fad0d0f",
+   "assets/audio/Male protagonist/grunt_uoe_2.mp3": "d50e852d806fe4a4",
+   "assets/audio/Male protagonist/grunt_uoe_3.mp3": "80c1b03da0073ef9",
+   "assets/audio/Male protagonist/grunt_wa_1.mp3": "dacf48eb7176829b",
+   "assets/audio/Male protagonist/hiyah_1.mp3": "12f4c7b16d87a580",
+   "assets/audio/Male protagonist/hiyah_2.mp3": "00ebd318d80a948b",
+   "assets/audio/Male protagonist/hiyah_3.mp3": "547ce550736baca2",
+   "assets/audio/Male protagonist/hiyah_4.mp3": "769de52adc49e063",
+   "assets/audio/Male protagonist/jp_itai_1.mp3": "cf0306ae3308f8c4",
+   "assets/audio/Male protagonist/jp_itai_2.mp3": "af189b8cd1b60989",
+   "assets/audio/Male protagonist/jp_n_1.mp3": "d92ac7dd2e30e0fa",
+   "assets/audio/Male protagonist/jp_shimatta_1.mp3": "ccdc441e120b1fc3",
+   "assets/audio/Male protagonist/jump_1.mp3": "99318ffc563d976d",
+   "assets/audio/Male protagonist/jump_2.mp3": "a7f8a28bc049346b",
+   "assets/audio/Male protagonist/jump_3.mp3": "cb6b1c3f5870e932",
+   "assets/audio/Male protagonist/kick_1.mp3": "e762b2027ec7bee9",
+   "assets/audio/Male protagonist/kick_2.mp3": "3cf0a78413dd4988",
+   "assets/audio/Male protagonist/ouch_1.mp3": "f90445491c99c459",
+   "assets/audio/Male protagonist/ow_1.mp3": "5a01b93e8b63685d",
+   "assets/audio/Male protagonist/pained_death_1.mp3": "92db232a42e6eb2c",
+   "assets/audio/Male protagonist/pained_death_2.mp3": "e7473d7c3c5980c4",
+   "assets/audio/Male protagonist/punch_1.mp3": "40816ee05eddeaf9",
+   "assets/audio/Male protagonist/punch_2.mp3": "f7f68cfafcc5e137",
+   "assets/audio/Sword Combat SFX Pack Free Version/slash_07.mp3": "7e2ca7f465a6d720",
+   "assets/audio/Sword Combat SFX Pack Free Version/slash_26.mp3": "93aaf70a22dca059",
+   "assets/audio/Sword Combat SFX Pack Free Version/slashhit_01.mp3": "0748bc96a62573e0",
+   "assets/audio/Sword Combat SFX Pack Free Version/slashhit_11.mp3": "1324c8cd77310de5",
+   "assets/audio/Sword Combat SFX Pack Free Version/slashhit_17.mp3": "4bfef2a8e8014d24",
+   "assets/audio/Sword Combat SFX Pack Free Version/spawn_poof.mp3": "f26ea7c275b3ea78",
+   "assets/audio/Warrior Voice Pack/angry1.mp3": "7f5c9a423b9cb1e3",
+   "assets/audio/Warrior Voice Pack/angry2.mp3": "12bde9352f67ca03",
+   "assets/audio/Warrior Voice Pack/attack1.mp3": "cbe937702a069736",
+   "assets/audio/Warrior Voice Pack/attack2.mp3": "9567e55feb0fbcb1",
+   "assets/audio/Warrior Voice Pack/attack3.mp3": "2d2ff9e86642c2fd",
+   "assets/audio/Warrior Voice Pack/attack4.mp3": "872d8d7e78a35570",
+   "assets/audio/Warrior Voice Pack/crit1.mp3": "9474cd48cec8af7f",
+   "assets/audio/Warrior Voice Pack/crit2.mp3": "e22ea1e254ea23e5",
+   "assets/audio/Warrior Voice Pack/crit3.mp3": "c828bf011de6c532",
+   "assets/audio/Warrior Voice Pack/death1.mp3": "67dca6c0a0a09ec4",
+   "assets/audio/Warrior Voice Pack/death2.mp3": "9af1bc7599f6e27b",
+   "assets/audio/Warrior Voice Pack/defend1.mp3": "8b3b453025e400bf",
+   "assets/audio/Warrior Voice Pack/defend2.mp3": "1e36ab07d6f9435c",
+   "assets/audio/Warrior Voice Pack/heavyattack1.mp3": "1a0fca01c9183524",
+   "assets/audio/Warrior Voice Pack/heavyattack2.mp3": "dad76e837942fe65",
+   "assets/audio/Warrior Voice Pack/heavyattack3.mp3": "f4a42363d878d460",
+   "assets/audio/Warrior Voice Pack/heavyattack4.mp3": "b9ad9bf5bd61a0df",
+   "assets/audio/Warrior Voice Pack/hit1.mp3": "2235eb4eb609c6be",
+   "assets/audio/Warrior Voice Pack/hit2.mp3": "fdeefccd1de8b732",
+   "assets/audio/Warrior Voice Pack/hit3.mp3": "0191395908662b60",
+   "assets/audio/Warrior Voice Pack/hit4.mp3": "e58f1661395d4822",
+   "assets/audio/Warrior Voice Pack/hit5.mp3": "7af90807ca67474a",
+   "assets/audio/Warrior Voice Pack/hup1.mp3": "726ce36476daf854",
+   "assets/audio/Warrior Voice Pack/hup2.mp3": "bf32d8691c6986ba",
+   "assets/audio/Warrior Voice Pack/hup3.mp3": "0608ba23743fe3c9",
+   "assets/audio/Warrior Voice Pack/hut1.mp3": "40f2792486c1c049",
+   "assets/audio/Warrior Voice Pack/hut2.mp3": "1f9e541653282b3b",
+   "assets/audio/Warrior Voice Pack/lightattack1.mp3": "695fba4c28a657e4",
+   "assets/audio/Warrior Voice Pack/lightattack2.mp3": "86819fc065a4a8c8",
+   "assets/audio/Warrior Voice Pack/lightattack3.mp3": "e3bd86816582c149",
+   "assets/audio/Warrior Voice Pack/lightattack4.mp3": "706cfbd19fa41f09"
+  }
+ },
+ "lockedAt": "2026-10-24"
+}

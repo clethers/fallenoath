@@ -17,16 +17,19 @@
 
   G.defaultSettings = () => ({ damageNumbers: true, screenShake: true, autoAttack: true, leftHanded: false, reducedEffects: false, sound: true, sfxVolume: 0.8, voice: 'warrior' });
 
-  G.newProfile = function () {
+  // cls: the class (skill-tree path) chosen on the class screen; one class per save
+  G.newProfile = function (cls) {
+    const path = G.PATHS[cls] ? cls : 'storm';
+    const first = G.PATHS[path].actives[0];
     return {
       v: C.VERSION,
       created: Date.now(),
       level: 1, xp: 0, gold: 30,
       attrPoints: 0, skillPoints: 0,
       attrs: { str: 0, vit: 0, int: 0, agi: 0 },
-      path: 'storm', // the hero is a lightning swordsman
-      skills: { flashdraw: 1 },
-      slots: ['flashdraw', null, null, null], // 4 bar slots; the ultimate has its own button
+      path, // class: 'storm' (Storm Blade) or 'shadow' (Shadow Monarch)
+      skills: { [first]: 1 },
+      slots: [first, null, null, null], // 4 bar slots; the ultimate has its own button
       inventory: [
         { id: newId(), kind: 'consumable', key: 'hpPotion', qty: 3 },
         { id: newId(), kind: 'consumable', key: 'mpPotion', qty: 2 },
@@ -115,6 +118,10 @@
       if (buffs.atkSpeed) s.atkSpeed += buffs.atkSpeed;
       if (buffs.speed) s.moveSpeed *= 1 + buffs.speed;
     }
+    // Shadow Monarch: Advanced Dagger Arts (basic attacks only)
+    s.basicMult = 1;
+    const dr = G.passiveRank(p, 'daggerarts');
+    if (dr) { s.basicMult += dr * G.SKILLS.daggerarts.atk; s.atkSpeed += dr * G.SKILLS.daggerarts.speed; }
     s.crit = clamp(s.crit, 0, 0.75);
     s.atkSpeed = clamp(s.atkSpeed, 0.5, 3);
     s.maxHp = Math.max(1, Math.round(s.maxHp));
@@ -268,15 +275,15 @@
   };
 
   // GM account: everything maxed for testing — level cap, all skills at max rank, every area open, legendary gear.
-  G.newGmProfile = function () {
-    const p = G.newProfile();
+  G.newGmProfile = function (cls) {
+    const p = G.newProfile(cls);
     p.gm = true;
     p.level = C.MAX_LEVEL; p.xp = 0;
     p.gold = 999999;
     const pts = (C.MAX_LEVEL - 1) * C.ATTR_POINTS_PER_LEVEL; // 87 at level 30
     p.attrs = { str: 30, vit: 30, int: 15, agi: pts - 75 };
     p.attrPoints = 0;
-    G.choosePath(p, 'storm');
+    G.choosePath(p, p.path);
     G.AREAS.forEach((a) => (p.areas[a.id] = { unlocked: true, cleared: 0 }));
     p.inventory = [];
     G.addConsumable(p, 'hpPotion', 99);
@@ -353,8 +360,8 @@
     p.attrPoints = Math.min(p.attrPoints, maxAttr - spent);
     // skill tree (v3+). Older saves used a flat skill list: refund everything and let the player pick a path.
     const maxSP = 1 + (p.level - 1) * C.SKILL_POINTS_PER_LEVEL;
-    const keepSkills = raw.v >= 6 && raw.path === 'storm';
-    p.path = keepSkills ? 'storm' : null;
+    const keepSkills = raw.v >= 6 && !!G.PATHS[raw.path];
+    p.path = keepSkills ? raw.path : null;
     p.skills = {};
     if (p.path && raw.skills) Object.keys(raw.skills).forEach((k) => {
       const sk = G.SKILLS[k];
@@ -366,7 +373,7 @@
     else if (raw.v >= 4) p.skillPoints = Math.max(0, Math.min(p.skillPoints, maxSP - spentSP));
     else p.skillPoints = maxSP;
     // v5: the hero is a lightning swordsman only. Older saves (or other paths) get every point back on the lightning tree.
-    if (!keepSkills) { p.skills = {}; p.skillPoints = maxSP; p.gm = raw.gm === true; G.choosePath(p, 'storm'); }
+    if (!keepSkills) { p.skills = {}; p.skillPoints = maxSP; p.gm = raw.gm === true; G.choosePath(p, G.PATHS[raw.path] ? raw.path : 'storm'); }
     p.slots = Array.isArray(raw.slots) ? raw.slots.slice(0, 4).map((k) => (typeof k === 'string' ? k : null)) : [];
     G.fixSlots(p);
     p.inventory = (Array.isArray(raw.inventory) ? raw.inventory : []).map(sanitizeItem).filter(Boolean).slice(0, C.INVENTORY_SIZE);

@@ -37,6 +37,12 @@
       desc: 'A flash swordsman: draw, vanish in a streak of yellow and black lightning, and enemies fall a beat later.',
       actives: ['flashdraw', 'sixfold', 'blinkstep', 'godspeed', 'sheath', 'sovereign'], passives: ['iaifocus', 'thunderstep'],
     },
+    shadow: {
+      name: 'Shadow Monarch', element: 'Purple & Black Shadow', color: '#a77bff', icon: ['riseSkull', 5, 'void'], heroTint: 'monarch',
+      desc: 'Command the dead. Cut fast with twin daggers, raise fallen enemies as your shadow army, and rule the field with telekinesis and fear.',
+      signature: 'Inspired by Sung Jinwoo: Dagger Rush, ARISE, Shadow Exchange, Ruler\u2019s Authority, Bloodlust, Army of Shadows.',
+      actives: ['daggerrush', 'arise', 'shadowexchange', 'rulers', 'bloodlust', 'shadowarmy'], passives: ['monarchdomain', 'daggerarts'],
+    },
   };
   // tree layout: x/y are % positions in the tree view
   G.TREE_LAYOUT = [
@@ -73,6 +79,32 @@
       fx: 'black aura + chargeUp (stance), slashGold + thunderStrike/black strike (counter)', desc: 'A parry stance. If anything strikes you, you take no damage and flash-counter the attacker with a guaranteed crit. Missing shortens the cooldown.' },
     thunderstep: { path: 'storm', kind: 'passive', slot: 'p1', req: 'sixfold', name: 'Thunder Step', unlock: 5, icon: ['sparkBurst', 4, 'gold'],
       cdr: 0.15, mp: 1, desc: 'Every flash-dash shortens your skill cooldowns by 0.15s and restores 1 MP per rank.' },
+
+    // ---- Shadow Monarch (purple & black). Code: js/class-shadow.js
+    daggerrush: { path: 'shadow', kind: 'active', slot: 'a0', name: 'Dagger Rush', unlock: 1, mp: 10, cd: 3, icon: ['voidCut', 3],
+      hits: 4, gap: 0.07, lunge: 22, reach: 34, mult: 0.7, perRank: 0.12,
+      desc: 'Lunge forward and carve four lightning-fast dagger cuts into everything in front of you.' },
+    monarchdomain: { path: 'shadow', kind: 'passive', slot: 'p0', req: 'daggerrush', name: "Monarch's Domain", unlock: 2, icon: ['shadowMist', 6, 'void'],
+      range: 140, bonus: 0.12, life: 3,
+      desc: 'Shadow soldiers near you deal +12% damage per rank and their summons last 3 s longer per rank.' },
+    arise: { path: 'shadow', kind: 'active', slot: 'a1', req: 'daggerrush', name: 'Arise', unlock: 3, mp: 20, cd: 8, icon: ['riseSkull', 5, 'void'],
+      radius: 150, raise: 2, perRankRaise: 0.5, life: 18, soulTime: 8, maxArmy: 6, mult: 0.45, perRank: 0.07,
+      desc: 'ARISE. Fallen enemies near you (marked by purple souls for 8 s) stand back up as shadow soldiers and fight for you.' },
+    shadowexchange: { path: 'shadow', kind: 'active', slot: 'b0', req: 'monarchdomain', name: 'Shadow Exchange', unlock: 4, mp: 8, cd: 5, cdPerRank: 0.5, icon: ['smokeDark', 8, 'void'],
+      blink: 90, radius: 34, mult: 0.8, perRank: 0.15,
+      desc: 'Swap places with the shadow soldier closest to the enemy (or blink forward if you have none), bursting shadow where you land.' },
+    daggerarts: { path: 'shadow', kind: 'passive', slot: 'p1', req: 'arise', name: 'Advanced Dagger Arts', unlock: 5, icon: ['shadowArc', 3, 'void'],
+      atk: 0.08, speed: 0.05,
+      desc: 'Your basic attacks deal +8% damage and swing 5% faster per rank.' },
+    rulers: { path: 'shadow', kind: 'active', slot: 'a2', req: 'daggerarts', name: "Ruler's Authority", unlock: 6, mp: 24, cd: 11, icon: ['absorbVoid', 14],
+      radius: 75, range: 150, lift: 0.7, mult: 2.2, perRank: 0.3, stun: 1, aoe: 48,
+      desc: 'Seize everything in an area with invisible force, lift it off the ground, then slam it down for heavy damage and a stun.' },
+    bloodlust: { path: 'shadow', kind: 'active', slot: 'b1', req: 'shadowexchange', name: 'Bloodlust', unlock: 7, mp: 15, cd: 14, icon: ['fearMark', 22],
+      radius: 120, fear: 2, perRankFear: 0.25, vuln: 0.3, vulnTime: 5,
+      desc: 'Release a killing intent. Nearby enemies are frozen with fear and flee, and take 30% more damage for 5 s.' },
+    shadowarmy: { path: 'shadow', kind: 'active', slot: 'a3', req: 'rulers', ult: true, name: 'Army of Shadows', unlock: 10, mp: 60, cd: 45, icon: ['portalVoid', 5, 'void'],
+      life: 15, perRankLife: 2, soldiers: ['orc', 'brute', 'orc', 'archer'], igris: 1.6, mult: 0.6, perRank: 0.08,
+      desc: 'ULTIMATE. Tear open the shadow realm: Igris the Blood-Red Commander and four elite shadows march out, and every soldier you command is restored.' },
   };
   G.SKILL_ORDER = Object.keys(G.SKILLS);
   G.SKILL_MAX_RANK = 5;

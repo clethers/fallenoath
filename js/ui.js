@@ -13,7 +13,7 @@
 
   // ------------------------------------------------------------ screens
   ui.show = function (name) {
-    ['loading', 'title', 'hub', 'hud'].forEach((s) => {
+    ['loading', 'title', 'class', 'hub', 'hud'].forEach((s) => {
       const el = $(s === 'hud' ? 'hud' : 'screen-' + s);
       el.classList.toggle('active', s === name);
     });
@@ -23,6 +23,45 @@
     if (name === 'title') {
       $('btn-continue').disabled = !G.hasSave();
     }
+  };
+
+  // ------------------------------------------------------------ class select (New Game / GM)
+  // mode: 'new' or 'gm'; onPick(pathId)
+  ui.chooseClass = function (mode, onPick) {
+    const list = $('class-list');
+    list.innerHTML = '';
+    $('class-sub').textContent = mode === 'gm' ? 'GM account: the class you pick is maxed out' : 'One class per save. Pick the one you want to play.';
+    const heroes = [];
+    Object.keys(G.PATHS).forEach((id) => {
+      const P = G.PATHS[id];
+      const sig = P.actives.filter((k) => !G.SKILLS[k].ult).slice(0, 3).concat([G.ultSkill(id)]);
+      const card = el(`<div class="class-card" style="--cc:${P.color}">
+        <canvas class="hero" width="96" height="96"></canvas>
+        <div><h3>${esc(P.name)}</h3><div class="el">${esc(P.element)}</div><p>${esc(P.desc)}</p>
+        <div class="sig">${sig.map((k) => `<span><i style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], 20, G.SKILLS[k].icon[2])}'></i>${esc(G.SKILLS[k].name)}</span>`).join('')}</div></div>
+      </div>`);
+      if (id === 'storm') card.appendChild(el('<b class="tag">LOCKED V1</b>'));
+      const b = btn('Play as ' + P.name, '', () => { heroes.length = 0; onPick(id); });
+      card.appendChild(b);
+      list.appendChild(card);
+      heroes.push({ cv: card.querySelector('canvas'), tint: P.heroTint });
+    });
+    $('class-back').onclick = () => { heroes.length = 0; ui.show('title'); };
+    ui.show('class');
+    // idle hero preview (the class tint is applied to the same Adventurer sheet the game uses)
+    const t0 = performance.now();
+    const tick = () => {
+      if (ui.screen !== 'class' || !heroes.length) return;
+      const f = Math.floor((performance.now() - t0) / 125);
+      heroes.forEach((h) => {
+        const key = G.tintedSheet('adv_idle_down', h.tint), sh = G.SHEETS[key], im = G.img('sheet:' + key);
+        const g = h.cv.getContext('2d');
+        g.clearRect(0, 0, 96, 96); g.imageSmoothingEnabled = false;
+        if (im && sh) g.drawImage(im, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, 48 - 46 * 3, 90 - 57 * 3, sh.fw * 3, sh.fh * 3);
+      });
+      requestAnimationFrame(tick);
+    };
+    requestAnimationFrame(tick);
   };
 
   // ------------------------------------------------------------ toasts / banner

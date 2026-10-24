@@ -199,6 +199,18 @@
     boltDark: Object.assign(gp('Lightning', 'lightning_strike_001', 'large_violet', 128, 128, 7), { dark: true }),
     burstDark: Object.assign(gp('Lightning', 'lightning_burst_002', 'large_violet', 64, 64, 9), { dark: true }),
     auraDark: Object.assign(gp('Lightning', 'lightning_aura_002', 'large_blue', 96, 96, 16), { dark: true }),
+    // ---- Shadow Monarch (purple & black). Same Gigapack sheets; 'void' = purple luminosity tint, dark+rim = black core with a purple outline
+    shadowArc: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { warm: 'void' }),
+    soulMark: Object.assign(gp('Fantasy Spells', 'status_sparkling_001', 'small_yellow', 48, 48, 24), { warm: 'void' }),
+    portalVoid: Object.assign(gp('Sci-fi', 'scifi_warp_002', 'large_red', 96, 96, 10), { warm: 'void' }),
+    smokeDark: Object.assign(gp('Smoke Bursts', 'directional_smoke_burst_001', 'large_white', 64, 64, 21), { dark: true, rim: '#a77bff' }),
+    riseSkull: Object.assign(gp('Smoke Bursts', 'stylized_skull_smoke_burst_001', 'large_white', 64, 64, 12), { dark: true, rim: '#a77bff' }),
+    shadowMist: Object.assign(gp('Smoke Bursts', 'looping_smoke_burst_002', 'large_gray', 64, 64, 16), { dark: true, rim: '#7d4dff' }),
+    fearMark: gp('Fantasy Spells', 'spell_death_001', 'small_red', 32, 32, 50),
+    absorbVoid: Object.assign(gp('Fantasy Spells', 'spell_absorb_001', 'large_violet', 128, 128, 31), { warm: 'void' }),
+    novaVoid: Object.assign(gp('Explosions', 'stylized_explosion_002', 'large_violet', 96, 96, 10), { warm: 'void' }),
+    sparkVoid: Object.assign(gp('Lightning', 'lightning_burst_003', 'large_violet', 96, 96, 10), { warm: 'void' }),
+    voidCut: Object.assign(gp('Impacts', 'directional_impact_003', 'large_violet', 80, 80, 6), { warm: 'void' }),
     // Thunder Effect 02 (strips)
     thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, warm: 'mul' },
     thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14, warm: 'mul' },
@@ -261,6 +273,15 @@
         const im = images['sheet:' + k];
         SHEETS[k].n = im ? Math.max(1, Math.floor(im.width / SHEETS[k].fw)) : 0;
       });
+      // tinted copies of character sheets: '~shadow' = shadow soldiers (black core, purple rim), '~monarch' = the darkened hero
+      Object.keys(SHEETS).forEach((k) => {
+        const im = images['sheet:' + k];
+        if (!im || k.includes('~')) return;
+        const style = /^(orc|soldier|knight)_/.test(k) ? 'shadow' : /^adv_/.test(k) ? 'monarch' : null;
+        if (!style) return;
+        images['sheet:' + k + '~' + style] = tintSheet(im, style);
+        SHEETS[k + '~' + style] = Object.assign({}, SHEETS[k]);
+      });
       Object.keys(FX).forEach((k) => {
         let im = images['fx:' + k];
         // gold tint for the black & yellow kit: 'mul' warms pale/white sheets, 'lum' recolours blue ones
@@ -268,8 +289,8 @@
           const c = document.createElement('canvas');
           c.width = im.width; c.height = im.height;
           const g = c.getContext('2d');
-          if (FX[k].warm === 'lum') {
-            g.fillStyle = '#ffc93a'; g.fillRect(0, 0, c.width, c.height);
+          if (FX[k].warm === 'lum' || FX[k].warm === 'void') {
+            g.fillStyle = FX[k].warm === 'void' ? '#8a5cff' : '#ffc93a'; g.fillRect(0, 0, c.width, c.height);
             g.globalCompositeOperation = 'luminosity'; g.drawImage(im, 0, 0);
           } else {
             g.drawImage(im, 0, 0);
@@ -289,7 +310,7 @@
           const yg = y.getContext('2d');
           yg.drawImage(im, 0, 0);
           yg.globalCompositeOperation = 'source-atop';
-          yg.fillStyle = '#ffd23f';
+          yg.fillStyle = FX[k].rim || '#ffd23f';
           yg.fillRect(0, 0, y.width, y.height);
           for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1], [-1, -1], [1, -1], [-1, 1], [1, 1]]) g.drawImage(y, dx, dy);
           // 2) the near-black core on top (compositing only, so it also works from file://)
@@ -310,10 +331,31 @@
     });
   };
 
+  function tintSheet(im, style) {
+    const mk = () => { const c = document.createElement('canvas'); c.width = im.width; c.height = im.height; return c; };
+    const c = mk(), g = c.getContext('2d');
+    if (style === 'shadow') {
+      const r = mk(), rg = r.getContext('2d');
+      rg.drawImage(im, 0, 0); rg.globalCompositeOperation = 'source-atop'; rg.fillStyle = '#a77bff'; rg.fillRect(0, 0, r.width, r.height);
+      for (const [dx, dy] of [[-1, 0], [1, 0], [0, -1], [0, 1]]) g.drawImage(r, dx, dy);
+      const d = mk(), dg = d.getContext('2d');
+      dg.drawImage(im, 0, 0); dg.globalCompositeOperation = 'source-atop'; dg.fillStyle = 'rgba(16,8,30,0.84)'; dg.fillRect(0, 0, d.width, d.height);
+      g.drawImage(d, 0, 0);
+    } else { // monarch: keep the sprite's detail, shift it to cold purple-black
+      g.drawImage(im, 0, 0);
+      g.globalCompositeOperation = 'multiply'; g.fillStyle = '#9a8cc8'; g.fillRect(0, 0, c.width, c.height);
+      g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(14,6,30,0.18)'; g.fillRect(0, 0, c.width, c.height);
+      g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0);
+    }
+    return c;
+  }
+  G.tintedSheet = (key, style) => (style && images['sheet:' + key + '~' + style] ? key + '~' + style : key);
+
   // URL usable in CSS/IMG for UI icons (a single effect frame shown via background-position)
   // tone: 'gold' warms any sheet to the kit's yellow, 'dark' makes black lightning with a gold rim (CSS filters, see --icof)
   const ICON_TONE = {
     gold: 'sepia(1) saturate(3.2) hue-rotate(-6deg) brightness(1.08)',
+    void: 'sepia(1) saturate(2.6) hue-rotate(215deg) brightness(0.95)',
     dark: 'brightness(0.12) drop-shadow(1px 0 0 #ffd23f) drop-shadow(-1px 0 0 #ffd23f) drop-shadow(0 1px 0 #ffd23f) drop-shadow(0 -1px 0 #ffd23f)',
   };
   G.fxIconStyle = function (fxKey, frame, size, tone) {

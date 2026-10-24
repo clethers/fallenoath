@@ -146,15 +146,22 @@
     else G.ui.show('title');
   });
   $('btn-new').addEventListener('click', () => {
-    const go = () => { startProfile(G.newProfile()); G.ui.toast('Your journey begins. Enter the Mossy Courtyard!', 'quest'); };
+    const go = () => G.ui.chooseClass('new', (cls) => {
+      startProfile(G.newProfile(cls));
+      G.ui.toast('Your journey begins as a ' + G.PATHS[cls].name + '. Enter the Mossy Courtyard!', 'quest');
+    });
     if (G.hasSave('main')) G.ui.confirm('Starting a new game will overwrite your current save.', go, { yes: 'Start new game', danger: true });
     else go();
   });
+  // GM account: pick a class; the saved GM account is kept if it is already that class
   $('btn-gm').addEventListener('click', () => {
-    const r = G.loadSave('gm');
-    const p = r.profile || G.newGmProfile();
-    startProfile(p);
-    G.ui.toast(r.profile ? 'GM account loaded' : 'GM account created: level ' + p.level + ', all skills maxed, every area unlocked', 'level');
+    G.ui.chooseClass('gm', (cls) => {
+      const r = G.loadSave('gm');
+      const keep = r.profile && r.profile.path === cls;
+      const p = keep ? r.profile : G.newGmProfile(cls);
+      startProfile(p);
+      G.ui.toast(keep ? 'GM account loaded (' + G.PATHS[cls].name + ')' : 'GM ' + G.PATHS[cls].name + ' created: level ' + p.level + ', all skills maxed, every area unlocked', 'level');
+    });
   });
   G.tmpSettings = G.defaultSettings();
   $('btn-title-settings').addEventListener('click', () => {

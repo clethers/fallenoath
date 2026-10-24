@@ -142,3 +142,21 @@ The same voice line never plays twice in a row.
 | Death | death1–2 | pained death 1–2, JP shimatta |
 
 Only one voice line plays at a time, so lines never pile up.
+
+## Shadow Monarch class
+
+All art comes from the same packs, recoloured at load time:
+
+| Use | Asset (tint) |
+|---|---|
+| Hero | Adventurer sheets, multiplied to cold purple-black (`~monarch`) |
+| Shadow soldiers / Igris | Tiny RPG Orc and Soldier sheets, and the Knight sheets: black core with a 1 px purple rim (`~shadow`) |
+| Dagger cuts | `Impacts/directional_impact_003_large_violet` (`void`), `directional_impact_002_small_white` (`void`) |
+| Souls (Arise targets) | `Fantasy Spells/status_sparkling_001_small_yellow` (`void`) |
+| Rise / summon | `Smoke Bursts/stylized_skull_smoke_burst_001_large_white` (dark, purple rim) + `Sci-fi/scifi_warp_002_large_red` (`void`) |
+| Shadow Exchange | `Smoke Bursts/directional_smoke_burst_001_large_white` (dark, purple rim), `Lightning/lightning_burst_003_large_violet` (`void`) |
+| Ruler's Authority | `Fantasy Spells/spell_absorb_001_large_violet` (`void`), then lightning_burst_003 + skull smoke + dark smoke |
+| Bloodlust | `Fantasy Spells/spell_death_001_large_red` (at the hero), `spell_death_001_small_red` (fear marker on enemies), `Smoke Bursts/looping_smoke_burst_002_large_gray` (dark, purple rim) |
+| Army of Shadows | the warp portal, skull smoke and mist above |
+
+Sound: Willosuna's **Magic Spells SFX Lite** (royalty-free, no attribution required, use in games allowed, no redistribution as a pack). Ten clips are trimmed, faded and peak-levelled to about −2 dB in `assets/audio/Magic Spells SFX Lite/`: `shadow`, `summon`, `teleport`, `portal`, `debuff`, `timewarp`, `slam`, `blast`, `charge` and `rune`. The pack's LICENSE.txt is kept next to them, and the full pack is in `Prologue\Audio`.
