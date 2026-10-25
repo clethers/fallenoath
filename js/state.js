@@ -118,10 +118,10 @@
       if (buffs.atkSpeed) s.atkSpeed += buffs.atkSpeed;
       if (buffs.speed) s.moveSpeed *= 1 + buffs.speed;
     }
-    // Shadow Monarch: Advanced Dagger Arts (basic attacks only)
+    // Shadow Monarch: Quicksilver (move speed; basic attacks only for damage / swing speed)
     s.basicMult = 1;
-    const dr = G.passiveRank(p, 'daggerarts');
-    if (dr) { s.basicMult += dr * G.SKILLS.daggerarts.atk; s.atkSpeed += dr * G.SKILLS.daggerarts.speed; }
+    const qr = G.passiveRank(p, 'quicksilver');
+    if (qr) { const q = G.SKILLS.quicksilver; s.basicMult += qr * q.atk; s.atkSpeed += qr * q.aspd; s.moveSpeed *= 1 + qr * q.speed; }
     s.crit = clamp(s.crit, 0, 0.75);
     s.atkSpeed = clamp(s.atkSpeed, 0.5, 3);
     s.maxHp = Math.max(1, Math.round(s.maxHp));
@@ -369,7 +369,9 @@
     });
     Object.keys(p.skills).forEach((k) => { if (!p.skills[k]) delete p.skills[k]; });
     const spentSP = Object.values(p.skills).reduce((a, b) => a + b, 0);
+    const removed = p.path && raw.skills && Object.keys(raw.skills).some((k) => !G.SKILLS[k] && raw.skills[k] > 0); // e.g. the Shadow Monarch rework
     if (spentSP > maxSP && raw.gm !== true) { p.skills = {}; p.skillPoints = maxSP; }
+    else if (removed) p.skillPoints = Math.max(0, maxSP - spentSP); // refund points from skills that no longer exist
     else if (raw.v >= 4) p.skillPoints = Math.max(0, Math.min(p.skillPoints, maxSP - spentSP));
     else p.skillPoints = maxSP;
     // v5: the hero is a lightning swordsman only. Older saves (or other paths) get every point back on the lightning tree.

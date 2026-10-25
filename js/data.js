@@ -38,10 +38,11 @@
       actives: ['flashdraw', 'sixfold', 'blinkstep', 'godspeed', 'sheath', 'sovereign'], passives: ['iaifocus', 'thunderstep'],
     },
     shadow: {
-      name: 'Shadow Monarch', element: 'Purple & Black Shadow', color: '#a77bff', icon: ['riseSkull', 5, 'void'], heroTint: 'monarch',
-      desc: 'Command the dead. Cut fast with twin daggers, raise fallen enemies as your shadow army, and rule the field with telekinesis and fear.',
-      signature: 'Inspired by Sung Jinwoo: Dagger Rush, ARISE, Shadow Exchange, Ruler\u2019s Authority, Bloodlust, Army of Shadows.',
-      actives: ['daggerrush', 'arise', 'shadowexchange', 'rulers', 'bloodlust', 'shadowarmy'], passives: ['monarchdomain', 'daggerarts'],
+      name: 'Shadow Monarch', element: 'Black & Purple Shadow', color: '#a77bff', icon: ['riseSkull', 5, 'void'], heroTint: 'monarch',
+      fxRemap: { sparkBurst: 'burstBlue', hit: 'cutBlue', hitCrit: 'cutBlue', slashArc: 'cutBlue' }, // gold sword sparks -> purple
+      desc: 'A shadow assassin who rules the dead. Leap between enemies on purple lightning, crush them with telekinesis, freeze them with killing intent, and open a domain of shadow where your army rises.',
+      signature: 'Inspired by Sung Jinwoo: Shadow Fang, Ruler\u2019s Authority, Bloodlust, Shadow Step, Army of Shadows.',
+      actives: ['shadowfang', 'rulers', 'shadowstep', 'bloodlust', 'shadowarmy'], passives: ['stealth', 'quicksilver', 'extraction'],
     },
   };
   // tree layout: x/y are % positions in the tree view
@@ -80,31 +81,31 @@
     thunderstep: { path: 'storm', kind: 'passive', slot: 'p1', req: 'sixfold', name: 'Thunder Step', unlock: 5, icon: ['sparkBurst', 4, 'gold'],
       cdr: 0.15, mp: 1, desc: 'Every flash-dash shortens your skill cooldowns by 0.15s and restores 1 MP per rank.' },
 
-    // ---- Shadow Monarch (purple & black). Code: js/class-shadow.js
-    daggerrush: { path: 'shadow', kind: 'active', slot: 'a0', name: 'Dagger Rush', unlock: 1, mp: 10, cd: 3, icon: ['voidCut', 3],
-      hits: 4, gap: 0.07, lunge: 22, reach: 34, mult: 0.7, perRank: 0.12,
-      desc: 'Lunge forward and carve four lightning-fast dagger cuts into everything in front of you.' },
-    monarchdomain: { path: 'shadow', kind: 'passive', slot: 'p0', req: 'daggerrush', name: "Monarch's Domain", unlock: 2, icon: ['shadowMist', 6, 'void'],
-      range: 140, bonus: 0.12, life: 3,
-      desc: 'Shadow soldiers near you deal +12% damage per rank and their summons last 3 s longer per rank.' },
-    arise: { path: 'shadow', kind: 'active', slot: 'a1', req: 'daggerrush', name: 'Arise', unlock: 3, mp: 20, cd: 8, icon: ['riseSkull', 5, 'void'],
-      radius: 150, raise: 2, perRankRaise: 0.5, life: 18, soulTime: 8, maxArmy: 6, mult: 0.45, perRank: 0.07,
-      desc: 'ARISE. Fallen enemies near you (marked by purple souls for 8 s) stand back up as shadow soldiers and fight for you.' },
-    shadowexchange: { path: 'shadow', kind: 'active', slot: 'b0', req: 'monarchdomain', name: 'Shadow Exchange', unlock: 4, mp: 8, cd: 5, cdPerRank: 0.5, icon: ['smokeDark', 8, 'void'],
-      blink: 90, radius: 34, mult: 0.8, perRank: 0.15,
-      desc: 'Swap places with the shadow soldier closest to the enemy (or blink forward if you have none), bursting shadow where you land.' },
-    daggerarts: { path: 'shadow', kind: 'passive', slot: 'p1', req: 'arise', name: 'Advanced Dagger Arts', unlock: 5, icon: ['shadowArc', 3, 'void'],
-      atk: 0.08, speed: 0.05,
-      desc: 'Your basic attacks deal +8% damage and swing 5% faster per rank.' },
-    rulers: { path: 'shadow', kind: 'active', slot: 'a2', req: 'daggerarts', name: "Ruler's Authority", unlock: 6, mp: 24, cd: 11, icon: ['absorbVoid', 14],
-      radius: 75, range: 150, lift: 0.7, mult: 2.2, perRank: 0.3, stun: 1, aoe: 48,
-      desc: 'Seize everything in an area with invisible force, lift it off the ground, then slam it down for heavy damage and a stun.' },
-    bloodlust: { path: 'shadow', kind: 'active', slot: 'b1', req: 'shadowexchange', name: 'Bloodlust', unlock: 7, mp: 15, cd: 14, icon: ['fearMark', 22],
-      radius: 120, fear: 2, perRankFear: 0.25, vuln: 0.3, vulnTime: 5,
-      desc: 'Release a killing intent. Nearby enemies are frozen with fear and flee, and take 30% more damage for 5 s.' },
-    shadowarmy: { path: 'shadow', kind: 'active', slot: 'a3', req: 'rulers', ult: true, name: 'Army of Shadows', unlock: 10, mp: 60, cd: 45, icon: ['portalVoid', 5, 'void'],
-      life: 15, perRankLife: 2, soldiers: ['orc', 'brute', 'orc', 'archer'], igris: 1.6, mult: 0.6, perRank: 0.08,
-      desc: 'ULTIMATE. Tear open the shadow realm: Igris the Blood-Red Commander and four elite shadows march out, and every soldier you command is restored.' },
+    // ---- Shadow Monarch (assassin kit, red & blue + blue lightning). Code: js/class-shadow.js
+    shadowfang: { path: 'shadow', kind: 'active', slot: 'a0', name: 'Shadow Fang', unlock: 1, mp: 12, cd: 4, icon: ['zapBlue', 4, 'void'],
+      radius: 160, hops: 4, hopRange: 95, hopMult: 0.5, mult: 1.4, perRank: 0.2,
+      desc: 'Purple lightning leaps from your blade through up to 4 enemies, then you sink into the shadows and flash behind the last one for a finishing cut.' },
+    stealth: { path: 'shadow', kind: 'passive', slot: 'p0', req: 'shadowfang', name: 'Stealth', unlock: 2, icon: ['smokeDark', 8, 'void'],
+      delay: 2, bonus: 0.2,
+      desc: 'Go 2 s without attacking or casting to fade into the shadows. Your next hit always crits and deals +20% damage per rank.' },
+    rulers: { path: 'shadow', kind: 'active', slot: 'a1', req: 'shadowfang', name: "Ruler's Authority", unlock: 3, mp: 18, cd: 7, icon: ['impBlue2', 2, 'blue'],
+      radius: 140, targets: 5, perRankTargets: 0.5, lift: 34, mult: 1.6, perRank: 0.2, stun: 1, perRankStun: 0.15,
+      desc: 'Seize up to 5 nearby enemies with telekinesis, lift them into the air, then slam them into the ground. They are stunned when they land.' },
+    shadowstep: { path: 'shadow', kind: 'active', slot: 'b0', req: 'stealth', name: 'Shadow Step', unlock: 4, mp: 8, cd: 4, cdPerRank: 0.4, icon: ['smokeDark', 6, 'void'],
+      dist: 75, dashTime: 0.08, radius: 30, mult: 0.6, perRank: 0.15,
+      desc: 'Melt into the shadows and flash away from danger, untouchable. The shadow you leave behind bursts and damages enemies nearby.' },
+    quicksilver: { path: 'shadow', kind: 'passive', slot: 'p1', req: 'rulers', name: 'Quicksilver', unlock: 5, icon: ['cutBlue', 3, 'void'],
+      speed: 0.05, atk: 0.08, aspd: 0.04,
+      desc: 'Per rank: +5% movement speed, and basic attacks deal +8% damage and swing 4% faster.' },
+    extraction: { path: 'shadow', kind: 'passive', slot: 'a2', req: 'quicksilver', name: 'Shadow Extraction', unlock: 6, icon: ['riseSkull', 5, 'void'],
+      chance: 0.1, perRankChance: 0.05, life: 10, maxRaised: 3, mult: 0.4, perRank: 0.06,
+      desc: 'Enemies you defeat have a 10% chance (+5% per rank) to rise as a shadow samurai that fights for you for 10 s. Up to 3 at once.' },
+    bloodlust: { path: 'shadow', kind: 'active', slot: 'b1', req: 'shadowstep', name: 'Bloodlust', unlock: 7, mp: 15, cd: 14, icon: ['fearPurple', 30, 'void'],
+      radius: 180, fear: 2, perRankFear: 0.25, vuln: 0.3, vulnTime: 5,
+      desc: 'Release the Monarch\u2019s killing intent. A dark wave freezes nearby enemies with fear: they flee and take 30% more damage for 5 s.' },
+    shadowarmy: { path: 'shadow', kind: 'active', slot: 'a3', req: 'extraction', ult: true, name: 'Army of Shadows', unlock: 10, mp: 60, cd: 45, icon: ['impDarkP', 3, 'void'],
+      life: 15, perRankLife: 2, soldiers: 4, igris: 1.6, mult: 0.6, perRank: 0.08, domain: 125, domainTime: 8, slow: 0.3, vuln: 0.2, armyBonus: 0.3,
+      desc: 'ULTIMATE. Open the Monarch\u2019s Domain: a field of shadow where enemies are slowed and take 20% more damage. Four shadow samurai rise from it, then Igris, your knight commander. Shadows fight 30% harder inside the domain.' },
   };
   G.SKILL_ORDER = Object.keys(G.SKILLS);
   G.SKILL_MAX_RANK = 5;
@@ -134,13 +135,18 @@
   // anims: state -> sheet key; hit: frame index where damage/projectile happens
   const ORC_ANIM = { idle: 'orc_idle', walk: 'orc_walk', attack: 'orc_attack01', heavy: 'orc_attack02', hurt: 'orc_hit', death: 'orc_death' };
   const SOL_ANIM = { idle: 'soldier_idle', walk: 'soldier_walk', attack: 'soldier_attack01', heavy: 'soldier_attack02', shoot: 'soldier_attack03', hurt: 'soldier_hit', death: 'soldier_death' };
+  const TD = (n) => ({ idle: 'td' + n + '_idle', walk: 'td' + n + '_walk', run: 'td' + n + '_run', attack: 'td' + n + '_attack', heavy: 'td' + n + '_runatk', hurt: 'td' + n + '_hurt', death: 'td' + n + '_death' });
   const KN_ANIM = { idle: 'knight_idle', walk: 'knight_walk', run: 'knight_run', attack: 'knight_attack1', heavy: 'knight_attack2', lunge: 'knight_attack3', block: 'knight_block', hurt: 'knight_hurt', death: 'knight_death' };
 
   G.ENEMIES = {
-    orc: { name: 'Orc Grunt', anim: ORC_ANIM, ax: 54, ay: 56, scale: 1.5, radius: 7, hp: 42, atk: 8, def: 2, speed: 34, range: 16, cd: 1.5, hit: 3, xp: 12, gold: [2, 6], ai: 'melee', drops: { tusk: 0.45 } },
-    brute: { name: 'Orc Brute', anim: ORC_ANIM, ax: 54, ay: 56, scale: 2.0, radius: 10, hp: 130, atk: 15, def: 6, speed: 27, range: 20, cd: 2.0, hit: 3, heavy: true, xp: 34, gold: [6, 14], ai: 'melee', drops: { tusk: 0.8 } },
+    orc: { name: 'Orc Grunt', anim: TD(1), dir4: true, hgt: 32, ax: 32, ay: 46, scale: 0.95, radius: 7, hp: 42, atk: 8, def: 2, speed: 34, range: 16, cd: 1.5, hit: 4, xp: 12, gold: [2, 6], ai: 'melee', drops: { tusk: 0.45 } },
+    brute: { name: 'Orc Brute', anim: TD(3), dir4: true, hgt: 32, ax: 32, ay: 46, scale: 1.25, radius: 10, hp: 130, atk: 15, def: 6, speed: 27, range: 20, cd: 2.0, hit: 4, heavy: true, xp: 34, gold: [6, 14], ai: 'melee', drops: { tusk: 0.8 } },
     archer: { name: 'Deserter Archer', anim: SOL_ANIM, ax: 48, ay: 56, scale: 1.55, radius: 7, hp: 34, atk: 10, def: 2, speed: 36, range: 120, cd: 2.4, hit: 7, xp: 16, gold: [3, 8], ai: 'ranged', arrowSpeed: 150 },
-    warlord: { name: 'Grukk the Warlord', anim: ORC_ANIM, ax: 54, ay: 56, scale: 2.7, radius: 14, hp: 650, atk: 22, def: 10, speed: 30, range: 26, cd: 1.8, hit: 3, xp: 260, gold: [120, 160], ai: 'warlord', boss: true, drops: { tusk: 1 } },
+    warlord: { name: 'Grukk the Warlord', anim: TD(2), dir4: true, hgt: 32, ax: 32, ay: 46, scale: 1.75, radius: 14, hp: 650, atk: 22, def: 10, speed: 30, range: 26, cd: 1.8, hit: 4, xp: 260, gold: [120, 160], ai: 'warlord', boss: true, drops: { tusk: 1 } },
+    demon: { name: 'Lesser Demon', anim: { idle: 'demon_idle', walk: 'demon_walk', attack: 'demon_attack01', heavy: 'demon_attack02', hurt: 'demon_hurt', death: 'demon_death' }, ax: 52, ay: 58, scale: 1.6, hgt: 20, radius: 7, hp: 55, atk: 11, def: 3, speed: 40, range: 18, cd: 1.4, hit: 4, heavy: true, xp: 18, gold: [3, 8], ai: 'melee' },
+    kobold: { name: 'Kobold Skirmisher', anim: { idle: 'kobold_idle', walk: 'kobold_run', run: 'kobold_run', attack: 'kobold_attack', heavy: 'kobold_attack', hurt: 'kobold_idle', death: 'kobold_idle' }, ax: 52, ay: 90, scale: 0.5, hgt: 61, radius: 6, hp: 26, atk: 7, def: 1, speed: 58, range: 16, cd: 1.1, hit: 2, xp: 10, gold: [2, 5], ai: 'melee' },
+    necro: { name: 'Morvath the Necromancer', anim: { idle: 'nc_stand', walk: 'nc_run', run: 'nc_run', attack: 'nc_atk1', heavy: 'nc_atk2', cast: 'nc_atk3', hurt: 'nc_hurt', death: 'nc_death' }, ax: 81, ay: 115, scale: 0.85, hgt: 52, radius: 10, hp: 480, atk: 16, def: 6, speed: 30, range: 22, cd: 2.4, hit: 6, keep: 110, xp: 220, gold: [90, 130], ai: 'necro', boss: true },
+    shSamurai: { name: 'Shadow Samurai', anim: { idle: 'sam_idle', walk: 'sam_run', run: 'sam_run', attack: 'sam_attack1', heavy: 'sam_attack1', hurt: 'sam_hurt' }, ax: 46, ay: 81, scale: 1.3, radius: 7, hp: 1, atk: 10, def: 2, speed: 44, range: 24, cd: 1.1, hit: 3, xp: 0, gold: [0, 0], ai: 'melee', summon: true },
     knight: { name: 'Sir Varric, the Fallen', anim: KN_ANIM, ax: 54, ay: 83, scale: 1.3, radius: 12, hp: 1600, atk: 30, def: 14, speed: 40, range: 30, cd: 1.6, hit: 4, xp: 1000, gold: [400, 500], ai: 'knight', boss: true },
   };
 
@@ -153,18 +159,18 @@
     },
     {
       id: 'graveyard', name: 'Whispering Graveyard', level: 3, theme: 'graves', w: 18, h: 32, seed: 23,
-      desc: 'Deserters hide among the tombs, loosing arrows at anyone who passes.',
-      waves: [[['orc', 3], ['archer', 2]], [['archer', 4], ['orc', 2]], [['brute', 2], ['archer', 3]], [['orc', 5], ['archer', 3]]],
+      desc: 'Kobolds and deserters prowl the tombs, and the necromancer Morvath raises demons from the graves.',
+      waves: [[['kobold', 3], ['archer', 1]], [['archer', 3], ['kobold', 3]], [['demon', 2], ['archer', 2]], [['orc', 3], ['demon', 2], ['kobold', 2]]], boss: 'necro',
     },
     {
       id: 'ruins', name: 'Sunken Ruins', level: 6, theme: 'ruins', w: 20, h: 34, seed: 37,
       desc: 'Crumbling halls where the orc warlord Grukk gathers his horde.',
-      waves: [[['orc', 4], ['archer', 2]], [['brute', 2], ['archer', 3]], [['orc', 5], ['brute', 2]]], boss: 'warlord',
+      waves: [[['orc', 4], ['kobold', 2]], [['brute', 2], ['archer', 3]], [['orc', 5], ['brute', 2], ['kobold', 2]]], boss: 'warlord',
     },
     {
       id: 'shrine', name: 'Shrine of the Fallen', level: 9, theme: 'shrine', w: 20, h: 34, seed: 53,
       desc: 'The sealed shrine where a cursed knight still guards his broken oath.',
-      waves: [[['archer', 4], ['brute', 2]], [['orc', 6], ['archer', 3]]], boss: 'knight',
+      waves: [[['archer', 4], ['brute', 2], ['demon', 2]], [['orc', 5], ['demon', 3], ['archer', 3]]], boss: 'knight',
     },
     {
       id: 'trial', name: 'Endless Trial', level: 10, theme: 'trial', w: 20, h: 30, seed: 71, endless: true,

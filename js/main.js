@@ -157,11 +157,23 @@
   $('btn-gm').addEventListener('click', () => {
     G.ui.chooseClass('gm', (cls) => {
       const r = G.loadSave('gm');
-      const keep = r.profile && r.profile.path === cls;
-      const p = keep ? r.profile : G.newGmProfile(cls);
+      let p = r.profile;
+      if (p && p.path !== cls) G.choosePath(p, cls); // same GM account, new class (maxed)
+      if (!p) p = G.newGmProfile(cls);
       startProfile(p);
-      G.ui.toast(keep ? 'GM account loaded (' + G.PATHS[cls].name + ')' : 'GM ' + G.PATHS[cls].name + ' created: level ' + p.level + ', all skills maxed, every area unlocked', 'level');
+      G.ui.toast(r.profile ? 'GM account loaded as ' + G.PATHS[cls].name : 'GM ' + G.PATHS[cls].name + ' created: level ' + p.level + ', all skills maxed, every area unlocked', 'level');
     });
+  });
+  // GM account: switch character from the hub without losing level, gear or progress
+  $('hub-switch').addEventListener('click', () => {
+    const p = G.profile;
+    if (!p || !p.gm) return;
+    G.ui.chooseClass('switch', (cls) => {
+      if (cls !== p.path) G.choosePath(p, cls);
+      G.save();
+      G.ui.show('hub');
+      G.ui.toast('Switched to ' + G.PATHS[cls].name + ' (all skills maxed)', 'level');
+    }, () => G.ui.show('hub'));
   });
   G.tmpSettings = G.defaultSettings();
   $('btn-title-settings').addEventListener('click', () => {

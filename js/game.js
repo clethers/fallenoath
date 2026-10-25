@@ -11,7 +11,7 @@
   const game = (G.game = { run: null, showcase: null, paused: false, time: 0 });
 
   // ================================================================ drawing helpers
-  function drawSheet(ctx, key, frame, x, y, ax, ay, scale, flip, alpha) {
+  function drawSheet(ctx, key, frame, x, y, ax, ay, scale, flip, alpha, row) {
     const s = G.SHEETS[key];
     const im = G.img('sheet:' + key);
     if (!s || !im || !s.n) return false;
@@ -22,10 +22,10 @@
       ctx.save();
       ctx.translate(Math.round(x), Math.round(y));
       ctx.scale(-scale, scale);
-      ctx.drawImage(im, f * s.fw, 0, s.fw, s.fh, -ax, -ay, s.fw, s.fh);
+      ctx.drawImage(im, f * s.fw, (row || 0) * s.fh, s.fw, s.fh, -ax, -ay, s.fw, s.fh);
       ctx.restore();
     } else {
-      ctx.drawImage(im, f * s.fw, 0, s.fw, s.fh, Math.round(x - ax * scale), Math.round(y - ay * scale), s.fw * scale, s.fh * scale);
+      ctx.drawImage(im, f * s.fw, (row || 0) * s.fh, s.fw, s.fh, Math.round(x - ax * scale), Math.round(y - ay * scale), s.fw * scale, s.fh * scale);
     }
     ctx.globalAlpha = 1;
     return true;
@@ -36,6 +36,8 @@
   // Plays an existing effect sprite sheet; never synthesises artwork.
   const FX_CAP = { sparkBurst: 3, thunderSplashDark: 6, thunderSplash: 7, burstDark: 4, slashGold: 4, flashKick: 2, hit: 3, slashArc: 2 };
   function fx(run, key, x, y, o) {
+    const cp = G.profile && G.PATHS[G.profile.path];
+    if (cp && cp.fxRemap && cp.fxRemap[key]) key = cp.fxRemap[key]; // a class can recolour shared hit effects
     const d = G.FX[key];
     o = o || {};
     if (!d || !d.ok || !run) return null;
@@ -193,7 +195,7 @@
   function animInfo(e) {
     const key = e.def.anim[e.anim] || e.def.anim.idle;
     const s = G.SHEETS[key];
-    const fps = { idle: 8, walk: 10, run: 12, attack: 12, heavy: 11, shoot: 12, lunge: 13, block: 10, hurt: 14, death: 10 }[e.anim] || 10;
+    const fps = { idle: 8, walk: 10, run: 12, attack: 12, heavy: 11, shoot: 12, lunge: 13, block: 10, hurt: 14, death: 10, cast: 14 }[e.anim] || 10;
     const n = (s && s.n) || 1;
     return { key, fps, n, frame: Math.floor(e.animT * fps), done: e.animT * fps >= n };
   }
@@ -393,7 +395,8 @@
     for (const e of run.enemies) {
       if (e.dead || e.state === 'spawn') continue;
       if (Math.hypot(e.x - hx, (e.y - 4) - hy) < 20 + e.r) {
-        const r = rollDamage(pl.stats.atk, mult, e.defense, pl.stats.crit, pl.stats.critDmg);
+        const sb = pl.stealth ? pl.stealth.bonus : 0; // Shadow Monarch Stealth: the first hit crits and hits harder
+        const r = rollDamage(pl.stats.atk, mult * (1 + sb), e.defense, sb ? 1 : pl.stats.crit, pl.stats.critDmg);
         const dealt = damageEnemy(run, e, r.dmg, { crit: r.crit, knock: 10 });
         fx(run, r.crit ? 'hitCrit' : 'hit', e.x, e.y - 10 * e.def.scale, { scale: r.crit ? 0.7 : 0.8 });
         swordHitPassives(run, e, dealt);
@@ -406,6 +409,7 @@
       if (!pr.breakable || pr.dead) continue;
       if (Math.hypot(pr.x - hx, pr.y - 6 - hy) < 22) breakProp(run, pr);
     }
+    if (hitAny && pl.stealth) { pl.stealth = null; pl.stealthT = 0; fx(run, 'smokeDark', pl.x, pl.y - 12, { scale: 0.6, fps: 26 }); G.sfx('shRune', { minGap: 0, vol: 0.6 }); }
     if (hitAny) {
       G.sfx('slashHit', { minGap: 70 });
       fx(run, G.profile.path === 'shadow' ? 'shadowArc' : 'slashArc', hx + v[0] * 4, hy - 2 + v[1] * 4, { rot: DIRA[pl.dir] + Math.PI / 2, scale: pl.combo ? 1.05 : 0.9, fps: 26, flip: !!pl.combo });
@@ -874,12 +878,13 @@
     const s = e.status[kind];
     if (kind === 'stun' && e.boss) o.t *= 0.4;
     if (s) { s.t = Math.max(s.t, o.t); if (o.dps) s.dps = Math.max(s.dps, o.dps); return; }
-    if (kind === 'stun' && !o.label) text(run, e.x, e.y - 22 * e.def.scale - 8, 'STUN', '#9fe0ff');
-    if (o.label) text(run, e.x, e.y - 22 * e.def.scale - 8, o.label, o.labelColor || '#c9a6ff');
+    const topY = e.def.hgt ? e.y - e.def.hgt * e.def.scale - 8 : e.y - 22 * e.def.scale - 8;
+    if (kind === 'stun' && !o.label) text(run, e.x, topY, 'STUN', '#9fe0ff');
+    if (o.label) text(run, e.x, topY, o.label, o.labelColor || '#c9a6ff');
     const st = Object.assign({ tick: 0.5 }, o);
     if (o.noFx) { e.status[kind] = st; return; }
     const fxKey = o.fxKey || (kind === 'burn' ? 'burn' : kind === 'poison' ? 'statusPoison' : 'statusStun');
-    const h = (e.def.ay - 40) * e.def.scale * 0.5 + 10 * e.def.scale;
+    const h = e.def.hgt ? e.def.hgt * e.def.scale - 4 : (e.def.ay - 40) * e.def.scale * 0.5 + 10 * e.def.scale;
     st.fx = fx(run, fxKey, e.x, e.y, { loop: true, follow: e, offY: kind === 'burn' ? -10 * e.def.scale : -h - 6, scale: kind === 'burn' ? 0.8 * Math.min(1.6, e.def.scale) : 0.6, fps: 12 });
     e.status[kind] = st;
   }
@@ -908,7 +913,7 @@
     e.phase2 = true;
     G.ui.toast(e.def.name + ' is enraged!', 'boss');
     fx(run, 'alert', e.x, e.y, { follow: e, offY: -e.def.ay * e.def.scale * 0.55 - 12, important: true });
-    const adds = e.id === 'knight' ? [['archer', 2], ['orc', 2]] : [['orc', 3]];
+    const adds = e.id === 'knight' ? [['archer', 2], ['orc', 2]] : e.id === 'necro' ? [['demon', 2], ['kobold', 2]] : [['orc', 3]];
     adds.forEach(([id, n]) => { for (let i = 0; i < n; i++) run.spawnQueue.push({ id, level: e.level - 1, delay: 0.3 }); });
   }
 
@@ -940,7 +945,7 @@
     }
     e.cdT -= dt;
     e.special -= dt;
-    const slow = e.status.poison ? 1 - (e.status.poison.slow || 0) : 1;
+    const slow = (e.status.poison ? 1 - (e.status.poison.slow || 0) : 1) * (e.status.slow ? 1 - (e.status.slow.amt || 0) : 1); // poison, Monarch's Domain
     const enr = e.phase2 ? 1.25 : 1;
     const dx = pl.x - e.x, dy = pl.y - e.y, d = Math.hypot(dx, dy);
     if (Math.abs(dx) > 2 && e.state !== 'attack' && e.state !== 'lunge') e.face = dx > 0 ? 1 : -1;
@@ -1001,6 +1006,11 @@
         if (ai.done) { e.state = 'chase'; e.cdT = 0.8; setAnim(e, 'idle'); }
         return;
       }
+      case 'cast': // necromancer spells: play the cast animation, fire the spell on its frame
+        setAnim(e, e.castAnim);
+        if (!e.hitDone && ai.frame >= e.castFrame) { e.hitDone = true; e.castFn && e.castFn(); }
+        if (ai.done) { e.state = 'chase'; setAnim(e, 'idle'); }
+        return;
       case 'block':
         setAnim(e, 'block');
         if (ai.frame >= 4) e.animT = 2 / 10; // hold the guard pose
@@ -1027,6 +1037,7 @@
       }
       e.recentDmg = Math.max(0, (e.recentDmg || 0) - dt * e.maxHp * 0.02);
     }
+    if (e.ai === 'necro') { necroThink(run, e, d, dx, dy, enr, slow, moveToward); return; }
     if (e.ai === 'ranged') {
       if (d < 52) { moveToward(e.x - dx, e.y - dy, def.speed * 0.9 * slow); setAnim(e, 'walk'); if (d < 22 && e.cdT <= 0) startEnemyAttack(e, 'attack'); return; }
       if (d <= def.range && e.cdT <= 0) { startEnemyAttack(e, 'shoot'); return; }
@@ -1042,6 +1053,46 @@
       moveToward(pl.x, pl.y, def.speed * slow * enr);
       setAnim(e, e.ai === 'knight' && d > 80 ? 'run' : 'walk');
     }
+  }
+
+  // ---- Morvath the Necromancer: keeps his distance, curses the ground under the hero, summons demons
+  function necroCast(e, anim, frame, fn) { e.state = 'cast'; e.stateT = 0; e.hitDone = false; e.castAnim = anim; e.castFrame = frame; e.castFn = fn; e.anim = null; setAnim(e, anim); }
+  function necroThink(run, e, d, dx, dy, enr, slow, moveToward) {
+    const def = e.def, pl = run.player;
+    e.face = dx >= 0 ? 1 : -1;
+    if (e.special <= 0) { // summon demons
+      e.special = rnd(7, 9) / enr;
+      fx(run, 'alert', e.x, e.y, { follow: e, offY: -def.hgt * def.scale - 12, important: true });
+      necroCast(e, 'cast', 8, () => {
+        const n = e.phase2 ? 3 : 2;
+        G.sfx('shSummon', { minGap: 0 });
+        for (let i = 0; i < n; i++) {
+          const a = (i / n) * Math.PI * 2 + rnd(0, 1), p = { x: e.x + Math.cos(a) * 34, y: e.y + Math.sin(a) * 24 };
+          fx(run, 'portalVoid', p.x, p.y - 6, { scale: 0.6 });
+          run.spawnQueue.unshift({ id: 'demon', level: Math.max(1, e.level - 1), delay: 0.25, at: p });
+        }
+      });
+      return;
+    }
+    if (e.cdT <= 0 && d < 190) { // curse: dark marks under and around the hero erupt in skull smoke
+      e.cdT = def.cd / enr * rnd(0.85, 1.2);
+      necroCast(e, Math.random() < 0.5 ? 'attack' : 'heavy', 6, () => {
+        const n = e.phase2 ? 4 : 3;
+        G.sfx('shDebuff', { minGap: 0, vol: 0.7 });
+        for (let i = 0; i < n; i++) {
+          const pt = i === 0 ? { x: pl.x, y: pl.y } : { x: pl.x + rnd(-42, 42), y: pl.y + rnd(-34, 34) };
+          const delay = 0.85 + i * 0.18;
+          run.hazards.push({ x: pt.x, y: pt.y, t: 0, delay, radius: 16, mult: 1.3, src: e, fx: 'riseSkull', fy: 10, fs: 0.8, snd: 'shBlast',
+            warn: fx(run, 'fearMark', pt.x, pt.y - 4, { loop: true, dur: delay, scale: 0.9 }) });
+        }
+      });
+      return;
+    }
+    // drift: back away when the hero gets close, close in when far
+    const keep = def.keep;
+    if (d < keep * 0.65) { moveToward(e.x - dx, e.y - dy, def.speed * 1.1 * slow); setAnim(e, 'walk'); e.face = dx >= 0 ? 1 : -1; }
+    else if (d > keep * 1.35) { moveToward(pl.x, pl.y, def.speed * slow); setAnim(e, 'walk'); }
+    else setAnim(e, 'idle');
   }
 
   function startEnemyAttack(e, kind) {
@@ -1070,8 +1121,8 @@
       const h = run.hazards[i];
       h.t += dt;
       if (h.t >= h.delay) {
-        fx(run, h.fx, h.x, h.y - 50, { scale: 0.9, fps: 18 });
-        G.sfx('strike', { vol: 0.55, minGap: 70 });
+        fx(run, h.fx, h.x, h.y - (h.fy == null ? 50 : h.fy), { scale: h.fs || 0.9, fps: 18 });
+        G.sfx(h.snd || 'strike', { vol: 0.55, minGap: 70 });
         if (dist(h, run.player) < h.radius + run.player.r) damagePlayer(run, h.mult, h.src, { shake: 4, fx: 'hitArrow' });
         run.hazards.splice(i, 1);
       }
@@ -1098,13 +1149,13 @@
     const L = Math.max(plevel, 10) + Math.floor(n / 2);
     const list = [];
     if (n % 5 === 0) {
-      list.push({ id: n % 10 === 0 ? 'knight' : 'warlord', level: L + 1 });
+      list.push({ id: ['knight', 'warlord', 'necro'][(n / 5) % 3], level: L + 1 });
       for (let i = 0; i < 2 + Math.floor(n / 10); i++) list.push({ id: 'archer', level: L - 1 });
     } else {
       const count = 4 + Math.floor(n * 0.7);
       for (let i = 0; i < count; i++) {
         const r = Math.random();
-        list.push({ id: r < 0.45 ? 'orc' : r < 0.8 ? 'archer' : 'brute', level: L });
+        list.push({ id: r < 0.3 ? 'orc' : r < 0.55 ? 'archer' : r < 0.7 ? 'kobold' : r < 0.85 ? 'demon' : 'brute', level: L });
       }
     }
     return list;
@@ -1410,11 +1461,13 @@
   function heroTint() { const p = G.profile && G.PATHS[G.profile.path]; return p ? p.heroTint : null; }
   function drawPlayer(ctx, pl, run) {
     if (pl.dead && run.endT > 0.6) return;
+    const cp = G.profile && G.PATHS[G.profile.path], cls = cp && game.classSkills[G.profile.path];
+    if (cp && cp.heroSprite && cls && cls.drawHero && cls.drawHero(ctx, pl, run)) return; // class with its own hero sprite
     if (pl.spin || pl.dash) { // sword techniques reuse the hero's own attack frames
       const k = 'adv_' + (pl.spin ? 'atk1_' : 'atk2_') + pl.dir;
       const n = (G.SHEETS[k] && G.SHEETS[k].n) || 8;
       const f = pl.spin ? 2 + (Math.floor(run.time * 30) % 3) : Math.min(n - 1, 1 + Math.floor((pl.dash.t / pl.dash.dur) * 4));
-      drawSheet(ctx, G.tintedSheet(k, heroTint()), f, pl.x, pl.y, 46, 57, 1, false, pl.dash ? (pl.flashing ? 0.35 : 0.85) : 1);
+      drawSheet(ctx, G.tintedSheet(k, heroTint()), f, pl.x, pl.y, 46, 57, 1, false, (pl.dash ? (pl.flashing ? 0.35 : 0.85) : 1) * (pl.stealth ? 0.4 : 1));
       return;
     }
     const key = playerSheet(pl);
@@ -1426,9 +1479,22 @@
     let alpha = 1;
     if (pl.dead) alpha = Math.max(0, 1 - run.endT * 1.6);
     else if (pl.flash > 0 && Math.floor(pl.flash * 30) % 2 === 0) alpha = 0.45;
+    if (pl.stealth || pl.shSink) alpha *= 0.4; // Stealth / Shadow Fang: the hero fades into the shadows
     drawSheet(ctx, G.tintedSheet(key, heroTint()), frame, pl.x, pl.y, 46, 57, 1, false, alpha);
   }
 
+  // 4-direction sprites: rows are down, up, left, right. Face the hero (or away while feared); the dead keep their last row.
+  function dirRow(e, run) {
+    if (e.state === 'dead' || e.state === 'spawn' && e.row != null) return e.row || 0;
+    const pl = run.player;
+    let dx = pl.x - e.x, dy = pl.y - e.y;
+    if (e.status && e.status.fear) { dx = -dx; dy = -dy; }
+    if (e.state === 'lunge' && e.lungeA != null) { dx = Math.cos(e.lungeA); dy = Math.sin(e.lungeA); }
+    const cur = e.row == null ? 0 : e.row, horiz = cur >= 2;
+    const useH = Math.abs(dx) > Math.abs(dy) * (horiz ? 0.7 : 1.3); // a little stickiness so they don't flicker
+    e.row = useH ? (dx < 0 ? 2 : 3) : (dy < 0 ? 1 : 0);
+    return e.row;
+  }
   function drawEnemy(ctx, e, run) {
     const ai = animInfo(e);
     let frame = ai.frame;
@@ -1438,15 +1504,16 @@
     if (e.state === 'spawn') alpha = Math.max(0, (e.stateT - 0.2) / 0.25);
     if (e.state === 'dead') alpha = Math.max(0, 1 - Math.max(0, e.stateT - 0.8) / 0.4);
     const ly = e.y - (e.liftY || 0);
-    drawSheet(ctx, ai.key, frame, e.x, ly, e.def.ax, e.def.ay, e.def.scale, e.face < 0, alpha);
+    const row = e.def.dir4 ? dirRow(e, run) : 0, flip = e.def.dir4 ? false : e.face < 0;
+    drawSheet(ctx, ai.key, frame, e.x, ly, e.def.ax, e.def.ay, e.def.scale, flip, alpha, row);
     if (e.flash > 0 && e.state !== 'dead') { // hit flash: the enemy's own sprite drawn again additively (brightens it)
       ctx.globalCompositeOperation = 'lighter';
-      drawSheet(ctx, ai.key, frame, e.x, ly, e.def.ax, e.def.ay, e.def.scale, e.face < 0, Math.min(1, e.flash / 0.12) * 0.85 * alpha);
+      drawSheet(ctx, ai.key, frame, e.x, ly, e.def.ax, e.def.ay, e.def.scale, flip, Math.min(1, e.flash / 0.12) * 0.85 * alpha, row);
       ctx.globalCompositeOperation = 'source-over';
     }
     // health bar (interface element) for regular enemies
     if (!e.boss && !e.dead && e.state !== 'spawn' && e.hp < e.maxHp) {
-      const w = 16 + e.r, h = 2, x = e.x - w / 2, y = e.y - 20 * e.def.scale;
+      const w = 16 + e.r, h = 2, x = e.x - w / 2, y = e.y - (e.def.hgt ? e.def.hgt * e.def.scale + 3 : 20 * e.def.scale);
       ctx.fillStyle = 'rgba(0,0,0,0.6)'; ctx.fillRect(x - 0.5, y - 0.5, w + 1, h + 1);
       ctx.fillStyle = '#e04848'; ctx.fillRect(x, y, w * (e.hp / e.maxHp), h);
     }

@@ -11,6 +11,7 @@
   const P = {
     adv: 'assets/FREE_Adventurer 2D Pixel Art/Sprites/',
     knight: 'assets/FREE_Knight 2D Pixel Art v1.2/Sprites/',
+    samurai: 'assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/',
     tiny: 'assets/Tiny RPG Character Asset Pack -Demo Soldier&Orc/',
     tex: 'assets/Pixel Art Top Down - Basic v1.2.3/Texture/',
     fx: 'assets/Super Pixel Effects Gigapack (Free Version)/spritesheet/',
@@ -29,11 +30,33 @@
   ['IDLE', 'RUN', 'WALK', 'ATTACK 1', 'ATTACK 2', 'ATTACK 3', 'BLOCK', 'HURT', 'DEATH'].forEach((n) => {
     SHEETS['knight_' + n.replace(' ', '').toLowerCase()] = { src: P.knight + n + '.png', fw: 112, fh: 96 };
   });
+  // FREE Samurai 2D (same artist as the Knight): the Shadow Monarch's shadow samurai
+  [['IDLE', 'idle'], ['ATTACK 1', 'attack1'], ['RUN', 'run'], ['HURT', 'hurt']].forEach(([f, n]) => {
+    SHEETS['sam_' + n] = { src: P.samurai + f + '.png', fw: 96, fh: 96 };
+  });
   ['Idle', 'Walk', 'Attack01', 'Attack02', 'Hit', 'Death'].forEach((n) => {
     SHEETS['orc_' + n.toLowerCase()] = { src: P.tiny + 'Orc/Orc_' + n + '.png', fw: 100, fh: 100 };
   });
   ['Idle', 'Walk', 'Attack01', 'Attack02', 'Attack03', 'Hit', 'Death'].forEach((n) => {
     SHEETS['soldier_' + n.toLowerCase()] = { src: P.tiny + 'Soldier/Soldier_' + n + '.png', fw: 100, fh: 100 };
+  });
+
+  // ---- Shadow Monarch hero: Necromancer by creativekind (sheet rows cut into strips, 160x128 frames)
+  ['stand', 'run', 'atk1', 'atk2', 'atk3', 'hurt', 'death'].forEach((n) => {
+    SHEETS['nc_' + n] = { src: 'assets/Necromancer (creativekind)/nc_' + n + '.png', fw: 160, fh: 128 };
+  });
+
+  // ---- Top-down orcs (CraftPix, free): 64x64 frames, one row per direction (down, up, left, right)
+  ['1', '2', '3'].forEach((o) => ['idle', 'walk', 'run', 'attack', 'runatk', 'walkatk', 'hurt', 'death'].forEach((a) => {
+    SHEETS['td' + o + '_' + a] = { src: 'assets/Top-Down Orcs (CraftPix)/orc' + o + '_' + a + '.png', fw: 64, fh: 64, rows: 4 };
+  }));
+
+  // ---- Tiny RPG 02 Demon (100x100) and Kobold Warrior (148x96): side view, facing right
+  ['idle', 'walk', 'attack01', 'attack02', 'hurt', 'death'].forEach((a) => {
+    SHEETS['demon_' + a] = { src: 'assets/Tiny RPG Demon (Zerie)/demon_' + a + '.png', fw: 100, fh: 100 };
+  });
+  ['idle', 'run', 'attack'].forEach((a) => {
+    SHEETS['kobold_' + a] = { src: 'assets/Kobold Warrior/kobold_' + a + '.png', fw: 148, fh: 96 };
   });
 
   // ---- Static textures (tilesets / props)
@@ -199,18 +222,38 @@
     boltDark: Object.assign(gp('Lightning', 'lightning_strike_001', 'large_violet', 128, 128, 7), { dark: true }),
     burstDark: Object.assign(gp('Lightning', 'lightning_burst_002', 'large_violet', 64, 64, 9), { dark: true }),
     auraDark: Object.assign(gp('Lightning', 'lightning_aura_002', 'large_blue', 96, 96, 16), { dark: true }),
-    // ---- Shadow Monarch (purple & black). Same Gigapack sheets; 'void' = purple luminosity tint, dark+rim = black core with a purple outline
-    shadowArc: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { warm: 'void' }),
-    soulMark: Object.assign(gp('Fantasy Spells', 'status_sparkling_001', 'small_yellow', 48, 48, 24), { warm: 'void' }),
-    portalVoid: Object.assign(gp('Sci-fi', 'scifi_warp_002', 'large_red', 96, 96, 10), { warm: 'void' }),
-    smokeDark: Object.assign(gp('Smoke Bursts', 'directional_smoke_burst_001', 'large_white', 64, 64, 21), { dark: true, rim: '#a77bff' }),
-    riseSkull: Object.assign(gp('Smoke Bursts', 'stylized_skull_smoke_burst_001', 'large_white', 64, 64, 12), { dark: true, rim: '#a77bff' }),
-    shadowMist: Object.assign(gp('Smoke Bursts', 'looping_smoke_burst_002', 'large_gray', 64, 64, 16), { dark: true, rim: '#7d4dff' }),
+    // ---- Shadow Monarch (assassin: red & blue cuts, blue lightning, black shadows with a blue rim). Same packs, recoloured at load.
+    shadowArc: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { tint: { mode: 'mul', color: '#b98aff' } }),
+    soulMark: Object.assign(gp('Fantasy Spells', 'status_sparkling_001', 'small_yellow', 48, 48, 24), { tint: { mode: 'lum', color: '#9a63ff' } }),
+    portalVoid: Object.assign(gp('Sci-fi', 'scifi_warp_002', 'large_red', 96, 96, 10), { tint: { mode: 'lum', color: '#8f55ff' } }),
+    smokeDark: Object.assign(gp('Smoke Bursts', 'directional_smoke_burst_001', 'large_white', 64, 64, 21), { dark: true, rim: '#b07aff' }),
+    riseSkull: Object.assign(gp('Smoke Bursts', 'stylized_skull_smoke_burst_001', 'large_white', 64, 64, 12), { dark: true, rim: '#b07aff' }),
+    shadowMist: Object.assign(gp('Smoke Bursts', 'looping_smoke_burst_002', 'large_gray', 64, 64, 16), { dark: true, rim: '#8f55ff' }),
     fearMark: gp('Fantasy Spells', 'spell_death_001', 'small_red', 32, 32, 50),
-    absorbVoid: Object.assign(gp('Fantasy Spells', 'spell_absorb_001', 'large_violet', 128, 128, 31), { warm: 'void' }),
-    novaVoid: Object.assign(gp('Explosions', 'stylized_explosion_002', 'large_violet', 96, 96, 10), { warm: 'void' }),
-    sparkVoid: Object.assign(gp('Lightning', 'lightning_burst_003', 'large_violet', 96, 96, 10), { warm: 'void' }),
-    voidCut: Object.assign(gp('Impacts', 'directional_impact_003', 'large_violet', 80, 80, 6), { warm: 'void' }),
+    absorbVoid: Object.assign(gp('Fantasy Spells', 'spell_absorb_001', 'large_violet', 128, 128, 31), { tint: { mode: 'lum', color: '#9a63ff' } }),
+    sparkVoid: Object.assign(gp('Lightning', 'lightning_burst_003', 'large_violet', 96, 96, 10), { tint: { mode: 'lum', color: '#8f55ff' } }),
+    voidCut: Object.assign(gp('Impacts', 'directional_impact_003', 'large_violet', 80, 80, 6), { tint: { mode: 'lum', color: '#ff2e44' } }),
+    cutRed: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { tint: { mode: 'mul', color: '#ff3a4c' } }),
+    cutBlue: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { tint: { mode: 'mul', color: '#b07aff' } }),
+    arcRed: Object.assign(gp('Impacts', 'directional_impact_002', 'large_white', 140, 50, 7), { tint: { mode: 'mul', color: '#ff3a4c' } }),
+    arcBlue: Object.assign(gp('Impacts', 'directional_impact_002', 'large_white', 140, 50, 7), { tint: { mode: 'mul', color: '#b07aff' } }),
+    boomRed: Object.assign(gp('Explosions', 'symmetrical_explosion_004', 'large_orange', 96, 96, 12), { tint: { mode: 'mul', color: '#ff3036' } }),
+    // blue lightning
+    boltBlue: Object.assign(gp('Lightning', 'lightning_strike_001', 'large_violet', 128, 128, 7), { tint: { mode: 'lum', color: '#a46bff' } }),
+    burstBlue: Object.assign(gp('Lightning', 'lightning_burst_002', 'large_violet', 64, 64, 9), { tint: { mode: 'lum', color: '#a46bff' } }),
+    zapBlue: Object.assign(gp('Lightning', 'lightning_burst_001', 'large_violet', 64, 64, 8), { tint: { mode: 'lum', color: '#c08cff' } }),
+    auraBlue: gp('Lightning', 'lightning_aura_002', 'large_blue', 96, 96, 16),
+    thunderBlue: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, tint: { mode: 'lum', color: '#9a5cff' } },
+    // ---- Shadow Monarch kit v2: black & purple shadow, blue telekinesis (Ruler's Authority)
+    // beam: one thin wavy tendril cut from lightning_strike_001 frames 3-5 (x 16-56, y 4-84), recoloured purple
+    beamPurple: { src: P.fx + 'Lightning/lightning_strike_001/lightning_strike_001_large_violet/spritesheet.png', fw: 40, fh: 80, n: 3,
+      cut: { from: 128, frames: [3, 4, 5], x: 16, y: 4 }, tint: { mode: 'lum', color: '#c08cff' } },
+    shadeBurst: Object.assign(gp('Smoke Bursts', 'symmetrical_smoke_burst_001', 'large_brown', 64, 64, 10), { dark: true, rim: '#b07aff' }),
+    impDarkP: Object.assign(gp('Impacts', 'symmetrical_impact_004', 'large_yellow', 96, 96, 8), { dark: true, rim: '#a77bff' }),
+    fearPurple: Object.assign(gp('Fantasy Spells', 'spell_death_001', 'small_red', 32, 32, 50), { tint: { mode: 'lum', color: '#b48cff' } }),
+    sparkleBlue: Object.assign(gp('Fantasy Spells', 'status_sparkling_001', 'small_yellow', 48, 48, 24), { tint: { mode: 'lum', color: '#5fb0ff' } }),
+    impBlue2: gp('Impacts', 'symmetrical_impact_002', 'large_blue', 96, 96, 10),
+    impDark4: Object.assign(gp('Impacts', 'symmetrical_impact_004', 'large_yellow', 96, 96, 8), { dark: true, rim: '#4fa3ff' }),
     // Thunder Effect 02 (strips)
     thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, warm: 'mul' },
     thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14, warm: 'mul' },
@@ -238,7 +281,7 @@
   G.img = (key) => images[key];
   G.assetFailures = failed;
 
-  function load(key, src) {
+  function load(key, src, optional) {
     return new Promise((res) => {
       const im = new Image();
       im.onload = () => {
@@ -246,6 +289,7 @@
         res();
       };
       im.onerror = () => {
+        if (optional) return res(); // optional art (e.g. private test sprites) may be absent
         failed.push(src);
         console.warn('[assets] missing:', src);
         res();
@@ -256,13 +300,13 @@
 
   G.loadAssets = function (onProgress) {
     const jobs = [];
-    Object.keys(SHEETS).forEach((k) => jobs.push(['sheet:' + k, SHEETS[k].src]));
+    Object.keys(SHEETS).forEach((k) => jobs.push(['sheet:' + k, SHEETS[k].src, SHEETS[k].optional]));
     Object.keys(TEX).forEach((k) => jobs.push(['tex:' + k, TEX[k]]));
     Object.keys(FX).forEach((k) => jobs.push(['fx:' + k, FX[k].src]));
     let done = 0;
     return Promise.all(
-      jobs.map(([k, s]) =>
-        load(k, s).then(() => {
+      jobs.map(([k, s, o]) =>
+        load(k, s, o).then(() => {
           done++;
           onProgress && onProgress(done / jobs.length);
         })
@@ -277,24 +321,33 @@
       Object.keys(SHEETS).forEach((k) => {
         const im = images['sheet:' + k];
         if (!im || k.includes('~')) return;
-        const style = /^(orc|soldier|knight)_/.test(k) ? 'shadow' : /^adv_/.test(k) ? 'monarch' : null;
-        if (!style) return;
-        images['sheet:' + k + '~' + style] = tintSheet(im, style);
-        SHEETS[k + '~' + style] = Object.assign({}, SHEETS[k]);
+        const styles = /^(orc|soldier|knight|td\d|demon|kobold|sam)_/.test(k) ? ['shadow'] : /^adv_/.test(k) ? ['monarch', 'shadow'] : [];
+        styles.forEach((style) => {
+          images['sheet:' + k + '~' + style] = tintSheet(im, style);
+          SHEETS[k + '~' + style] = Object.assign({}, SHEETS[k]);
+        });
       });
       Object.keys(FX).forEach((k) => {
         let im = images['fx:' + k];
         // gold tint for the black & yellow kit: 'mul' warms pale/white sheets, 'lum' recolours blue ones
-        if (im && FX[k].warm) {
+        if (im && FX[k].cut) { // build a strip from a region of chosen frames of an existing sheet
+          const c = FX[k].cut, cv = document.createElement('canvas');
+          cv.width = FX[k].fw * c.frames.length; cv.height = FX[k].fh;
+          const g = cv.getContext('2d');
+          c.frames.forEach((f, i) => g.drawImage(im, f * c.from + c.x, c.y, FX[k].fw, FX[k].fh, i * FX[k].fw, 0, FX[k].fw, FX[k].fh));
+          images['fx:' + k] = im = cv;
+        }
+        const tint = FX[k].tint || (FX[k].warm === 'lum' ? { mode: 'lum', color: '#ffc93a' } : FX[k].warm === 'void' ? { mode: 'lum', color: '#8a5cff' } : FX[k].warm ? { mode: 'mul', color: '#ffdd55' } : null);
+        if (im && tint) {
           const c = document.createElement('canvas');
           c.width = im.width; c.height = im.height;
           const g = c.getContext('2d');
-          if (FX[k].warm === 'lum' || FX[k].warm === 'void') {
-            g.fillStyle = FX[k].warm === 'void' ? '#8a5cff' : '#ffc93a'; g.fillRect(0, 0, c.width, c.height);
+          if (tint.mode === 'lum') { // recolour any hue, keep the sheet's light and dark
+            g.fillStyle = tint.color; g.fillRect(0, 0, c.width, c.height);
             g.globalCompositeOperation = 'luminosity'; g.drawImage(im, 0, 0);
-          } else {
+          } else { // multiply: turns white/pale sheets into the colour
             g.drawImage(im, 0, 0);
-            g.globalCompositeOperation = 'multiply'; g.fillStyle = '#ffdd55'; g.fillRect(0, 0, c.width, c.height);
+            g.globalCompositeOperation = 'multiply'; g.fillStyle = tint.color; g.fillRect(0, 0, c.width, c.height);
           }
           g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0); // keep the original shape/alpha
           images['fx:' + k] = im = c;
@@ -343,7 +396,7 @@
       g.drawImage(d, 0, 0);
     } else { // monarch: keep the sprite's detail, shift it to cold purple-black
       g.drawImage(im, 0, 0);
-      g.globalCompositeOperation = 'multiply'; g.fillStyle = '#9a8cc8'; g.fillRect(0, 0, c.width, c.height);
+      g.globalCompositeOperation = 'multiply'; g.fillStyle = '#8e98c6'; g.fillRect(0, 0, c.width, c.height);
       g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(14,6,30,0.18)'; g.fillRect(0, 0, c.width, c.height);
       g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0);
     }
@@ -356,6 +409,8 @@
   const ICON_TONE = {
     gold: 'sepia(1) saturate(3.2) hue-rotate(-6deg) brightness(1.08)',
     void: 'sepia(1) saturate(2.6) hue-rotate(215deg) brightness(0.95)',
+    red: 'sepia(1) saturate(6) hue-rotate(-45deg) brightness(0.95)',
+    blue: 'sepia(1) saturate(3.4) hue-rotate(175deg) brightness(1.05)',
     dark: 'brightness(0.12) drop-shadow(1px 0 0 #ffd23f) drop-shadow(-1px 0 0 #ffd23f) drop-shadow(0 1px 0 #ffd23f) drop-shadow(0 -1px 0 #ffd23f)',
   };
   G.fxIconStyle = function (fxKey, frame, size, tone) {

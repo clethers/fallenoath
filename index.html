@@ -42,7 +42,7 @@
     <section id="screen-class" class="screen">
       <header class="class-top">
         <button class="icon-btn" id="class-back" aria-label="Back">&#8249;</button>
-        <div><h2 class="class-title">Choose your class</h2><p class="muted tiny" id="class-sub">One class per save</p></div>
+        <div><h2 class="class-title" id="class-title-text">Choose your class</h2><p class="muted tiny" id="class-sub">One class per save</p></div>
       </header>
       <div class="class-list" id="class-list"></div>
     </section>
@@ -60,7 +60,7 @@
         </div>
         <div class="gold" id="hub-gold">0</div>
       </header>
-      <h2 class="hub-title">World Map</h2>
+      <div class="hub-row"><h2 class="hub-title">World Map</h2><button class="btn small gm-switch" id="hub-switch" hidden>Switch Character</button></div>
       <div class="area-list" id="area-list"></div>
       <nav class="hub-nav">
         <button class="nav-btn" data-open="hero"><span>Hero</span><b class="badge" id="badge-hero"></b></button>

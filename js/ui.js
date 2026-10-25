@@ -27,10 +27,13 @@
 
   // ------------------------------------------------------------ class select (New Game / GM)
   // mode: 'new' or 'gm'; onPick(pathId)
-  ui.chooseClass = function (mode, onPick) {
+  ui.chooseClass = function (mode, onPick, onBack) {
     const list = $('class-list');
     list.innerHTML = '';
-    $('class-sub').textContent = mode === 'gm' ? 'GM account: the class you pick is maxed out' : 'One class per save. Pick the one you want to play.';
+    const cur = mode === 'switch' && G.profile ? G.profile.path : null;
+    $('class-title-text') && ($('class-title-text').textContent = mode === 'switch' ? 'Switch character' : 'Choose your class');
+    $('class-sub').textContent = mode === 'switch' ? 'GM account: level, gear and progress stay; the new class is maxed out'
+      : mode === 'gm' ? 'GM account: the class you pick is maxed out' : 'One class per save. Pick the one you want to play.';
     const heroes = [];
     Object.keys(G.PATHS).forEach((id) => {
       const P = G.PATHS[id];
@@ -41,12 +44,13 @@
         <div class="sig">${sig.map((k) => `<span><i style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], 20, G.SKILLS[k].icon[2])}'></i>${esc(G.SKILLS[k].name)}</span>`).join('')}</div></div>
       </div>`);
       if (id === 'storm') card.appendChild(el('<b class="tag">LOCKED V1</b>'));
-      const b = btn('Play as ' + P.name, '', () => { heroes.length = 0; onPick(id); });
+      if (id === cur) card.classList.add('current');
+      const b = btn(id === cur ? 'Current character' : (mode === 'switch' ? 'Switch to ' : 'Play as ') + P.name, '', () => { heroes.length = 0; onPick(id); }, id === cur);
       card.appendChild(b);
       list.appendChild(card);
-      heroes.push({ cv: card.querySelector('canvas'), tint: P.heroTint });
+      heroes.push({ cv: card.querySelector('canvas'), tint: P.heroTint, sprite: P.heroSprite });
     });
-    $('class-back').onclick = () => { heroes.length = 0; ui.show('title'); };
+    $('class-back').onclick = () => { heroes.length = 0; if (onBack) onBack(); else ui.show('title'); };
     ui.show('class');
     // idle hero preview (the class tint is applied to the same Adventurer sheet the game uses)
     const t0 = performance.now();
@@ -54,10 +58,12 @@
       if (ui.screen !== 'class' || !heroes.length) return;
       const f = Math.floor((performance.now() - t0) / 125);
       heroes.forEach((h) => {
-        const key = G.tintedSheet('adv_idle_down', h.tint), sh = G.SHEETS[key], im = G.img('sheet:' + key);
         const g = h.cv.getContext('2d');
         g.clearRect(0, 0, 96, 96); g.imageSmoothingEnabled = false;
-        if (im && sh) g.drawImage(im, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, 48 - 46 * 3, 90 - 57 * 3, sh.fw * 3, sh.fh * 3);
+        const own = h.sprite && G.img('sheet:' + h.sprite.prefix + '_stand');
+        if (own) { const sh = G.SHEETS[h.sprite.prefix + '_stand'], k = h.sprite.scale * 2.2; g.drawImage(own, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, 48 - h.sprite.ax * k, 90 - h.sprite.ay * k, sh.fw * k, sh.fh * k); return; }
+        const key = G.tintedSheet('adv_idle_down', h.tint), sh = G.SHEETS[key], im = G.img('sheet:' + key);
+        if (im && sh) g.drawImage(im, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, 48 - 47 * 2.4, 48 - 41 * 2.4, sh.fw * 2.4, sh.fh * 2.4);
       });
       requestAnimationFrame(tick);
     };
@@ -140,8 +146,9 @@
     const p = G.profile;
     if (!p) return;
     $('hub-lv').textContent = p.level;
-    $('hub-name').textContent = p.gm ? 'Game Master' : 'Adventurer';
+    $('hub-name').textContent = (p.gm ? 'Game Master' : 'Adventurer') + (G.PATHS[p.path] ? ' · ' + G.PATHS[p.path].name : '');
     $('hub-gm').hidden = !p.gm;
+    $('hub-switch').hidden = !p.gm;
     const need = C.xpForLevel(p.level);
     $('hub-xp').style.width = (p.level >= C.MAX_LEVEL ? 100 : (p.xp / need) * 100) + '%';
     $('hub-xp-text').textContent = p.level >= C.MAX_LEVEL ? 'Max level' : fmt(p.xp) + ' / ' + fmt(need) + ' XP';
@@ -583,7 +590,7 @@
       tree.appendChild(n);
     });
     body.appendChild(tree);
-    body.appendChild(el('<p class="note">8 skills: 6 actives and 2 passives (diamond frames, always on). Pick which 4 actives sit on the action bar from each skill’s details; the ultimate always has its own button.</p>'));
+    { const P = G.PATHS[G.profile.path], na = P ? P.actives.length : 6, np = P ? P.passives.length : 2; body.appendChild(el(`<p class="note">${na + np} skills: ${na} actives and ${np} passives (diamond frames, always on). Pick which 4 actives sit on the action bar from each skill’s details; the ultimate always has its own button.</p>`)); }
   }
 
   function skillSheet(k) {

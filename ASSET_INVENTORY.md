@@ -143,20 +143,54 @@ The same voice line never plays twice in a row.
 
 Only one voice line plays at a time, so lines never pile up.
 
-## Shadow Monarch class
+## Shadow Monarch class (kit v2: black & purple shadow, blue telekinesis)
 
-All art comes from the same packs, recoloured at load time:
+All art except the shadow samurai comes from packs already in the game, recoloured at load time:
 
 | Use | Asset (tint) |
 |---|---|
 | Hero | Adventurer sheets, multiplied to cold purple-black (`~monarch`) |
-| Shadow soldiers / Igris | Tiny RPG Orc and Soldier sheets, and the Knight sheets: black core with a 1 px purple rim (`~shadow`) |
-| Dagger cuts | `Impacts/directional_impact_003_large_violet` (`void`), `directional_impact_002_small_white` (`void`) |
-| Souls (Arise targets) | `Fantasy Spells/status_sparkling_001_small_yellow` (`void`) |
-| Rise / summon | `Smoke Bursts/stylized_skull_smoke_burst_001_large_white` (dark, purple rim) + `Sci-fi/scifi_warp_002_large_red` (`void`) |
-| Shadow Exchange | `Smoke Bursts/directional_smoke_burst_001_large_white` (dark, purple rim), `Lightning/lightning_burst_003_large_violet` (`void`) |
-| Ruler's Authority | `Fantasy Spells/spell_absorb_001_large_violet` (`void`), then lightning_burst_003 + skull smoke + dark smoke |
-| Bloodlust | `Fantasy Spells/spell_death_001_large_red` (at the hero), `spell_death_001_small_red` (fear marker on enemies), `Smoke Bursts/looping_smoke_burst_002_large_gray` (dark, purple rim) |
-| Army of Shadows | the warp portal, skull smoke and mist above |
+| Shadow samurai (ultimate, Shadow Extraction) | **FREE Samurai 2D Pixel Art v1.2** (same artist as the Knight; any game project, commercial or not, no resale as an asset, credit optional; License.txt kept next to the sprites): black core with a 1 px purple rim (`~shadow`) |
+| Igris | the Knight sheets, drawn 1.65x (`~shadow`) |
+| Shadow Fang beam | one thin tendril cut from `Lightning/lightning_strike_001_large_violet` frames 3 to 5 (`beamPurple`, purple), glowing head `lightning_burst_001`, sparkles `status_sparkling_001` |
+| Shadow Fang landing | `Smoke Bursts/symmetrical_smoke_burst_001_large_brown` (dark, purple rim: `shadeBurst`), final cut `directional_impact_002_large_white` (purple) |
+| Ruler's Authority | hand glow drawn in code, `status_sparkling_001` (blue: `sparkleBlue`), lift `Impacts/symmetrical_impact_002_large_blue` (`impBlue2`), slam under each mob `symmetrical_impact_004_large_yellow` (dark, blue rim: `impDark4`) |
+| Shadow Step | the hero's own frames as afterimages, `looping_smoke_burst_002` (dark, purple rim) |
+| Bloodlust | wave `symmetrical_impact_004` (dark, purple rim: `impDarkP`), `shadeBurst`, fear sign `Fantasy Spells/spell_death_001_small_red` (purple: `fearPurple`) |
+| Army of Shadows | the Monarch's Domain is drawn in code (dark field, purple rim), `impDarkP`, mist, smoke and sparkles as the samurai rise |
+
+Downloaded or added for previews but **not used in the game**: Hero Knight (Sven Thole) and Tiny Swords (Pixel Frog). Both stay in the Prologue folder.
 
 Sound: Willosuna's **Magic Spells SFX Lite** (royalty-free, no attribution required, use in games allowed, no redistribution as a pack). Ten clips are trimmed, faded and peak-levelled to about −2 dB in `assets/audio/Magic Spells SFX Lite/`: `shadow`, `summon`, `teleport`, `portal`, `debuff`, `timewarp`, `slam`, `blast`, `charge` and `rune`. The pack's LICENSE.txt is kept next to them, and the full pack is in `Prologue\Audio`.
+
+## Enemies: top-down orcs (CraftPix)
+
+The Orc Grunt, the Orc Brute and Grukk the Warlord now use **Free Top-Down Orc Game Character Pixel Art** by CraftPix.net. The license is CraftPix's free-asset license: personal and commercial use are allowed, redistributing the files as assets is not. The pack's combined `_full` sheets are copied to `assets/Top-Down Orcs (CraftPix)/` and renamed. Frames are 64x64, with one row per direction (down, up, left, right). The animations are idle, walk, run, attack, run-attack (heavy and slam), walk-attack, hurt and death.
+
+| Enemy | Orc | Scale |
+|---|---|---|
+| Orc Grunt | orc1 (green) | 0.95 |
+| Orc Brute | orc3 (armoured, dark green) | 1.25 |
+| Grukk the Warlord (boss) | orc2 (blue chieftain) | 1.75 |
+
+They face the hero, or away from him while feared. Raised shadow orcs use the same sheets with the shadow tint. The Deserter Archer is still the Tiny RPG Soldier, and Sir Varric is still the Knight. The older Tiny RPG orc sheets are no longer used.
+
+## New enemies and the Graveyard boss
+
+| Enemy | Sprite | Notes |
+|---|---|---|
+| Lesser Demon | Tiny RPG Character Asset Pack 02: Demon_A (100x100, scale 1.6) | Idle, walk, two attacks, hurt, death. Morvath summons them; they also appear in the Graveyard, the Shrine and the Endless Trial. |
+| Kobold Skirmisher | FREE Kobold Warrior 2D Pixel Art (148x96 frames, scale 0.5) | Fast and fragile. Idle, run and attack only, so hurt and death reuse the idle pose and fade out. Appears in the Graveyard, the Ruins and the Endless Trial. |
+| **Morvath the Necromancer** (Graveyard boss) | Necromancer by creativekind (160x128, scale 0.85) | Keeps his distance, casts curses (spell_death marks that erupt in skull smoke under the hero) and summons demons (more in phase 2, when kobolds also join). Also part of the Endless Trial boss rotation: knight, warlord, necromancer. |
+
+Licenses: the Kobold Warrior's License.txt allows any game project, commercial included, but not resale as an asset. The Tiny RPG 02 pack is by the same author as the Tiny RPG Soldier/Orc already in use, under the same free terms. The Necromancer's terms are noted above. Raised shadows of demons and kobolds use the shadow tint.
+
+## Shadow Monarch rework: red and blue, blue lightning
+
+All effects are the same packs, recoloured at load with `tint` (multiply for white sheets, luminosity for coloured ones):
+- **Red and blue cuts:** `directional_impact_002` small and large white, multiplied red or blue.
+- **Blue lightning:** `lightning_strike_001`, `lightning_burst_001/002/003` (luminosity blue), the native `lightning_aura_002_large_blue`, and the Thunder Effect 02 strike in blue.
+- **Red explosions:** `symmetrical_explosion_004` multiplied red.
+- **Shadow purple to blue:** the portal, souls, skull smoke, mist and the shadow-soldier rim are all blue now.
+
+Afterimage clones use the Adventurer's own frames as `~shadow` silhouettes.

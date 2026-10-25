@@ -60,6 +60,10 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
 .btn.small { min-height: 36px; font-size: 14px; padding: 0 12px; width: auto; display: inline-block; }
 .btn.gm { background: linear-gradient(#3b2c52, #261c38); border-color: #8c6ac8; color: #e2d2ff; }
 .btn.gm small { display: block; font-size: 11px; font-weight: 600; color: #b9a3e0; letter-spacing: .3px; margin-top: 1px; }
+.hub-row { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.hub-row .hub-title { margin-bottom: 0; }
+.btn.gm-switch { background: linear-gradient(#3b2c52, #261c38); border-color: #8c6ac8; color: #e2d2ff; margin: 0 16px 0 0; }
+.class-card.current { box-shadow: 0 0 0 2px var(--cc), 0 0 18px color-mix(in srgb, var(--cc) 45%, transparent); }
 .gm-tag { font-size: 10px; padding: 1px 6px; border-radius: 6px; background: #5b3f8c; color: #f0e6ff; border: 1px solid #8c6ac8; vertical-align: 2px; letter-spacing: 1px; }
 .btn:disabled { opacity: .4; filter: grayscale(.8); pointer-events: none; }
 .icon-btn {
