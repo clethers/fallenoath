@@ -16,8 +16,9 @@
 ## Where the code lives
 
 - **Class code:** `js/class-shadow.js`, registered as `G.game.classSkills.shadow`. It never edits the locked Storm Blade block.
-- **Hooks in `js/game.js`:** two small changes, both outside the lock.
+- **Hooks in `js/game.js`:** small changes, all outside the lock.
   - A `slow` enemy status, used by the domain.
+  - A `presence` enemy status (extra damage taken), used by Monarch's Presence.
   - The hero fades while `pl.shSink` is set, used by Shadow Fang.
 
 ## Skills (8: 5 actives, 3 passives, max rank 5)
@@ -29,9 +30,9 @@
 | a1 | Ruler's Authority | 3 | active | Shadow Fang | 18 | 7 s |
 | b0 | Shadow Step | 4 | active | Stealth | 8 | 4 s (−0.4/rank, min 1.5) |
 | p1 | Quicksilver | 5 | passive | Ruler's Authority | none | none |
-| a2 | Shadow Extraction | 6 | passive | Quicksilver | none | none |
+| a2 | Monarch's Presence | 6 | passive | Quicksilver | none | none |
 | b1 | Bloodlust | 7 | active | Shadow Step | 15 | 14 s |
-| a3 | Army of Shadows (ultimate) | 10 | active, ult | Shadow Extraction | 60 | 45 s |
+| a3 | Army of Shadows (ultimate) | 10 | active, ult | Monarch's Presence | 60 | 45 s |
 
 **Shadow Fang**
 - A purple lightning beam leaps from the hero through up to 4 enemies. Each next enemy must be within 95 px. Each hop deals ×0.5.
@@ -57,10 +58,10 @@
 **Quicksilver**
 - Per rank: +5% move speed, +8% basic attack damage and +4% swing speed.
 
-**Shadow Extraction**
-- A defeated non-boss enemy has a 10% chance (+5%/rank) to rise as a shadow samurai.
-- The samurai fights for 10 s and deals ×0.4 (+0.06/rank).
-- Up to 3 can be out at once.
+**Monarch's Presence**
+- A faint purple aura on the ground around the hero (80 px).
+- Enemies inside it take +5% damage per rank from every source (skills, basic attacks and shadows).
+- It replaced Shadow Extraction, which raised defeated enemies as samurai; that was removed.
 
 **Bloodlust**
 - Dark mist gathers at the hero's feet.
@@ -76,7 +77,7 @@
 - Igris (the Knight) arrives last with a shockwave. He cleaves everything in front of him for ×1.6.
 - The shadows last 15 s (+2/rank), and any shadows already out are restored to full time.
 
-**Old saves:** saves from the first kit get back every point spent on the removed skills (Multistrike, Arise, Dagger Rush, Death's Dance).
+**Old saves:** saves from the first kit get back every point spent on the removed skills (Multistrike, Arise, Dagger Rush, Death's Dance, Shadow Extraction).
 
 ## Shadow soldiers
 
@@ -88,9 +89,9 @@
 
 | Moment | Sound |
 |---|---|
-| Shadow Fang | `whoosh`, `strike` per hop, `teleport` (sink), `launch` (dash), `strikeBig` + `slashHit` (cut) |
+| Shadow Fang | `whoosh`, `strike` per hop, `teleport` (sink), sword `slash` + `shadow` (dash, no lightning), `strikeBig` + `slashHit` (cut) |
 | Ruler's Authority | `timewarp` (lift), `whoosh`, `slam` + `blast` |
-| Shadow Step | `whoosh` + `teleport`, then `blast` when the shadow bursts |
+| Shadow Step | sword `slash` + `teleport` (no lightning), then `blast` when the shadow bursts |
 | Bloodlust | `charge`, then `debuff` + `shadow` |
 | Army of Shadows | `charge`, `portal` + `shadow` (domain), `summon` per samurai, `slam` + `finisher` (Igris) |
 | Hero enters an area | `portal` |

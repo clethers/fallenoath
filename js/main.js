@@ -13,12 +13,17 @@
   function resize() {
     const app = $('app');
     const r = app.getBoundingClientRect();
-    const dpr = Math.min(window.devicePixelRatio || 1, 3);
+    // pixel art doesn't need the phone's full pixel density: rendering at up to 1.25x and letting
+    // the browser scale the canvas up (image-rendering: pixelated) is about 6x less work on a 3x phone.
+    // Reduced effects drops to 1x.
+    const st = (G.profile && G.profile.settings) || {};
+    const dpr = Math.min(window.devicePixelRatio || 1, st.reducedEffects ? 1 : 1.25);
     canvas.width = Math.max(1, Math.round(r.width * dpr));
     canvas.height = Math.max(1, Math.round(r.height * dpr));
     G.view = { w: canvas.width, h: canvas.height, dpr };
     ctx.imageSmoothingEnabled = false;
   }
+  G.resizeView = resize;
   window.addEventListener('resize', resize);
   window.addEventListener('orientationchange', () => setTimeout(resize, 200));
 
@@ -218,6 +223,7 @@
       $('title-foot').textContent = failed.length + ' asset file(s) could not be loaded — see console. The game will continue without them.';
     }
     const r = G.loadSave();
+    resize(); // apply the saved render resolution
     if (r.warning) $('title-foot').textContent = r.warning;
     G.game.ensureShowcase();
     G.ui.show('title');

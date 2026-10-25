@@ -8,8 +8,8 @@
        CC BY-ND 4.0 (format conversion only — not edited)
      • Sword Combat Sound Effects Pack Free Version — Hove Audio (royalty free;
        slash whooshes + blade hits, trimmed and levelled)
-   Uses plain <audio> elements so it also works when index.html is opened
-   straight from disk.
+   Plays through Web Audio (decoded once, cheap on phones); falls back to
+   plain <audio> elements when index.html is opened straight from disk.
    ========================================================================= */
 (function () {
   'use strict';
@@ -82,7 +82,110 @@
     },
   };
   const VOICE_GAIN = 0.6; // hero voices sit under the lightning effects
-  const vpools = {};
+  G.SFX_CREDITS = 'Sound: Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free) by Hove Audio · "Elemental Magic: Lightning Attacks" © 2024 Last Day Dreaming, CC BY-ND 4.0 · Hero voices: Warrior Voice Pack by John Carroll (CC0) and RPG Male Vocal "Male protagonist" by Konakuma. Shadow Monarch spells: Magic Spells SFX Lite by Willosuna.';
+
+  // ---------------------------------------------------------------- playback engine
+  // Phones choke on dozens of <audio> elements (each one decodes its own copy, and
+  // seeking them stalls the page), so sounds are decoded once into Web Audio buffers
+  // and played as cheap one-shot sources. Opened straight from disk (file://) the
+  // browser won't let us fetch the files, so we fall back to <audio> elements there.
+  function settings() { return (G.profile && G.profile.settings) || G.tmpSettings || { sound: true, sfxVolume: 0.8 }; }
+  function master() { const s = settings(); return s.sound === false ? 0 : Math.max(0, Math.min(1, s.sfxVolume == null ? 0.8 : s.sfxVolume)); }
+  const url = (src) => (src.startsWith('data:') ? src : encodeURI(src));
+  const canFetch = (src) => src.startsWith('data:') || location.protocol !== 'file:';
+  let AC = null;
+  function ac() {
+    if (AC) return AC;
+    const C = window.AudioContext || window.webkitAudioContext;
+    if (!C) return null;
+    try { AC = new C(); } catch (e) { AC = null; }
+    return AC;
+  }
+  const bufs = {}; // src -> AudioBuffer (undefined: loading or not tried, null: failed)
+  const loading = {};
+  function loadBuf(src) {
+    const c = ac();
+    if (!c || !canFetch(src) || loading[src]) return;
+    loading[src] = fetch(url(src)).then((r) => r.arrayBuffer())
+      .then((ab) => new Promise((res, rej) => c.decodeAudioData(ab, res, rej))) // callback form: older Safari
+      .then((b) => { bufs[src] = b; })
+      .catch(() => { bufs[src] = null; });
+  }
+  // the audio context starts suspended until the player touches the screen
+  const unlock = () => { const c = ac(); if (c && c.state !== 'running') c.resume().catch(() => {}); };
+  if (window.addEventListener) ['pointerdown', 'touchend', 'keydown'].forEach((ev) => window.addEventListener(ev, unlock, { passive: true }));
+  const live = new Set(); // playing Web Audio sources, so they can all be stopped
+  function playBuf(src, vol, rate, o) {
+    const c = AC, b = bufs[src];
+    if (!c || !b || c.state !== 'running') return null;
+    const n = c.createBufferSource(), g = c.createGain();
+    n.buffer = b; n.loop = !!o.loop; n.playbackRate.value = rate;
+    g.gain.value = vol;
+    n.connect(g); g.connect(c.destination);
+    n.start(0, Math.min(o.offset || 0, Math.max(0, b.duration - 0.01)));
+    const h = { n, stop: () => { try { n.stop(); } catch (e) { /* already stopped */ } live.delete(h); } };
+    n.onended = () => live.delete(h);
+    live.add(h);
+    return h;
+  }
+  // <audio> fallback (file://, or before a buffer has finished decoding)
+  const POOL = 3;
+  const pools = {};
+  function playEl(src, vol, rate, o) {
+    let list = pools[src];
+    if (!list) {
+      list = pools[src] = [];
+      for (let i = 0; i < POOL; i++) {
+        const a = new Audio(); a.preload = 'auto'; a.src = url(src);
+        a.addEventListener('error', () => { if (!a.warned) { a.warned = true; console.warn('[audio] missing:', src); } });
+        list.push(a);
+      }
+    }
+    const a = list.find((x) => x.paused || x.ended) || list[0];
+    try {
+      a.loop = !!o.loop;
+      a.currentTime = o.offset || 0;
+      a.volume = Math.max(0, Math.min(1, vol));
+      a.playbackRate = rate;
+      const p = a.play();
+      if (p && p.catch) p.catch(() => {}); // blocked until the first tap: fine
+    } catch (e) { /* ignore */ }
+    return { el: a, stop: () => { try { a.pause(); a.loop = false; } catch (e) { /* ignore */ } } };
+  }
+  function play(src, vol, rate, o) {
+    if (AC && canFetch(src)) { // Web Audio path: silent until decoded / unlocked (only the first instants)
+      if (AC.state !== 'running') unlock();
+      if (bufs[src] === undefined) loadBuf(src);
+      return playBuf(src, vol, rate, o);
+    }
+    return playEl(src, vol, rate, o);
+  }
+
+  G.loadSfx = function () {
+    const c = ac();
+    Object.keys(G.SFX).forEach((k) => G.SFX[k].src.forEach((src) => {
+      if (c && canFetch(src)) loadBuf(src);
+      else if (!pools[src]) playEl(src, 0, 1, {}).stop(); // file://: warm up the <audio> pool
+    }));
+  };
+
+  // play a one-shot; minGap stops the same sound stacking on top of itself
+  const last = {};
+  G.sfx = function (key, o) {
+    o = o || {};
+    const def = G.SFX[key], vol = master();
+    if (!def || vol <= 0) return null;
+    const now = performance.now();
+    if (last[key] && now - last[key] < (o.minGap == null ? 45 : o.minGap)) return null;
+    last[key] = now;
+    const src = def.src[Math.floor(Math.random() * def.src.length)];
+    const v = Math.max(0, Math.min(1, def.vol * (o.vol == null ? 1 : o.vol) * vol));
+    const rate = (o.rate || 1) * (def.vary ? 1 + (Math.random() * 2 - 1) * def.vary : 1); // slight pitch variety
+    const h = play(src, v, rate, o);
+    return { stop: () => { if (h) h.stop(); } };
+  };
+
+  // ---- hero voices: one line at a time, never the same line twice in a row
   let voiceNow = null, voiceLast = 0, voiceLastSrc = null;
   G.voice = function (kind, o) {
     o = o || {};
@@ -95,74 +198,24 @@
     if (now - voiceLast < (o.minGap == null ? 250 : o.minGap)) return;
     const list = set[kind];
     if (!list || !list.length) return;
-    // never the same line twice in a row
     let src = list[Math.floor(Math.random() * list.length)];
     if (list.length > 1) while (src === voiceLastSrc) src = list[Math.floor(Math.random() * list.length)];
     voiceLastSrc = src;
-    let a = vpools[src];
-    if (!a) { a = vpools[src] = new Audio(); a.preload = 'auto'; a.src = src.startsWith('data:') ? src : encodeURI(src); }
-    try {
-      if (voiceNow && voiceNow !== a && !o.overlap) voiceNow.pause(); // one voice line at a time
-      a.currentTime = 0;
-      a.volume = Math.max(0, Math.min(1, (o.vol == null ? 0.9 : o.vol) * vol * VOICE_GAIN));
-      const p = a.play();
-      if (p && p.catch) p.catch(() => {});
-      voiceNow = a; voiceLast = now;
-    } catch (e) { /* ignore */ }
+    if (voiceNow && !o.overlap) voiceNow.stop();
+    if (!bufs[src]) loadBuf(src);
+    voiceNow = play(src, Math.max(0, Math.min(1, (o.vol == null ? 0.9 : o.vol) * vol * VOICE_GAIN)), 1, {});
+    voiceLast = now;
   };
+  // only the chosen actor's lines are loaded up front; the other set loads if picked in Settings
   G.preloadVoices = function () {
-    Object.values(G.VOICES).forEach((set) => Object.keys(set).forEach((kk) => Array.isArray(set[kk]) && set[kk].forEach((src) => {
-      if (!vpools[src]) { const a = new Audio(); a.preload = 'auto'; a.src = src.startsWith('data:') ? src : encodeURI(src); vpools[src] = a; }
-    })));
-  };
-
-  G.SFX_CREDITS = 'Sound: Lightning Magic SFX Pack and Sword Combat Sound Effects Pack (free) by Hove Audio · "Elemental Magic: Lightning Attacks" © 2024 Last Day Dreaming, CC BY-ND 4.0 · Hero voices: Warrior Voice Pack by John Carroll (CC0) and RPG Male Vocal "Male protagonist" by Konakuma. Shadow Monarch spells: Magic Spells SFX Lite by Willosuna.';
-
-  const POOL = 4;
-  const pools = {};
-  const last = {};
-  function settings() { return (G.profile && G.profile.settings) || G.tmpSettings || { sound: true, sfxVolume: 0.8 }; }
-  function master() { const s = settings(); return s.sound === false ? 0 : Math.max(0, Math.min(1, s.sfxVolume == null ? 0.8 : s.sfxVolume)); }
-
-  G.loadSfx = function () {
-    Object.keys(G.SFX).forEach((k) => {
-      pools[k] = G.SFX[k].src.map((src) => {
-        const list = [];
-        for (let i = 0; i < POOL; i++) {
-          const a = new Audio();
-          a.preload = 'auto';
-          a.src = src.startsWith('data:') ? src : encodeURI(src);
-          a.addEventListener('error', () => { if (!a.warned) { a.warned = true; console.warn('[audio] missing:', src); } });
-          list.push(a);
-        }
-        return list;
-      });
-    });
-  };
-
-  // play a one-shot; minGap stops the same sound stacking on top of itself
-  G.sfx = function (key, o) {
-    o = o || {};
-    const def = G.SFX[key], vol = master();
-    if (!def || !pools[key] || vol <= 0) return null;
-    const now = performance.now();
-    if (last[key] && now - last[key] < (o.minGap == null ? 45 : o.minGap)) return null;
-    last[key] = now;
-    const variants = pools[key];
-    const list = variants[Math.floor(Math.random() * variants.length)];
-    const a = list.find((x) => x.paused || x.ended) || list[0];
-    try {
-      a.loop = !!o.loop;
-      a.currentTime = o.offset || 0; // offset: start partway in so the clip's peak lands on a visual beat
-      a.volume = Math.max(0, Math.min(1, def.vol * (o.vol == null ? 1 : o.vol) * vol));
-      a.playbackRate = (o.rate || 1) * (def.vary ? 1 + (Math.random() * 2 - 1) * def.vary : 1); // slight pitch variety
-      const p = a.play();
-      if (p && p.catch) p.catch(() => {}); // blocked until the first tap — fine
-    } catch (e) { /* ignore */ }
-    return { stop: () => { try { a.pause(); a.loop = false; } catch (e) { /* ignore */ } } };
+    const vid = settings().voice || 'warrior';
+    const set = G.VOICES[vid];
+    if (!set || !ac()) return;
+    Object.keys(set).forEach((kk) => Array.isArray(set[kk]) && set[kk].forEach(loadBuf));
   };
   G.sfxStopAll = function () {
-    if (voiceNow) try { voiceNow.pause(); } catch (e) { /* ignore */ }
-    Object.values(pools).forEach((v) => v.forEach((l) => l.forEach((a) => { try { a.pause(); a.loop = false; } catch (e) { /* ignore */ } })));
+    if (voiceNow) voiceNow.stop();
+    live.forEach((h) => h.stop());
+    Object.values(pools).forEach((l) => l.forEach((a) => { try { a.pause(); a.loop = false; } catch (e) { /* ignore */ } }));
   };
 })();

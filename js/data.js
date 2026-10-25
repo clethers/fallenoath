@@ -42,7 +42,7 @@
       fxRemap: { sparkBurst: 'burstBlue', hit: 'cutBlue', hitCrit: 'cutBlue', slashArc: 'cutBlue' }, // gold sword sparks -> purple
       desc: 'A shadow assassin who rules the dead. Leap between enemies on purple lightning, crush them with telekinesis, freeze them with killing intent, and open a domain of shadow where your army rises.',
       signature: 'Inspired by Sung Jinwoo: Shadow Fang, Ruler\u2019s Authority, Bloodlust, Shadow Step, Army of Shadows.',
-      actives: ['shadowfang', 'rulers', 'shadowstep', 'bloodlust', 'shadowarmy'], passives: ['stealth', 'quicksilver', 'extraction'],
+      actives: ['shadowfang', 'rulers', 'shadowstep', 'bloodlust', 'shadowarmy'], passives: ['stealth', 'quicksilver', 'presence'],
     },
   };
   // tree layout: x/y are % positions in the tree view
@@ -97,13 +97,13 @@
     quicksilver: { path: 'shadow', kind: 'passive', slot: 'p1', req: 'rulers', name: 'Quicksilver', unlock: 5, icon: ['cutBlue', 3, 'void'],
       speed: 0.05, atk: 0.08, aspd: 0.04,
       desc: 'Per rank: +5% movement speed, and basic attacks deal +8% damage and swing 4% faster.' },
-    extraction: { path: 'shadow', kind: 'passive', slot: 'a2', req: 'quicksilver', name: 'Shadow Extraction', unlock: 6, icon: ['riseSkull', 5, 'void'],
-      chance: 0.1, perRankChance: 0.05, life: 10, maxRaised: 3, mult: 0.4, perRank: 0.06,
-      desc: 'Enemies you defeat have a 10% chance (+5% per rank) to rise as a shadow samurai that fights for you for 10 s. Up to 3 at once.' },
+    presence: { path: 'shadow', kind: 'passive', slot: 'a2', req: 'quicksilver', name: "Monarch's Presence", unlock: 6, icon: ['shadowMist', 6, 'void'],
+      radius: 80, amt: 0.05,
+      desc: 'A faint shadow aura surrounds you. Enemies within 80 px take +5% damage per rank from every source.' },
     bloodlust: { path: 'shadow', kind: 'active', slot: 'b1', req: 'shadowstep', name: 'Bloodlust', unlock: 7, mp: 15, cd: 14, icon: ['fearPurple', 30, 'void'],
       radius: 180, fear: 2, perRankFear: 0.25, vuln: 0.3, vulnTime: 5,
       desc: 'Release the Monarch\u2019s killing intent. A dark wave freezes nearby enemies with fear: they flee and take 30% more damage for 5 s.' },
-    shadowarmy: { path: 'shadow', kind: 'active', slot: 'a3', req: 'extraction', ult: true, name: 'Army of Shadows', unlock: 10, mp: 60, cd: 45, icon: ['impDarkP', 3, 'void'],
+    shadowarmy: { path: 'shadow', kind: 'active', slot: 'a3', req: 'presence', ult: true, name: 'Army of Shadows', unlock: 10, mp: 60, cd: 45, icon: ['impDarkP', 3, 'void'],
       life: 15, perRankLife: 2, soldiers: 4, igris: 1.6, mult: 0.6, perRank: 0.08, domain: 125, domainTime: 8, slow: 0.3, vuln: 0.2, armyBonus: 0.3,
       desc: 'ULTIMATE. Open the Monarch\u2019s Domain: a field of shadow where enemies are slowed and take 20% more damage. Four shadow samurai rise from it, then Igris, your knight commander. Shadows fight 30% harder inside the domain.' },
   };

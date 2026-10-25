@@ -321,7 +321,8 @@
       Object.keys(SHEETS).forEach((k) => {
         const im = images['sheet:' + k];
         if (!im || k.includes('~')) return;
-        const styles = /^(orc|soldier|knight|td\d|demon|kobold|sam)_/.test(k) ? ['shadow'] : /^adv_/.test(k) ? ['monarch', 'shadow'] : [];
+        // only the sheets the Shadow Monarch's soldiers and afterimages use get copies (saves memory on phones)
+        const styles = /^(knight|sam)_/.test(k) ? ['shadow'] : /^adv_/.test(k) ? ['monarch', 'shadow'] : [];
         styles.forEach((style) => {
           images['sheet:' + k + '~' + style] = tintSheet(im, style);
           SHEETS[k + '~' + style] = Object.assign({}, SHEETS[k]);

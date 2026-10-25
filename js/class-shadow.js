@@ -2,7 +2,7 @@
    FALLEN OATH — Shadow Monarch class, kit v2 (black & purple shadow, purple
    lightning, blue telekinesis). Inspired by Sung Jinwoo (Solo Leveling):
    Shadow Fang, Stealth, Ruler's Authority, Shadow Step, Quicksilver,
-   Shadow Extraction, Bloodlust and Army of Shadows (with the Monarch's Domain).
+   Monarch's Presence, Bloodlust and Army of Shadows (with the Monarch's Domain).
    Plugs into the game through G.game.classSkills.shadow (see js/game.js), so the
    locked Storm Blade code is never touched.
    Art: shadow soldiers are sprite sheets redrawn as black silhouettes with a
@@ -145,26 +145,26 @@
     return true;
   }
 
-  // ---------------------------------------------------------------- Shadow Extraction (passive)
-  // a defeated enemy may rise as a shadow samurai for a few seconds
-  function trackExtraction(run) {
-    const r = K.passiveRank('extraction');
-    for (const e of run.enemies) {
-      if (!e.dead || e.shSeen || e.deadAt == null) continue;
-      e.shSeen = true;
-      if (!r || e.boss || (e.def && e.def.summon)) continue;
-      const sk = G.SKILLS.extraction;
-      if (Math.random() >= sk.chance + sk.perRankChance * (r - 1)) continue;
-      const raised = army(run).filter((s) => s.kind === 'extract');
-      if (raised.length >= sk.maxRaised) { const old = raised[0]; army(run).splice(army(run).indexOf(old), 1); vanish(run, old); }
-      const x = e.x, y = e.y;
-      K.schedule(run, 0.5, () => {
-        if (!live(run)) return;
-        raise(run, 'shSamurai', x, y, { life: sk.life, mult: sk.mult + sk.perRank * (r - 1), kind: 'extract' });
-        K.text(run, x, y - 40, 'ARISE', '#c39bff');
-        G.sfx('shSummon', { minGap: 120, vol: 0.4 });
-      });
-    }
+  // ---------------------------------------------------------------- Monarch's Presence (passive)
+  // enemies close to the hero take extra damage from every source
+  function updatePresence(run) {
+    const r = K.passiveRank('presence'), pl = run.player;
+    if (!r || pl.dead) return;
+    const sk = G.SKILLS.presence;
+    for (const e of K.enemiesNear(run, pl.x, pl.y, sk.radius)) K.applyStatus(run, e, 'presence', { t: 0.25, amt: sk.amt * r, noFx: true });
+  }
+  function drawPresence(run, out) { // a faint purple aura on the ground around the hero
+    const r = K.passiveRank('presence'), pl = run.player;
+    if (!r || pl.dead) return;
+    const R = G.SKILLS.presence.radius, a = 0.16 + 0.05 * Math.sin(run.time * 2.5);
+    out.push({ y: -1e9 + 1, t: 5, draw: (ctx) => {
+      ctx.save(); ctx.translate(pl.x, pl.y); ctx.scale(1, 0.72);
+      const gr = ctx.createRadialGradient(0, 0, R * 0.55, 0, 0, R);
+      gr.addColorStop(0, 'rgba(60,20,110,0)'); gr.addColorStop(1, `rgba(90,40,170,${a})`);
+      ctx.fillStyle = gr; ctx.beginPath(); ctx.arc(0, 0, R, 0, Math.PI * 2); ctx.fill();
+      ctx.lineWidth = 1; ctx.strokeStyle = `rgba(167,123,255,${a * 1.6})`; ctx.stroke();
+      ctx.restore();
+    } });
   }
 
   // ---------------------------------------------------------------- Stealth (passive)
@@ -279,7 +279,7 @@
         const len = Math.hypot(ex - pl.x, ey - pl.y);
         K.fx(run, 'portalVoid', pl.x, pl.y - 8, { scale: 0.5, fps: 26 });
         beam(run, pl.x, pl.y - 12, ex, ey - 12, 1.1);
-        G.sfx('launch', { minGap: 0, vol: 0.8 }); G.sfx('strike', { minGap: 0, vol: 0.45, rate: 1.2 });
+        G.sfx('slash', { minGap: 0, vol: 0.8, rate: 0.8 }); G.sfx('shShadow', { minGap: 0, vol: 0.5, rate: 1.3 }); // shadow dash: a blade whoosh, no lightning
         pl.flashing = true;
         K.startDash(run, ex, ey, 0.13, null, () => {
           pl.flashing = false;
@@ -355,7 +355,7 @@
       if (mv > 0.3) a = Math.atan2(G.input.my, G.input.mx); // steer with the joystick
       const st = takeStealth(run);
       const ox = pl.x, oy = pl.y;
-      G.sfx('whoosh', { minGap: 0, vol: 0.8 }); G.sfx('shTeleport', { minGap: 0, vol: 0.6 });
+      G.sfx('slash', { minGap: 0, vol: 0.75, rate: 0.85 }); G.sfx('shTeleport', { minGap: 0, vol: 0.6 }); // shadow dash: no lightning
       G.voice('dodge', { minGap: 0 });
       // the shadow left behind: a black silhouette of the hero facing back
       const dir = dirOf(a + Math.PI);
@@ -527,7 +527,7 @@
     update(run, dt, kit) {
       K = kit;
       if (!isShadow()) return;
-      trackExtraction(run);
+      updatePresence(run);
       updateStealth(run, dt);
       updateDomain(run);
       if (run.shGhosts) for (let i = run.shGhosts.length - 1; i >= 0; i--) {
@@ -540,6 +540,7 @@
     },
     drawables(run, out) {
       if (!K || !isShadow()) return;
+      drawPresence(run, out);
       drawDomain(run, out);
       drawDim(run, out);
       drawGlow(run, out);

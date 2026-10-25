@@ -214,6 +214,7 @@
     o = o || {};
     let dmg = amount;
     if (e.status.vuln) dmg = Math.round(dmg * (1 + e.status.vuln.amt));
+    if (e.status.presence) dmg = Math.round(dmg * (1 + e.status.presence.amt)); // Shadow Monarch: Monarch's Presence
     if (e.block > 0) { dmg = Math.max(1, Math.round(dmg * 0.15)); text(run, e.x, e.y - 50, 'BLOCKED', '#9fd0ff'); }
     e.hp -= dmg;
     e.flash = 0.12;

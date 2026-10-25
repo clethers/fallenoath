@@ -227,14 +227,14 @@
     setT('hp-count', String(G.invCount(p, 'hpPotion')));
     setT('mp-count', String(G.invCount(p, 'mpPotion')));
     // skills
-    document.querySelectorAll('.act.skill').forEach((b) => {
+    (ui.skillBtns || (ui.skillBtns = Array.from(document.querySelectorAll('.act.skill')))).forEach((b) => {
       const key = G.barSkill(p, +b.dataset.slot);
       const cdEl = b.querySelector('.cd');
       if (!key) { if (cdEl.textContent) { cdEl.textContent = ''; cdEl.style.background = ''; } return; }
       const sk = G.SKILLS[key], cd = pl.cds[key] || 0;
       const label = cd > 0 ? (cd < 1 ? cd.toFixed(1) : Math.ceil(cd)) + '' : '';
-      const pct = cd > 0 ? (cd / sk.cd) * 100 : 0;
-      const bg = cd > 0 ? `conic-gradient(rgba(0,0,0,.7) ${pct.toFixed(0)}%, rgba(0,0,0,.15) 0)` : '';
+      const pct = cd > 0 ? Math.ceil((cd / sk.cd) * 50) * 2 : 0; // 2% steps: fewer style recalcs per second
+      const bg = cd > 0 ? `conic-gradient(rgba(0,0,0,.7) ${pct}%, rgba(0,0,0,.15) 0)` : '';
       if (cdEl.textContent !== label) cdEl.textContent = label;
       const ck = 'cdp_' + b.dataset.slot;
       if (ui.cache[ck] > 0 && cd <= 0) { b.classList.remove('ready'); void b.offsetWidth; b.classList.add('ready'); setTimeout(() => b.classList.remove('ready'), 700); }
@@ -747,7 +747,7 @@
       ['damageNumbers', 'Damage numbers', 'Floating numbers for damage and healing'],
       ['screenShake', 'Screen shake', 'Camera shake on heavy hits'],
       ['leftHanded', 'Left-handed controls', 'Swap the joystick and action buttons'],
-      ['reducedEffects', 'Reduced effects', 'Limit simultaneous effects on slower devices'],
+      ['reducedEffects', 'Reduced effects', 'Fewer effects at once and a lower render resolution, for slower phones'],
     ];
     const st = el('<div class="stack"></div>');
     opts.forEach(([k, label, hint]) => {
@@ -755,6 +755,7 @@
       row.onclick = () => {
         s[k] = !s[k];
         if (k === 'leftHanded') $('hud').classList.toggle('lefty', s[k]);
+        if (k === 'reducedEffects' && G.resizeView) G.resizeView();
         G.save(); ui.renderPanel();
       };
       st.appendChild(row);

@@ -150,13 +150,14 @@ All art except the shadow samurai comes from packs already in the game, recolour
 | Use | Asset (tint) |
 |---|---|
 | Hero | Adventurer sheets, multiplied to cold purple-black (`~monarch`) |
-| Shadow samurai (ultimate, Shadow Extraction) | **FREE Samurai 2D Pixel Art v1.2** (same artist as the Knight; any game project, commercial or not, no resale as an asset, credit optional; License.txt kept next to the sprites): black core with a 1 px purple rim (`~shadow`) |
+| Shadow samurai (ultimate) | **FREE Samurai 2D Pixel Art v1.2** (same artist as the Knight; any game project, commercial or not, no resale as an asset, credit optional; License.txt kept next to the sprites): black core with a 1 px purple rim (`~shadow`) |
 | Igris | the Knight sheets, drawn 1.65x (`~shadow`) |
 | Shadow Fang beam | one thin tendril cut from `Lightning/lightning_strike_001_large_violet` frames 3 to 5 (`beamPurple`, purple), glowing head `lightning_burst_001`, sparkles `status_sparkling_001` |
 | Shadow Fang landing | `Smoke Bursts/symmetrical_smoke_burst_001_large_brown` (dark, purple rim: `shadeBurst`), final cut `directional_impact_002_large_white` (purple) |
 | Ruler's Authority | hand glow drawn in code, `status_sparkling_001` (blue: `sparkleBlue`), lift `Impacts/symmetrical_impact_002_large_blue` (`impBlue2`), slam under each mob `symmetrical_impact_004_large_yellow` (dark, blue rim: `impDark4`) |
 | Shadow Step | the hero's own frames as afterimages, `looping_smoke_burst_002` (dark, purple rim) |
 | Bloodlust | wave `symmetrical_impact_004` (dark, purple rim: `impDarkP`), `shadeBurst`, fear sign `Fantasy Spells/spell_death_001_small_red` (purple: `fearPurple`) |
+| Monarch's Presence | the aura is drawn in code |
 | Army of Shadows | the Monarch's Domain is drawn in code (dark field, purple rim), `impDarkP`, mist, smoke and sparkles as the samurai rise |
 
 Downloaded or added for previews but **not used in the game**: Hero Knight (Sven Thole) and Tiny Swords (Pixel Frog). Both stay in the Prologue folder.
