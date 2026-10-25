@@ -33,7 +33,7 @@
   // existing effect sheets of that element (keys refer to G.FX). Damage multipliers are of skill power.
   G.PATHS = {
     storm: {
-      name: 'Storm Blade', element: 'Black & Yellow Lightning', color: '#f2cf4a', icon: ['thunderStrike', 6, 'gold'],
+      name: 'Storm Blade', element: 'Black & Yellow Lightning', color: '#f2cf4a', icon: ['thunderStrike', 6, 'gold'], heroTint: 'zenitsu',
       desc: 'A flash swordsman: draw, vanish in a streak of yellow and black lightning, and enemies fall a beat later.',
       actives: ['flashdraw', 'sixfold', 'blinkstep', 'godspeed', 'sheath', 'sovereign'], passives: ['iaifocus', 'thunderstep'],
     },

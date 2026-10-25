@@ -1,6 +1,6 @@
 # Storm Blade: locked class spec (v1)
 
-**Status:** locked on 2026-10-24. This is the reference class. Build the next class next to it without changing it.
+**Status:** locked on 2026-10-24; re-locked on 2026-10-26 for the Zenitsu hero look (nothing else changed). This is the reference class. Build the next class next to it without changing it.
 
 **Lock check:** `node tools/check-class-lock.js` should print `OK  Storm Blade`. It compares the class data, the skill code between the `LOCKED` markers in `js/game.js`, and the hash of every asset file the class uses against `classes/storm-blade/lock.json`. If a change to this class is ever intended, make it on purpose, update this spec, then re-lock with `node tools/check-class-lock.js --update`.
 
@@ -11,7 +11,7 @@
 | Fantasy | Lightning samurai. A flash swordsman (Zenitsu-style iai): draw, vanish in a streak of yellow and black lightning, and enemies fall a beat later. |
 | Path id / name | `storm` / Storm Blade |
 | Element | Black & Yellow Lightning (path colour `#f2cf4a`) |
-| Hero sprite | Adventurer. Dashes play its own attack frames, drawn faint for the flash look. |
+| Hero sprite | Adventurer, edited to look like Zenitsu (`heroTint: 'zenitsu'`, sheets in `assets/Zenitsu (edited FREE Adventurer)/`): yellow hair and haori, amber eyes, the sword sling removed and the katana sheathed at the hip in idle and run frames. Attacks still draw the sword. Dashes play its own attack frames, drawn faint for the flash look. |
 | Combat style | Auto-attack sword swings, plus 4 bar skills and an ultimate (5th button) |
 | Colour rule | Only yellow and black lightning. Yellow is Thunder Effect 02 plus yellow Gigapack sheets, gold-tinted at load (`warm`). Black is the same sheets darkened at load (`dark`), with a 1 px yellow outline. Icons use CSS tones `gold` and `dark`. No new art. |
 

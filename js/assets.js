@@ -11,7 +11,8 @@
   const P = {
     adv: 'assets/FREE_Adventurer 2D Pixel Art/Sprites/',
     gojo: 'assets/Gojo (edited FREE Adventurer)/',
-    jw: 'assets/Jin-Woo (edited FREE Adventurer)/', // the Adventurer with the sword removed, black hair and coat, purple eyes // the Adventurer with the sword removed, white hair, dark outfit
+    jw: 'assets/Jin-Woo (edited FREE Adventurer)/',
+    zen: 'assets/Zenitsu (edited FREE Adventurer)/', // Storm Blade: yellow hair and haori, katana sheathed at the hip // the Adventurer with the sword removed, black hair and coat, purple eyes // the Adventurer with the sword removed, white hair, dark outfit
     knight: 'assets/FREE_Knight 2D Pixel Art v1.2/Sprites/',
     samurai: 'assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/',
     tiny: 'assets/Tiny RPG Character Asset Pack -Demo Soldier&Orc/',
@@ -28,6 +29,11 @@
     SHEETS['adv_run_' + d] = { src: P.adv + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['adv_atk1_' + d] = { src: P.adv + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['adv_atk2_' + d] = { src: P.adv + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
+    // Storm Blade hero: same frames as the Adventurer, drawn as 'adv_*~zenitsu'
+    SHEETS['zen_idle_' + d] = { src: P.zen + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['zen_run_' + d] = { src: P.zen + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['zen_atk1_' + d] = { src: P.zen + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['zen_atk2_' + d] = { src: P.zen + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
     // Shadow Monarch hero: same frames as the Adventurer, drawn as 'adv_*~jinwoo'
     SHEETS['jw_idle_' + d] = { src: P.jw + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['jw_run_' + d] = { src: P.jw + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
@@ -355,9 +361,9 @@
       });
       // the Limitless Sorcerer's own hero sheets stand in for the Adventurer's ('adv_idle_down~gojo' = 'gojo_idle_down')
       Object.keys(SHEETS).forEach((k) => {
-        const m = /^(gojo|jw)_/.exec(k);
+        const m = /^(gojo|jw|zen)_/.exec(k);
         if (!m || k.includes('~') || !images['sheet:' + k]) return;
-        const a = 'adv_' + k.slice(m[0].length) + (m[1] === 'jw' ? '~jinwoo' : '~gojo');
+        const a = 'adv_' + k.slice(m[0].length) + '~' + { gojo: 'gojo', jw: 'jinwoo', zen: 'zenitsu' }[m[1]];
         images['sheet:' + a] = images['sheet:' + k]; SHEETS[a] = Object.assign({}, SHEETS[k]);
       });
       Object.keys(FX).forEach((k) => {

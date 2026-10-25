@@ -63,6 +63,7 @@
      6,
      "gold"
     ],
+    "heroTint": "zenitsu",
     "desc": "A flash swordsman: draw, vanish in a streak of yellow and black lightning, and enemies fall a beat later.",
     "actives": [
      "flashdraw",
@@ -786,5 +787,5 @@
    "assets/audio/Warrior Voice Pack/lightattack4.mp3": "706cfbd19fa41f09"
   }
  },
- "lockedAt": "2026-10-24"
+ "lockedAt": "2026-10-25"
 }
