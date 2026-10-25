@@ -10,7 +10,8 @@
 
   const P = {
     adv: 'assets/FREE_Adventurer 2D Pixel Art/Sprites/',
-    gojo: 'assets/Gojo (edited FREE Adventurer)/', // the Adventurer with the sword removed, white hair, dark outfit
+    gojo: 'assets/Gojo (edited FREE Adventurer)/',
+    jw: 'assets/Jin-Woo (edited FREE Adventurer)/', // the Adventurer with the sword removed, black hair and coat, purple eyes // the Adventurer with the sword removed, white hair, dark outfit
     knight: 'assets/FREE_Knight 2D Pixel Art v1.2/Sprites/',
     samurai: 'assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/',
     tiny: 'assets/Tiny RPG Character Asset Pack -Demo Soldier&Orc/',
@@ -27,6 +28,11 @@
     SHEETS['adv_run_' + d] = { src: P.adv + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['adv_atk1_' + d] = { src: P.adv + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['adv_atk2_' + d] = { src: P.adv + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
+    // Shadow Monarch hero: same frames as the Adventurer, drawn as 'adv_*~jinwoo'
+    SHEETS['jw_idle_' + d] = { src: P.jw + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['jw_run_' + d] = { src: P.jw + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['jw_atk1_' + d] = { src: P.jw + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['jw_atk2_' + d] = { src: P.jw + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
     // Limitless Sorcerer hero: same frames as the Adventurer, drawn as 'adv_*~gojo'
     SHEETS['gojo_idle_' + d] = { src: P.gojo + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['gojo_run_' + d] = { src: P.gojo + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
@@ -339,16 +345,19 @@
         const im = images['sheet:' + k];
         if (!im || k.includes('~')) return;
         // only the sheets the Shadow Monarch's soldiers and afterimages use get copies (saves memory on phones)
-        const styles = /^(knight|sam)_/.test(k) ? ['shadow'] : /^adv_/.test(k) ? ['monarch', 'shadow'] : [];
+        // (the Shadow Monarch's afterimages are made from his own sword-less sheets)
+        const styles = /^(knight|sam)_/.test(k) ? ['shadow'] : /^adv_/.test(k) ? ['shadow'] : [];
         styles.forEach((style) => {
-          images['sheet:' + k + '~' + style] = tintSheet(im, style);
+          const src = /^adv_/.test(k) && images['sheet:jw_' + k.slice(4)] ? images['sheet:jw_' + k.slice(4)] : im;
+          images['sheet:' + k + '~' + style] = tintSheet(src, style);
           SHEETS[k + '~' + style] = Object.assign({}, SHEETS[k]);
         });
       });
       // the Limitless Sorcerer's own hero sheets stand in for the Adventurer's ('adv_idle_down~gojo' = 'gojo_idle_down')
       Object.keys(SHEETS).forEach((k) => {
-        if (!/^gojo_/.test(k) || !images['sheet:' + k]) return;
-        const a = 'adv_' + k.slice(5) + '~gojo';
+        const m = /^(gojo|jw)_/.exec(k);
+        if (!m || k.includes('~') || !images['sheet:' + k]) return;
+        const a = 'adv_' + k.slice(m[0].length) + (m[1] === 'jw' ? '~jinwoo' : '~gojo');
         images['sheet:' + a] = images['sheet:' + k]; SHEETS[a] = Object.assign({}, SHEETS[k]);
       });
       Object.keys(FX).forEach((k) => {

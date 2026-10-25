@@ -38,7 +38,7 @@
       actives: ['flashdraw', 'sixfold', 'blinkstep', 'godspeed', 'sheath', 'sovereign'], passives: ['iaifocus', 'thunderstep'],
     },
     shadow: {
-      name: 'Shadow Monarch', element: 'Black & Purple Shadow', color: '#a77bff', icon: ['riseSkull', 5, 'void'], heroTint: 'monarch',
+      name: 'Shadow Monarch', element: 'Black & Purple Shadow', color: '#a77bff', icon: ['riseSkull', 5, 'void'], heroTint: 'jinwoo',
       fxRemap: { sparkBurst: 'burstBlue', hit: 'cutBlue', hitCrit: 'cutBlue', slashArc: 'cutBlue' }, // gold sword sparks -> purple
       desc: 'A shadow assassin who rules the dead. Leap between enemies on purple lightning, crush them with telekinesis, freeze them with killing intent, and open a domain of shadow where your army rises.',
       signature: 'Inspired by Sung Jinwoo: Shadow Fang, Ruler\u2019s Authority, Bloodlust, Shadow Step, Army of Shadows.',
