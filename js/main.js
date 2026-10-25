@@ -6,10 +6,14 @@
   const G = (window.G = window.G || {});
   const $ = (id) => document.getElementById(id);
   const canvas = $('view');
-  const ctx = canvas.getContext('2d');
+  const ctx = canvas.getContext('2d', { alpha: false }); // opaque: the browser can skip blending the canvas with the page (big win in Safari)
   G.view = { w: 360, h: 640, dpr: 1 };
 
   // ------------------------------------------------------------ resize
+  // autoScale: if the device can't keep up (slow frames for a few seconds), the render resolution
+  // steps down automatically from 1.25 to 1. It never steps back up during a session.
+  let autoScale = 1.25;
+  const AUTO_STEPS = [1.25, 1];
   function resize() {
     const app = $('app');
     const r = app.getBoundingClientRect();
@@ -17,7 +21,7 @@
     // the browser scale the canvas up (image-rendering: pixelated) is about 6x less work on a 3x phone.
     // Reduced effects drops to 1x.
     const st = (G.profile && G.profile.settings) || {};
-    const dpr = Math.min(window.devicePixelRatio || 1, st.reducedEffects ? 1 : 1.25);
+    const dpr = Math.min(window.devicePixelRatio || 1, st.reducedEffects ? 1 : 1.25, autoScale);
     canvas.width = Math.max(1, Math.round(r.width * dpr));
     canvas.height = Math.max(1, Math.round(r.height * dpr));
     G.view = { w: canvas.width, h: canvas.height, dpr };
@@ -193,9 +197,18 @@
 
   // ------------------------------------------------------------ loop
   let last = performance.now();
+  let slowT = 0, slowEma = 16;
   function frame(now) {
-    const dt = Math.min(0.05, Math.max(0, (now - last) / 1000));
+    const raw = Math.max(0, now - last);
+    const dt = Math.min(0.05, raw / 1000);
     last = now;
+    // adaptive resolution: only judged while actually playing (not in menus or a hidden tab)
+    if (G.game.run && G.ui.screen === 'hud' && raw < 250) {
+      slowEma += (raw - slowEma) * 0.05;
+      slowT = slowEma > 24 ? slowT + raw : 0;
+      const i = AUTO_STEPS.indexOf(autoScale);
+      if (slowT > 2500 && i >= 0 && i < AUTO_STEPS.length - 1) { autoScale = AUTO_STEPS[i + 1]; slowT = 0; slowEma = 16; resize(); }
+    }
     try {
       updateMove();
       G.game.update(dt);

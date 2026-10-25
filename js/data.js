@@ -44,6 +44,13 @@
       signature: 'Inspired by Sung Jinwoo: Shadow Fang, Ruler\u2019s Authority, Bloodlust, Shadow Step, Army of Shadows.',
       actives: ['shadowfang', 'rulers', 'shadowstep', 'bloodlust', 'shadowarmy'], passives: ['stealth', 'quicksilver', 'presence'],
     },
+    limitless: {
+      name: 'Limitless Sorcerer', element: 'Blue, Red & Hollow Purple', color: '#5fb4ff', icon: ['chargeBlue', 4, 'blue'], heroTint: 'gojo', draft: true,
+      fxRemap: { sparkBurst: 'impBlue3', hit: 'sparkleBlue', hitCrit: 'impBlue3', slashArc: 'tapBlue' }, // energy taps instead of sword sparks
+      desc: 'The strongest sorcerer. Pull enemies together with Blue, blast them apart with Red, erase them with Hollow Purple, and trap them in the Infinite Void.',
+      signature: 'Inspired by Gojo Satoru: Lapse Blue, Reversal Red, Blink, Hollow Purple, Domain Expansion.',
+      actives: ['lapseblue', 'reversalred', 'blink', 'hollowpurple', 'infinitevoid'], passives: ['infinity', 'sixeyes', 'rct'],
+    },
   };
   // tree layout: x/y are % positions in the tree view
   G.TREE_LAYOUT = [
@@ -106,6 +113,31 @@
     shadowarmy: { path: 'shadow', kind: 'active', slot: 'a3', req: 'presence', ult: true, name: 'Army of Shadows', unlock: 10, mp: 60, cd: 45, icon: ['impDarkP', 3, 'void'],
       life: 15, perRankLife: 2, soldiers: 4, igris: 1.6, mult: 0.6, perRank: 0.08, domain: 125, domainTime: 8, slow: 0.3, vuln: 0.2, armyBonus: 0.3,
       desc: 'ULTIMATE. Open the Monarch\u2019s Domain: a field of shadow where enemies are slowed and take 20% more damage. Four shadow samurai rise from it, then Igris, your knight commander. Shadows fight 30% harder inside the domain.' },
+    // ---- Limitless Sorcerer (Gojo) - DRAFT for testing
+    lapseblue: { path: 'limitless', kind: 'active', slot: 'a0', name: 'Lapse: Blue', unlock: 1, mp: 12, cd: 4, icon: ['chargeBlue', 4, 'blue'],
+      radius: 80, pull: 0.85, tick: 0.25, mult: 0.8, perRank: 0.15,
+      desc: 'A point of Blue forms in front of you and drags every enemy nearby into it, crushing them together until it implodes.' },
+    infinity: { path: 'limitless', kind: 'passive', slot: 'p0', req: 'lapseblue', name: 'Infinity', unlock: 2, icon: ['impBlue2', 3, 'blue'],
+      reduce: 0.08,
+      desc: 'Attacks slow down before they reach you: take 8% less damage per rank.' },
+    reversalred: { path: 'limitless', kind: 'active', slot: 'a1', req: 'lapseblue', name: 'Reversal: Red', unlock: 3, mp: 16, cd: 6, icon: ['chargeRed', 4, 'red'],
+      range: 100, cone: 0.75, mult: 1.6, perRank: 0.25, knock: 70,
+      desc: 'A red point flashes at your fingertip and explodes forward, blasting every enemy in front of you far away.' },
+    blink: { path: 'limitless', kind: 'active', slot: 'b0', req: 'infinity', name: 'Blink', unlock: 4, mp: 8, cd: 4, cdPerRank: 0.4, icon: ['impBlue3', 2, 'blue'],
+      dist: 75,
+      desc: 'Fold space and teleport a short distance away from danger, untouchable for an instant. The joystick picks the direction.' },
+    sixeyes: { path: 'limitless', kind: 'passive', slot: 'p1', req: 'reversalred', name: 'Six Eyes', unlock: 5, icon: ['sparkleBlue', 8, 'blue'],
+      mpSave: 0.06, crit: 0.03,
+      desc: 'Per rank: skills refund 6% of their MP cost, and +3% critical chance.' },
+    rct: { path: 'limitless', kind: 'passive', slot: 'a2', req: 'sixeyes', name: 'Reverse Cursed Technique', unlock: 6, icon: ['lightBurstBlue', 6, 'blue'],
+      regen: 0.004, potion: 0.1,
+      desc: 'Per rank: in combat, heal 0.4% of max HP every second, and potions heal 10% more.' },
+    hollowpurple: { path: 'limitless', kind: 'active', slot: 'b1', req: 'blink', name: 'Hollow Purple', unlock: 7, mp: 30, cd: 12, icon: ['orbPurple', 1, null],
+      speed: 300, life: 0.8, width: 26, mult: 4, perRank: 0.5,
+      desc: 'Collide Blue and Red into a huge purple sphere that tears through everything in a straight line.' },
+    infinitevoid: { path: 'limitless', kind: 'active', slot: 'a3', req: 'rct', ult: true, name: 'Infinite Void', unlock: 10, mp: 60, cd: 45, icon: ['impBlue2', 4, 'blue'],
+      radius: 150, freeze: 2.4, mult: 3, perRank: 0.4,
+      desc: 'ULTIMATE. Domain Expansion: a starry void swallows the area. Every enemy inside is frozen, overloaded with endless information, then takes heavy damage.' },
   };
   G.SKILL_ORDER = Object.keys(G.SKILLS);
   G.SKILL_MAX_RANK = 5;

@@ -122,6 +122,11 @@
     s.basicMult = 1;
     const qr = G.passiveRank(p, 'quicksilver');
     if (qr) { const q = G.SKILLS.quicksilver; s.basicMult += qr * q.atk; s.atkSpeed += qr * q.aspd; s.moveSpeed *= 1 + qr * q.speed; }
+    // Limitless Sorcerer passives
+    s.dmgReduce = 0; s.potionMult = 1;
+    const ir = G.passiveRank(p, 'infinity'); if (ir) s.dmgReduce = ir * G.SKILLS.infinity.reduce;
+    const er = G.passiveRank(p, 'sixeyes'); if (er) s.crit += er * G.SKILLS.sixeyes.crit;
+    const rr = G.passiveRank(p, 'rct'); if (rr) s.potionMult += rr * G.SKILLS.rct.potion;
     s.crit = clamp(s.crit, 0, 0.75);
     s.atkSpeed = clamp(s.atkSpeed, 0.5, 3);
     s.maxHp = Math.max(1, Math.round(s.maxHp));

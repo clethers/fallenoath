@@ -296,6 +296,7 @@
     if (pl.invuln > 0) return;
     o = o || {};
     const r = rollDamage(src.atk, mult, pl.stats.def, 0, 1);
+    if (pl.stats.dmgReduce) { r.dmg = Math.max(1, Math.round(r.dmg * (1 - pl.stats.dmgReduce))); fx(run, 'sparkleBlue', pl.x, pl.y - 16, { scale: 0.5, fps: 30 }); } // Infinity
     pl.hp -= r.dmg;
     pl.invuln = 0.35; pl.flash = 0.25; pl.lastHit = run.time;
     text(run, pl.x, pl.y - 34, String(r.dmg), '#ff6b6b');
@@ -444,7 +445,7 @@
     if (!G.removeConsumable(p, key, 1)) { G.ui.toast('No ' + G.CONSUMABLES[key].name + 's left', 'warn'); return false; }
     pl.potionCd = C.POTION.cooldown;
     if (kind === 'hp') {
-      const h = Math.round(pl.stats.maxHp * C.POTION.hp);
+      const h = Math.round(pl.stats.maxHp * C.POTION.hp * (pl.stats.potionMult || 1));
       pl.hp = Math.min(pl.stats.maxHp, pl.hp + h);
       text(run, pl.x, pl.y - 36, '+' + h, '#7ce38a');
       fx(run, 'hearts', pl.x, pl.y - 18, { follow: pl, offY: -18, scale: 0.8 });

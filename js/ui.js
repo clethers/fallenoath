@@ -44,6 +44,7 @@
         <div class="sig">${sig.map((k) => `<span><i style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], 20, G.SKILLS[k].icon[2])}'></i>${esc(G.SKILLS[k].name)}</span>`).join('')}</div></div>
       </div>`);
       if (id === 'storm') card.appendChild(el('<b class="tag">LOCKED V1</b>'));
+      if (P.draft) card.appendChild(el('<b class="tag">DRAFT</b>'));
       if (id === cur) card.classList.add('current');
       const b = btn(id === cur ? 'Current character' : (mode === 'switch' ? 'Switch to ' : 'Play as ') + P.name, '', () => { heroes.length = 0; onPick(id); }, id === cur);
       card.appendChild(b);
@@ -150,7 +151,7 @@
     $('hub-gm').hidden = !p.gm;
     $('hub-switch').hidden = !p.gm;
     const need = C.xpForLevel(p.level);
-    $('hub-xp').style.width = (p.level >= C.MAX_LEVEL ? 100 : (p.xp / need) * 100) + '%';
+    $('hub-xp').style.transform = 'scaleX(' + (p.level >= C.MAX_LEVEL ? 1 : Math.min(1, p.xp / need)) + ')';
     $('hub-xp-text').textContent = p.level >= C.MAX_LEVEL ? 'Max level' : fmt(p.xp) + ' / ' + fmt(need) + ' XP';
     $('hub-gold').textContent = fmt(p.gold);
     const list = $('area-list');
@@ -184,7 +185,7 @@
   // ------------------------------------------------------------ HUD
   function setW(id, pct) {
     const k = 'w_' + id, v = Math.max(0, Math.min(100, pct)).toFixed(1);
-    if (ui.cache[k] !== v) { ui.cache[k] = v; $(id).style.width = v + '%'; }
+    if (ui.cache[k] !== v) { ui.cache[k] = v; $(id).style.transform = 'scaleX(' + (v / 100) + ')'; }
   }
   function setT(id, txt) {
     const k = 't_' + id;
@@ -230,16 +231,16 @@
     (ui.skillBtns || (ui.skillBtns = Array.from(document.querySelectorAll('.act.skill')))).forEach((b) => {
       const key = G.barSkill(p, +b.dataset.slot);
       const cdEl = b.querySelector('.cd');
-      if (!key) { if (cdEl.textContent) { cdEl.textContent = ''; cdEl.style.background = ''; } return; }
+      const cdf = b.cdf || (b.cdf = b.querySelector('.cdf'));
+      if (!key) { if (cdEl.textContent) cdEl.textContent = ''; if (b.cdS) { b.cdS = 0; cdf.style.transform = 'scaleY(0)'; } return; }
       const sk = G.SKILLS[key], cd = pl.cds[key] || 0;
       const label = cd > 0 ? (cd < 1 ? cd.toFixed(1) : Math.ceil(cd)) + '' : '';
-      const pct = cd > 0 ? Math.ceil((cd / sk.cd) * 50) * 2 : 0; // 2% steps: fewer style recalcs per second
-      const bg = cd > 0 ? `conic-gradient(rgba(0,0,0,.7) ${pct}%, rgba(0,0,0,.15) 0)` : '';
+      const sc = cd > 0 ? Math.ceil((cd / sk.cd) * 50) / 50 : 0; // 2% steps
       if (cdEl.textContent !== label) cdEl.textContent = label;
       const ck = 'cdp_' + b.dataset.slot;
       if (ui.cache[ck] > 0 && cd <= 0) { b.classList.remove('ready'); void b.offsetWidth; b.classList.add('ready'); setTimeout(() => b.classList.remove('ready'), 700); }
       ui.cache[ck] = cd;
-      if (cdEl.style.background !== bg) cdEl.style.background = bg;
+      if (b.cdS !== sc) { b.cdS = sc; cdf.style.transform = 'scaleY(' + sc + ')'; }
       b.classList.toggle('nomp', pl.mp < sk.mp);
     });
     // boss
@@ -349,7 +350,7 @@
     const s = G.calcStats(p, null);
     body.appendChild(el(`<div class="section-title">Level ${p.level} Adventurer</div>`));
     const need = C.xpForLevel(p.level);
-    body.appendChild(el(`<div class="card"><div class="row"><div class="grow"><div class="bar xp"><i style="width:${p.level >= C.MAX_LEVEL ? 100 : (p.xp / need) * 100}%"></i></div></div>
+    body.appendChild(el(`<div class="card"><div class="row"><div class="grow"><div class="bar xp"><i style="transform:scaleX(${p.level >= C.MAX_LEVEL ? 1 : Math.min(1, p.xp / need)})"></i></div></div>
       <span class="tiny muted">${p.level >= C.MAX_LEVEL ? 'MAX' : fmt(p.xp) + ' / ' + fmt(need) + ' XP'}</span></div></div>`));
     body.appendChild(el(`<div class="section-title">Attributes</div>`));
     const pts = el(`<div class="note" style="margin-bottom:6px">Unspent points: <b style="color:var(--gold-2)">${p.attrPoints}</b> (gain ${C.ATTR_POINTS_PER_LEVEL} per level)</div>`);

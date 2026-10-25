@@ -10,6 +10,7 @@
 
   const P = {
     adv: 'assets/FREE_Adventurer 2D Pixel Art/Sprites/',
+    gojo: 'assets/Gojo (edited FREE Adventurer)/', // the Adventurer with the sword removed, white hair, dark outfit
     knight: 'assets/FREE_Knight 2D Pixel Art v1.2/Sprites/',
     samurai: 'assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/',
     tiny: 'assets/Tiny RPG Character Asset Pack -Demo Soldier&Orc/',
@@ -26,6 +27,11 @@
     SHEETS['adv_run_' + d] = { src: P.adv + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['adv_atk1_' + d] = { src: P.adv + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['adv_atk2_' + d] = { src: P.adv + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
+    // Limitless Sorcerer hero: same frames as the Adventurer, drawn as 'adv_*~gojo'
+    SHEETS['gojo_idle_' + d] = { src: P.gojo + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['gojo_run_' + d] = { src: P.gojo + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['gojo_atk1_' + d] = { src: P.gojo + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['gojo_atk2_' + d] = { src: P.gojo + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
   });
   ['IDLE', 'RUN', 'WALK', 'ATTACK 1', 'ATTACK 2', 'ATTACK 3', 'BLOCK', 'HURT', 'DEATH'].forEach((n) => {
     SHEETS['knight_' + n.replace(' ', '').toLowerCase()] = { src: P.knight + n + '.png', fw: 112, fh: 96 };
@@ -254,6 +260,17 @@
     sparkleBlue: Object.assign(gp('Fantasy Spells', 'status_sparkling_001', 'small_yellow', 48, 48, 24), { tint: { mode: 'lum', color: '#5fb0ff' } }),
     impBlue2: gp('Impacts', 'symmetrical_impact_002', 'large_blue', 96, 96, 10),
     impDark4: Object.assign(gp('Impacts', 'symmetrical_impact_004', 'large_yellow', 96, 96, 8), { dark: true, rim: '#4fa3ff' }),
+    // ---- Limitless Sorcerer (Gojo): Blue, Red, Hollow Purple
+    chargeBlue: Object.assign(gp('Sci-fi', 'scifi_charge_up_001', 'large_yellow', 96, 96, 12), { tint: { mode: 'lum', color: '#4fa3ff' } }),
+    impBlue3: Object.assign(gp('Impacts', 'symmetrical_impact_003', 'large_yellow', 96, 96, 7), { tint: { mode: 'lum', color: '#4fa3ff' } }),
+    tapBlue: gp('Impacts', 'directional_impact_001', 'large_blue', 64, 64, 7),
+    lightBurstBlue: Object.assign(gp('Magic Bursts', 'round_light_burst_001', 'large_yellow', 144, 144, 16), { tint: { mode: 'lum', color: '#4fa3ff' } }),
+    chargeRed: Object.assign(gp('Sci-fi', 'scifi_charge_up_001', 'large_yellow', 96, 96, 12), { tint: { mode: 'lum', color: '#ff3a3a' } }),
+    impRed6: Object.assign(gp('Impacts', 'symmetrical_impact_006', 'large_yellow', 160, 160, 8), { tint: { mode: 'lum', color: '#ff3d3d' } }),
+    coneRed: Object.assign(gp('Impacts', 'directional_impact_004', 'large_yellow', 80, 80, 5), { tint: { mode: 'lum', color: '#ff3d3d' } }),
+    lightBurstRed: Object.assign(gp('Magic Bursts', 'round_light_burst_001', 'large_yellow', 144, 144, 16), { tint: { mode: 'lum', color: '#ff4a4a' } }),
+    orbPurple: gp('Explosions', 'stylized_explosion_002', 'large_violet', 96, 96, 10),
+    impPurple3: Object.assign(gp('Impacts', 'symmetrical_impact_003', 'large_yellow', 96, 96, 7), { tint: { mode: 'lum', color: '#b06bff' } }),
     // Thunder Effect 02 (strips)
     thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, warm: 'mul' },
     thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14, warm: 'mul' },
@@ -327,6 +344,12 @@
           images['sheet:' + k + '~' + style] = tintSheet(im, style);
           SHEETS[k + '~' + style] = Object.assign({}, SHEETS[k]);
         });
+      });
+      // the Limitless Sorcerer's own hero sheets stand in for the Adventurer's ('adv_idle_down~gojo' = 'gojo_idle_down')
+      Object.keys(SHEETS).forEach((k) => {
+        if (!/^gojo_/.test(k) || !images['sheet:' + k]) return;
+        const a = 'adv_' + k.slice(5) + '~gojo';
+        images['sheet:' + a] = images['sheet:' + k]; SHEETS[a] = Object.assign({}, SHEETS[k]);
       });
       Object.keys(FX).forEach((k) => {
         let im = images['fx:' + k];
