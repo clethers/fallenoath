@@ -402,7 +402,7 @@
       const it = p.equipped[slot];
       const b = document.createElement('button');
       b.className = 'slot' + (it ? ' filled r-' + it.rarity : '');
-      b.innerHTML = `<div class="slot-label">${SLOT_NAMES[slot]}</div>` + (it ? `<div class="iname" style="color:${G.rarityOf(it).color}">${esc(it.name)}</div>` +
+      b.innerHTML = `<div class="slot-label">${SLOT_NAMES[slot]}</div>` + (it ? G.itemIconHTML(it, 28, 'slot-ico') + `<div class="iname" style="color:${G.rarityOf(it).color}">${esc(it.name)}</div>` +
         G.itemStatLines(it.stats).slice(0, 2).map((l) => `<div class="tiny muted">${l.text} ${l.label}</div>`).join('') : '<div class="iname muted">Empty</div>');
       b.onclick = () => it && ui.itemSheet(it, 'equipped');
       row.appendChild(b);
@@ -412,7 +412,7 @@
   function renderEquipment(body) {
     body.appendChild(el('<div class="section-title">Equipped</div>'));
     body.appendChild(equipRow());
-    body.appendChild(el('<p class="note">Tap an equipped item to inspect or unequip it. Equip new gear from your Bag. Item art does not exist in the asset folder, so gear is shown as rarity-coloured cards.</p>'));
+    body.appendChild(el('<p class="note">Tap an equipped item to inspect or unequip it. Equip new gear from your Bag.</p>'));
     const gear = G.profile.inventory.filter((i) => i.kind === 'gear');
     body.appendChild(el(`<div class="section-title">Gear in bag (${gear.length})</div>`));
     body.appendChild(invGrid(gear, 'bag', false));
@@ -431,11 +431,11 @@
       if (it.kind === 'gear') {
         const r = G.rarityOf(it);
         b.className = 'inv r-' + it.rarity;
-        b.innerHTML = `<span class="tag" style="color:${r.color}">${SLOT_TAG[it.slot]}</span><span class="nm">${esc(it.name)}</span>` + (isBetter(it) ? '<span class="better">▲</span>' : '');
+        b.innerHTML = (G.itemIconHTML(it, 36) || `<span class="tag" style="color:${r.color}">${SLOT_TAG[it.slot]}</span>`) + `<span class="nm" style="color:${r.color}">${esc(it.name)}</span>` + (isBetter(it) ? '<span class="better">▲</span>' : '');
       } else {
         const c = G.CONSUMABLES[it.key];
         b.className = 'inv r-common';
-        b.innerHTML = `<span class="tag" style="color:${it.key === 'hpPotion' ? '#ef7a6a' : it.key === 'mpPotion' ? '#7ab0ef' : '#e8c27a'}">${it.key === 'tusk' ? 'MAT' : 'USE'}</span><span class="nm">${esc(c.name)}</span><span class="qty">${it.qty}</span>`;
+        b.innerHTML = (G.itemIconHTML(it, 36) || `<span class="tag">${it.key === 'tusk' ? 'MAT' : 'USE'}</span>`) + `<span class="nm">${esc(c.name)}</span><span class="qty">${it.qty}</span>`;
       }
       b.onclick = () => ui.itemSheet(it, ctx);
       grid.appendChild(b);
@@ -473,7 +473,7 @@
     const acts = el('<div class="sheet-actions"></div>');
     if (it.kind === 'gear') {
       const r = G.rarityOf(it);
-      card.appendChild(el(`<div><h4 style="color:${r.color}">${esc(it.name)}</h4><div class="rar muted">${r.name} ${SLOT_NAMES[it.slot]} · Item level ${it.ilvl}</div>
+      card.appendChild(el(`<div>${G.itemIconHTML(it, 48, 'sheet-ico')}<h4 style="color:${r.color}">${esc(it.name)}</h4><div class="rar muted">${r.name} ${SLOT_NAMES[it.slot]} · Item level ${it.ilvl}</div>
         <div class="lines">${G.itemStatLines(it.stats).map((l) => `<div>${l.text} <span class="muted">${l.label}</span></div>`).join('')}</div>${ctx !== 'equipped' ? statCompare(it) : ''}</div>`));
       if (ctx === 'bag') {
         acts.appendChild(btn('Equip', 'primary', () => { G.equip(p, it.id); syncRunStats(); G.save(); closeSheet(); ui.renderPanel(); }));
@@ -502,7 +502,7 @@
       }
     } else {
       const c = G.CONSUMABLES[it.key];
-      card.appendChild(el(`<div><h4>${esc(c.name)}</h4><div class="rar muted">Owned: ${it.qty}</div><div class="lines"><div>${esc(c.desc)}</div></div></div>`));
+      card.appendChild(el(`<div>${G.itemIconHTML(it, 48, 'sheet-ico')}<h4>${esc(c.name)}</h4><div class="rar muted">Owned: ${it.qty}</div><div class="lines"><div>${esc(c.desc)}</div></div></div>`));
       if (ctx === 'bag' && !c.material) {
         const inRun = !!G.game.run && !G.game.run.finished;
         acts.appendChild(btn('Use', 'primary', () => {
@@ -712,7 +712,7 @@
     const sup = el('<div class="stack"></div>');
     [['hpPotion', C.SHOP.hpPotion], ['mpPotion', C.SHOP.mpPotion]].forEach(([k, price]) => {
       const c = G.CONSUMABLES[k];
-      const row = el(`<div class="shop-item"><div class="grow"><div class="nm">${c.name}</div><div class="sub2">${c.desc} · Owned ${G.invCount(p, k)}</div></div><span class="price">${price}g</span></div>`);
+      const row = el(`<div class="shop-item">${G.itemIconHTML({ key: k }, 32)}<div class="grow"><div class="nm">${c.name}</div><div class="sub2">${c.desc} · Owned ${G.invCount(p, k)}</div></div><span class="price">${price}g</span></div>`);
       row.appendChild(btn('Buy', 'small primary', () => {
         if (p.gold < price) { ui.toast('Not enough gold', 'warn'); return; }
         if (!G.addConsumable(p, k, 1)) { ui.toast('Bag is full', 'warn'); return; }
@@ -727,7 +727,7 @@
     if (!p.shop.stock.length) gear.appendChild(el('<p class="note">Sold out. Restock for new wares.</p>'));
     p.shop.stock.forEach((it) => {
       const r = G.rarityOf(it);
-      const row = el(`<div class="shop-item"><div class="grow"><div class="nm" style="color:${r.color}">${esc(it.name)}</div><div class="sub2">${r.name} ${SLOT_NAMES[it.slot]} · ${G.itemStatLines(it.stats).map((l) => l.text + ' ' + l.label).join(', ')}</div></div><span class="price">${shopPrice(it)}g</span></div>`);
+      const row = el(`<div class="shop-item">${G.itemIconHTML(it, 32)}<div class="grow"><div class="nm" style="color:${r.color}">${esc(it.name)}</div><div class="sub2">${r.name} ${SLOT_NAMES[it.slot]} · ${G.itemStatLines(it.stats).map((l) => l.text + ' ' + l.label).join(', ')}</div></div><span class="price">${shopPrice(it)}g</span></div>`);
       row.style.cursor = 'pointer';
       row.onclick = () => ui.itemSheet(it, 'buy');
       gear.appendChild(row);
@@ -781,6 +781,7 @@
     });
     body.appendChild(vrow);
     body.appendChild(el(`<p class="note">${esc(G.SFX_CREDITS)} There is no music yet.</p>`));
+    body.appendChild(el('<p class="note">Item icons: RPG Arsenal by LimeZu (limezu.itch.io), Pixel Art Icon Pack RPG by Cainos (cainos.itch.io), 16-bit RPG Icons (CC0).</p>'));
     body.appendChild(el('<div class="section-title">Controls</div>'));
     body.appendChild(el(`<p class="note card">Touch: drag the left side to move. Your hero attacks automatically when enemies (or crates and pots) are in reach; steer away to stop. Tap skill buttons to cast, HP/MP to drink potions.<br>
       Keyboard: WASD / arrows move · Space or J attack · 1–4 skills · 5 or R ultimate · Q / E potions · Esc pause · I bag · C hero · K skills · L quests.</p>`));

@@ -1,0 +1,7 @@
+items.png is a strip of 32x32 icons picked from three free packs (originals in the Prologue folder):
+  - RPG Arsenal by LimeZu - https://limezu.itch.io/ (licence: anything except claiming the art as your own; credit with the profile link)
+      swords (45, 29, 25, 61, 41), Copper Ring (1), Swift Band (7), Sage Amulet (22), Life Charm (23), potions (129, 130)
+  - Pixel Art Icon Pack - RPG by Cainos - https://cainos.itch.io/pixel-art-icon-pack-rpg (free and commercial use, no redistribution as an asset)
+      Leather Armor, Iron Armor, Bone (Orc Tusk), Golden Coin
+  - 16-bit RPG Icons - https://jshetler.itch.io/16-bit-rpg-icons (CC0)
+      Chain Shirt, Traveler's Cloak (2x version)

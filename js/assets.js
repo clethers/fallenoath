@@ -283,6 +283,8 @@
     lightBurstRed: Object.assign(gp('Magic Bursts', 'round_light_burst_001', 'large_yellow', 144, 144, 16), { tint: { mode: 'lum', color: '#ff4a4a' } }),
     orbPurple: gp('Explosions', 'stylized_explosion_002', 'large_violet', 96, 96, 10),
     impPurple3: Object.assign(gp('Impacts', 'symmetrical_impact_003', 'large_yellow', 96, 96, 7), { tint: { mode: 'lum', color: '#b06bff' } }),
+    // item icons: one 32x32 strip picked from free icon packs (assets/Item Icons/CREDITS.txt); frame order = G.ITEM_ICON
+    items: { src: 'assets/Item Icons/items.png', fw: 32, fh: 32, n: 17 },
     // Thunder Effect 02 (strips)
     thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, warm: 'mul' },
     thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14, warm: 'mul' },

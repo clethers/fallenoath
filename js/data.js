@@ -246,6 +246,17 @@
   G.STAT_LABEL = { atk: 'Attack', def: 'Defense', maxHp: 'Max HP', maxMp: 'Max MP', crit: 'Crit', atkSpeed: 'Attack Speed', mpRegen: 'MP Regen' };
   G.PCT_STATS = { crit: 1, atkSpeed: 1 };
 
+  // frame of each item in the 'items' icon strip (gear by base name, consumables by key)
+  G.ITEM_ICON = { 'Shortsword': 0, 'Iron Blade': 1, 'Broadsword': 2, 'Falchion': 3, 'Runed Saber': 4, 'Leather Vest': 5, 'Chain Shirt': 6, 'Scale Coat': 7,
+    "Traveler's Cloak": 8, 'Copper Ring': 9, 'Sage Amulet': 10, 'Swift Band': 11, 'Life Charm': 12, hpPotion: 13, mpPotion: 14, tusk: 15, gold: 16 };
+  G.itemIconFrame = (it) => {
+    if (!it) return null;
+    if (it.kind !== 'gear') return G.ITEM_ICON[it.key] != null ? G.ITEM_ICON[it.key] : null;
+    if (it.base && G.ITEM_ICON[it.base] != null) return G.ITEM_ICON[it.base];
+    const b = (G.ITEM_BASES[it.slot] || []).find((x) => it.name.endsWith(x.name)); // older saves: the base is the end of the name
+    return b ? G.ITEM_ICON[b.name] : null;
+  };
+  G.itemIconHTML = (it, size, cls) => { const f = G.itemIconFrame(it); return f == null ? '' : `<i class="iico ${cls || ''}" style='${G.fxIconStyle('items', f, size || 32)}'></i>`; };
   G.CONSUMABLES = {
     hpPotion: { name: 'Health Potion', desc: 'Restores 40% HP.', stack: true, value: 10 },
     mpPotion: { name: 'Mana Potion', desc: 'Restores 50% MP.', stack: true, value: 8 },

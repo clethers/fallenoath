@@ -249,6 +249,12 @@ button { font: inherit; color: inherit; cursor: pointer; touch-action: manipulat
   display: flex; flex-direction: column; justify-content: space-between; text-align: left; overflow: hidden; }
 .inv.empty { border-style: dashed; opacity: .35; pointer-events: none; }
 .inv .tag { font-weight: 900; letter-spacing: .5px; font-size: 10px; }
+/* item icons (32x32 pixel art, scaled with crisp pixels) */
+.iico { display: block; flex: none; width: 36px; height: 36px; background-repeat: no-repeat; image-rendering: pixelated; }
+.inv .iico { margin: 0 auto 1px; width: 36px; height: 36px; }
+.slot .slot-ico { position: absolute; right: 5px; top: 4px; width: 28px; height: 28px; }
+.slot.filled .slot-label { padding-right: 26px; }
+.sheet-ico { float: left; width: 48px; height: 48px; margin: 0 10px 4px 0; }
 .inv .nm { padding-right: 12px; font-weight: 700; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
 .inv .qty { position: absolute; right: 4px; bottom: 3px; font-weight: 900; font-size: 12px; }
 .inv .better { position: absolute; right: 3px; top: 2px; color: var(--good); font-weight: 900; font-size: 12px; }

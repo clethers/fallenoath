@@ -80,7 +80,7 @@
     }
     const prefix = G.ITEM_PREFIX[clamp(Math.floor(ilvl / 3) + rIdx + rint(-1, 1), 0, G.ITEM_PREFIX.length - 1)];
     const value = Math.round((8 + ilvl * 4) * rar.mult * rar.mult);
-    return { id: newId(), kind: 'gear', slot, rarity: rar.id, name: prefix + ' ' + base.name, ilvl, stats, value };
+    return { id: newId(), kind: 'gear', slot, rarity: rar.id, name: prefix + ' ' + base.name, base: base.name, ilvl, stats, value };
   };
   G.rollRarity = rollRarity;
 
