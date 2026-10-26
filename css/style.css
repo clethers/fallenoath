@@ -393,3 +393,27 @@ input[type="range"] { touch-action: pan-x; accent-color: var(--gold); }
 
 .voice-pick { display: flex; gap: 6px; flex: 1 1 100%; margin-top: 8px; }
 .voice-pick .btn { flex: 1; }
+
+/* Rift: shrine choice and room fade */
+.shrine-opts { display: grid; gap: 8px; margin-top: 10px; }
+.shrine-opt { display: flex; flex-direction: column; gap: 2px; text-align: left; padding: 12px 14px; border-radius: var(--radius); border: 1px solid #5a7fb0; background: linear-gradient(180deg, #24324a, #1b2436); color: var(--ink); font: inherit; cursor: pointer; }
+.shrine-opt b { color: #a9d4ff; font-size: 15px; }
+.shrine-opt span { color: var(--muted); font-size: 13px; }
+.shrine-opt:active { transform: scale(0.98); }
+#fade { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity 0.3s ease; z-index: 50; }
+#fade.on { opacity: 1; pointer-events: auto; }
+
+/* World Map: regions */
+.region { display: grid; gap: 8px; }
+.region + .region { margin-top: 6px; }
+.region-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; width: 100%; text-align: left; padding: 10px 12px; border-radius: var(--radius); border: 1px solid var(--line); background: linear-gradient(180deg, var(--panel-2), var(--panel)); color: var(--ink); font: inherit; cursor: pointer; }
+.region-head h3 { margin: 0; font-size: 16px; color: var(--gold-2); }
+.region-head p { margin: 2px 0 0; font-size: 12px; color: var(--muted); }
+.region-arrow { color: var(--gold-2); font-size: 18px; }
+.region.locked .region-head { opacity: 0.55; cursor: default; }
+.region.locked h3 { color: var(--muted); }
+.region-lock { font-size: 12px; color: var(--muted); border: 1px solid var(--line); border-radius: 999px; padding: 2px 8px; }
+.region-desc { margin: 0 2px; font-size: 12px; color: var(--muted); }
+.chip.boss { background: rgba(216,67,63,.18); color: #ff9a8f; border-color: rgba(216,67,63,.5); }
+.chip.elite { background: rgba(196,123,255,.16); color: #d9b3ff; border-color: rgba(196,123,255,.45); }
+.area-card .thumb { width: 96px; height: 96px; border-radius: 8px; background: #000; display: block; flex: none; }

@@ -28,14 +28,45 @@
   STONE_PLAIN.push([8, 6], [9, 6], [8, 7], [9, 7]);
   const STONE_RIVET = [[11, 8], [13, 8], [12, 9], [14, 9]];
 
+  // Undead Tileset Ground_rocks.png (16px grid): flat grey ground, cracked grey ground, beige cobbles
+  const UD_FLAT = [[2, 2], [27, 3], [30, 3], [29, 16]];
+  const UD_CRACK = [[5, 6], [9, 6], [12, 6], [4, 22], [9, 22], [24, 6], [26, 6], [15, 6], [14, 6], [7, 6], [8, 6], [11, 6], [6, 22], [8, 22]];
+  const UD_COBBLE = [[26, 22], [25, 22], [25, 12], [24, 22], [23, 22], [22, 22], [2, 9]];
+
   const BREAKABLE = { crate: 1, crateSmall: 1, barrel: 1, pot: 1, vase: 1, vase2: 1 };
   G.BREAKABLE = BREAKABLE;
 
+  // undead dungeon floor: grey cracked ground, a beige cobble path, scattered details and a cliff along the top
+  function drawUndeadGround(g, kind, w, h, rand, pick) {
+    const im = G.img('tex:udGround'), det = G.img('tex:udDetails');
+    if (!im) return;
+    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+      const t = kind[y][x] === 1 ? pick(UD_COBBLE) : rand() < 0.7 ? pick(UD_FLAT) : pick(UD_CRACK);
+      g.drawImage(im, t[0] * T, t[1] * T, T, T, x * T, y * T, T, T);
+    }
+    const D = G.UD_DECALS || { L: [], R: [] };
+    if (det) {
+      for (let i = 0; i < Math.round(w * h / 9); i++) { // cracks, roots, stones, crystals on the grey ground
+        const d = pick(D.L), x = Math.floor(rand() * (w * T - d[2])), y = 60 + Math.floor(rand() * (h * T - 60 - d[3]));
+        const k = kind[Math.floor((y + d[3] / 2) / T)]; if (k && k[Math.floor((x + d[2] / 2) / T)] === 1) continue;
+        g.drawImage(det, d[0], d[1], d[2], d[3], x, y, d[2], d[3]);
+      }
+      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { // pebbles soften the edges of the cobble path
+        if (kind[y][x] !== 1 || rand() > 0.35) continue;
+        const d = pick(D.R); g.drawImage(det, d[0], d[1], d[2], d[3], x * T + (rand() - 0.5) * 12, y * T + (rand() - 0.5) * 12, d[2], d[3]);
+      }
+    }
+    // the cliff along the top: grey ledge on rows 0-1, then the rock face (Ground_rocks rows 14-17, columns 1-12 repeated)
+    for (let x = 0; x < w; x++) for (let y = 0; y < 2; y++) { const t = pick(UD_FLAT); g.drawImage(im, t[0] * T, t[1] * T, T, T, x * T, y * T, T, T); }
+    for (let x = 0; x < w * T; x += 12 * T) g.drawImage(im, 1 * T, 14 * T, 12 * T, 4 * T, x, 1 * T, 12 * T, 4 * T);
+  }
+
   /** Build an area: returns {w,h,W,H,ground(canvas),props[],playMin/Max, spawnPoints[], start, chest} */
-  G.buildArea = function (area) {
-    const rand = mulberry(area.seed * 7919 + 13);
+  // room: optional Rift room { type, idx } -> a shorter map with a door at the top (no door in the boss room)
+  G.buildArea = function (area, room) {
+    const rand = mulberry(area.seed * 7919 + 13 + (room ? room.idx * 1013 : 0));
     const pick = (arr) => arr[Math.floor(rand() * arr.length)];
-    const w = area.w, h = area.h, W = w * T, H = h * T;
+    const w = area.w, h = room ? (room.type === 'boss' ? Math.max(24, area.h - 6) : 22) : area.h, W = w * T, H = h * T;
     const theme = area.theme;
     const kind = []; // per-cell: 0 grass, 1 path, 2 stone
     for (let y = 0; y < h; y++) { kind.push(new Array(w).fill(theme === 'shrine' || theme === 'trial' ? 2 : 0)); }
@@ -43,7 +74,7 @@
 
     // ---------- layout of paths / stone zones
     const cx = Math.floor(w / 2);
-    if (theme === 'grass' || theme === 'graves') {
+    if (theme === 'grass' || theme === 'graves' || theme === 'undead') {
       // winding central path + cross path
       let px = cx;
       for (let y = 3; y < h; y++) {
@@ -67,13 +98,22 @@
       for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) if (x < 2 || x >= w - 2 || (rand() < 0.04)) set(x, y, rand() < 0.75 ? 0 : 2);
     }
 
+    if (theme === 'undead') { // close the gaps in the cobble path so it reads as one road
+      const k0 = kind.map((r) => r.slice()), P = (x, y) => k0[y][x] === 1;
+      for (let y = 1; y < h - 1; y++) for (let x = 1; x < w - 1; x++) {
+        if (!P(x, y) && ((P(x - 1, y) && P(x + 1, y)) || (P(x, y - 1) && P(x, y + 1)))) kind[y][x] = 1; // a hole with road on both sides
+      }
+    }
+
     // ---------- render ground
     const ground = document.createElement('canvas');
     ground.width = W; ground.height = H + 72;
     const g = ground.getContext('2d');
     g.imageSmoothingEnabled = false;
     const grass = G.img('tex:grass'), stone = G.img('tex:stone');
-    for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const undead = theme === 'undead';
+    if (undead) drawUndeadGround(g, kind, w, h, rand, pick);
+    else for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
       const k = kind[y][x];
       let src = grass, t;
       if (k === 0) t = rand() < 0.12 ? pick(GRASS_DECO) : pick(GRASS_PLAIN);
@@ -84,6 +124,7 @@
       } else { src = stone; t = rand() < 0.06 ? pick(STONE_RIVET) : pick(STONE_PLAIN); }
       if (src) g.drawImage(src, t[0] * T, t[1] * T, T, T, x * T, y * T, T, T);
     }
+    if (area.dark) { g.fillStyle = 'rgba(18,8,26,0.32)'; g.fillRect(0, 0, W, H + 72); } // the darker lands near the shrine
     // large stone slabs as floor decals for stone themes
     if (stone && (theme === 'shrine' || theme === 'trial' || theme === 'ruins')) {
       const slabs = theme === 'ruins' ? 3 : 5;
@@ -105,7 +146,7 @@
     };
     const add = (key, x, y, opts) => {
       const d = G.PROPS[key];
-      if (!d) return null;
+      if (!d || y > H - 18) return null;
       const p = Object.assign({ key, x: Math.round(x), y: Math.round(y), r: d[7], breakable: !!BREAKABLE[key] }, opts || {});
       props.push(p);
       occupied.push({ x: p.x, y: p.y, r: Math.max(p.r, 8) + 4 });
@@ -127,10 +168,12 @@
 
     // perimeter: top wall line (decorative, behind play area), side borders
     const deco = []; // drawn before entities, never collide
-    for (let x = 0; x < W; x += 130) deco.push({ key: 'wallFront', x, y: 66 });
-    for (let x = 0; x < W; x += 130) deco.push({ key: 'wallFront', x, y: H + 66 });
-    for (let y = 60; y < H; y += 98) { deco.push({ key: 'wallEdgeV', x: 0, y, top: true }); deco.push({ key: 'wallEdgeV2', x: W - 10, y, top: true }); }
-    for (let x = 0; x < W; x += 98) deco.push({ key: 'wallEdgeH', x, y: H - 10, top: true });
+    if (!undead) { // the undead dungeon has its own cliff edge drawn into the ground
+      for (let x = 0; x < W; x += 130) deco.push({ key: 'wallFront', x, y: 66 });
+      for (let x = 0; x < W; x += 130) deco.push({ key: 'wallFront', x, y: H + 66 });
+      for (let y = 60; y < H; y += 98) { deco.push({ key: 'wallEdgeV', x: 0, y, top: true }); deco.push({ key: 'wallEdgeV2', x: W - 10, y, top: true }); }
+      for (let x = 0; x < W; x += 98) deco.push({ key: 'wallEdgeH', x, y: H - 10, top: true });
+    }
 
     const notPath = (c) => c !== 1;
     if (theme === 'grass') {
@@ -156,6 +199,22 @@
       scatter(['bush3', 'bush6', 'bush4'], 5, 24, notPath);
       scatter(['crateSmall', 'pot', 'vase', 'vase2', 'barrel'], 9, 26, notPath);
       scatter(['bush1', 'bush2', 'tuft5', 'tuft6', 'tuft7', 'tuft8', 'rock1', 'rock2', 'rubble1'], 20, 16, notPath);
+    } else if (theme === 'undead') {
+      // the necromancer's dungeon: a skull gate at the top, rows of graves, dead trees, ruins and bones
+      if (area.landmark === 'udLich') add('udLich', W / 2, 104); // the Bone King: a giant crowned skeleton behind the chest
+      else { add('udSkullDoor', W / 2, 92); add('udCrystal1', W / 2 - 42, 96); add('udCrystal2', W / 2 + 42, 96); }
+      add('udDeadTree1', 24, 150); add('udDeadTree2', W - 26, 136); add('udTree1', 26, H - 110); add('udDeadTree3', W - 30, H - 150);
+      add('udRuin2', 44, H * 0.5); add('udRuin3', W - 40, H * 0.58); add('udSkulls', W - 50, H * 0.36);
+      for (let row = 0; row < 4; row++) for (let col = 0; col < 2; col++) {
+        const x = 46 + col * 30 + (rand() - 0.5) * 6, y = 170 + row * 70 + (rand() - 0.5) * 8;
+        if (free(x, y, 10)) add(pick(['udGrave1', 'udGrave2', 'udGrave3', 'udGrave4', 'udGrave9', 'udGrave10', 'udGrave11', 'udGrave14', 'udGrave16', 'udGrave17']), x, y);
+        const x2 = W - 46 - col * 30 + (rand() - 0.5) * 6;
+        if (free(x2, y + 24, 10)) add(pick(['udGrave1', 'udGrave2', 'udGrave3', 'udGrave4', 'udGrave9', 'udGrave10', 'udGrave11', 'udGrave14', 'udGrave16', 'udGrave17']), x2, y + 24);
+      }
+      scatter(['udRock2', 'udRock3', 'udLog', 'udArm1', 'udArm2', 'udBones6', 'udStump2', 'udStump3', 'udCrystal2', 'udBones9', 'udBones10'], 9, 26, notPath);
+      scatter(['crateSmall', 'pot', 'vase', 'vase2'], 6, 28, notPath);
+      scatter(['udBones1', 'udBones2', 'udBones3', 'udBones4', 'udBones5', 'udBones8', 'udBones11', 'udBones13', 'udBones16', 'udPlant1', 'udPlant2', 'udPlant3', 'udPlant4',
+        'udThorn3', 'udThorn5', 'udStump4', 'udStump6', 'udRock4', 'udRock5', 'udCrystal3', 'udCrystal4', 'udArm3', 'udArm4', 'udRuin5'], 26, 16);
     } else if (theme === 'ruins') {
       props.push({ key: 'wallMossB', x: 42, y: H * 0.55, r: 0, wall: { w: 66, h: 30 } });
       props.push({ key: 'wallC', x: W - 42, y: H * 0.55, r: 0, wall: { w: 66, h: 30 } });
@@ -188,10 +247,25 @@
       props.filter((p) => p.key === 'lantern').forEach((l) => (l.torch = 'torch'));
     }
 
-    // chest spot near top (opened after clearing)
+    // Rift rooms: a door at the top centre (sealed until the room is done), a shrine altar in shrine rooms
+    let door = null, altar = null;
+    const clearAround = (x, y, r, keep) => { for (let i = props.length - 1; i >= 0; i--) if (Math.hypot(props[i].x - x, props[i].y - y) < r && !(keep && keep(props[i]))) props.splice(i, 1); };
+    if (room && room.type !== 'boss') {
+      door = { x: W / 2, y: 82, open: false };
+      clearAround(door.x, door.y, 34);
+    }
+    if (room && room.type === 'shrine') {
+      altar = { x: W / 2, y: Math.round(H * 0.48), used: false };
+      clearAround(altar.x, altar.y, 44);
+      deco.push({ key: 'altar', x: altar.x, y: altar.y + 20, floor: true });
+      const l = add('lantern', altar.x - 34, altar.y - 4); if (l) l.torch = 'torchBlue';
+      const l2 = add('lantern', altar.x + 34, altar.y - 4); if (l2) l2.torch = 'torchBlue';
+    }
+
+    // chest spot near top (opened after clearing): only in the boss room of a rift
     let chest = null;
-    if (!area.endless) {
-      const cy = theme === 'shrine' ? 140 : 118;
+    if (!area.endless && (!room || room.type === 'boss')) {
+      const cy = theme === 'shrine' ? 140 : area.landmark ? 156 : 118;
       chest = { key: 'chestClosed', x: W / 2, y: cy, r: 10, chest: true, open: false, active: false };
       // remove anything overlapping the chest
       for (let i = props.length - 1; i >= 0; i--) if (Math.hypot(props[i].x - chest.x, props[i].y - chest.y) < 22 && props[i].key !== 'statue') props.splice(i, 1);
@@ -206,7 +280,7 @@
       spawnPoints.push({ x: i % 2 ? 24 : W - 24, y: 110 + t * (H * 0.55) });
     }
     const play = { x0: 14, y0: 74, x1: W - 14, y1: H - 16 };
-    return { area, w, h, W, H, ground, props, deco, spawnPoints, start, chest, play, kind };
+    return { area, w, h, W, H, ground, props, deco, spawnPoints, start, chest, play, kind, door, altar };
   };
 
   // Draw a prop atlas entry with its anchor at (x,y)

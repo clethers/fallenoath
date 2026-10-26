@@ -143,6 +143,33 @@
     return c;
   }
 
+  function areaCard(a) {
+    const p = G.profile;
+    const st = p.areas[a.id];
+    const unlocked = st && st.unlocked;
+    const card = document.createElement('button');
+    card.className = 'area-card' + (unlocked ? '' : ' locked');
+    const lvClass = p.level >= a.level ? 'ok' : 'warn';
+    const prevName = G.AREAS[G.AREAS.indexOf(a) - 1];
+    const elite = (a.waves || []).some((w) => w.some((e) => e[2]));
+    card.innerHTML =
+      '<span class="thumb"></span>' +
+      `<div><h4>${esc(a.name)}</h4><p>${esc(unlocked ? a.desc : 'Clear ' + (prevName ? prevName.name : 'the previous area') + ' to unlock.')}</p>` +
+      `<div class="meta"><span class="chip ${lvClass}">Rec. Lv ${a.level}</span>` +
+      (a.endless ? `<span class="chip">Best wave ${p.bestWave}</span>` : `<span class="chip">${a.waves.length} waves</span>`) +
+      (a.boss ? `<span class="chip boss">Boss</span>` : elite ? `<span class="chip elite">Elite</span>` : '') +
+      (st && st.cleared ? `<span class="chip ok">Cleared ×${st.cleared}</span>` : '') + '</div></div>';
+    if (unlocked) card.querySelector('.thumb').replaceWith(thumbCopy(a));
+    card.addEventListener('click', () => {
+      if (!unlocked) { ui.toast('Locked — clear the previous area first', 'warn'); return; }
+      if (!p.path) { ui.toast('Choose your path first', 'skill'); ui.open('skills'); return; }
+      const go = () => { ui.show('hud'); G.game.startArea(a.id); };
+      if (p.level < a.level - 1) ui.confirm('This area is recommended for level ' + a.level + '. Enter anyway?', go, { yes: 'Enter' });
+      else go();
+    });
+    return card;
+  }
+
   ui.refreshHub = function () {
     const p = G.profile;
     if (!p) return;
@@ -156,28 +183,32 @@
     $('hub-gold').textContent = fmt(p.gold);
     const list = $('area-list');
     list.innerHTML = '';
-    G.AREAS.forEach((a) => {
-      const st = p.areas[a.id];
-      const unlocked = st && st.unlocked;
-      const card = document.createElement('button');
-      card.className = 'area-card' + (unlocked ? '' : ' locked');
-      const lvClass = p.level >= a.level ? 'ok' : 'warn';
-      const prevName = G.AREAS[G.AREAS.indexOf(a) - 1];
-      card.innerHTML =
-        '<span class="thumb"></span>' +
-        `<div><h4>${esc(a.name)}</h4><p>${esc(unlocked ? a.desc : 'Clear ' + (prevName ? prevName.name : 'the previous area') + ' to unlock.')}</p>` +
-        `<div class="meta"><span class="chip ${lvClass}">Rec. Lv ${a.level}</span>` +
-        (a.endless ? `<span class="chip">Best wave ${p.bestWave}</span>` : `<span class="chip">${a.waves.length} waves${a.boss ? ' + boss' : ''}</span>`) +
-        (st && st.cleared ? `<span class="chip ok">Cleared ×${st.cleared}</span>` : '') + '</div></div>';
-      card.querySelector('.thumb').replaceWith(thumbCopy(a));
-      card.addEventListener('click', () => {
-        if (!unlocked) { ui.toast('Locked — clear the previous area first', 'warn'); return; }
-        if (!p.path) { ui.toast('Choose your path first', 'skill'); ui.open('skills'); return; }
-        const go = () => { ui.show('hud'); G.game.startArea(a.id); };
-        if (p.level < a.level - 1) ui.confirm('This area is recommended for level ' + a.level + '. Enter anyway?', go, { yes: 'Enter' });
-        else go();
-      });
-      list.appendChild(card);
+    // World Map grouped by region; the newest open region starts expanded
+    const open = (a) => p.areas[a.id] && p.areas[a.id].unlocked;
+    const newest = [...G.REGIONS].reverse().find((r) => G.AREAS.some((a) => a.region === r.id && open(a)));
+    ui.regionOpen = ui.regionOpen || {};
+    G.REGIONS.forEach((r) => {
+      const areas = G.AREAS.filter((a) => a.region === r.id);
+      const unlockedAny = areas.some(open);
+      const cleared = areas.filter((a) => p.areas[a.id] && p.areas[a.id].cleared).length;
+      const sec = document.createElement('section');
+      sec.className = 'region' + (unlockedAny ? '' : ' locked');
+      if (!unlockedAny) {
+        const prev = G.REGIONS[G.REGIONS.indexOf(r) - 1], boss = prev && G.AREAS.filter((a) => a.region === prev.id && a.boss).pop();
+        sec.innerHTML = `<div class="region-head"><div><h3>${esc(r.name)}</h3><p>Lv ${r.levels[0]} to ${r.levels[1]} · ${boss ? 'Defeat ' + esc(G.ENEMIES[boss.boss].name) + ' to unlock' : 'Locked'}</p></div><span class="region-lock">Locked</span></div>`;
+        list.appendChild(sec); return;
+      }
+      const isOpen = ui.regionOpen[r.id] != null ? ui.regionOpen[r.id] : r === newest;
+      const head = document.createElement('button');
+      head.className = 'region-head';
+      head.innerHTML = `<div><h3>${esc(r.name)}</h3><p>Lv ${r.levels[0]} to ${r.levels[1]} · ${cleared} / ${areas.length} cleared</p></div><span class="region-arrow">${isOpen ? '▾' : '▸'}</span>`;
+      head.onclick = () => { ui.regionOpen[r.id] = !isOpen; ui.refreshHub(); };
+      sec.appendChild(head);
+      if (isOpen) {
+        sec.appendChild(el(`<p class="region-desc">${esc(r.desc)}</p>`));
+        areas.forEach((a) => sec.appendChild(areaCard(a)));
+      }
+      list.appendChild(sec);
     });
     ui.updateBadges();
   };
@@ -261,7 +292,12 @@
     if (run.phase === 'cleared' || run.phase === 'victory') line = run.map.chest && !run.chestOpened ? '<b>Area cleared!</b> Open the chest' : '<b>Area cleared!</b>';
     else if (a.endless) line = `<b>Wave ${Math.max(1, run.waveIdx + 1)}</b> · Best ${p.bestWave} · Foes ${alive}`;
     else if (run.phase === 'boss') line = `<b>Boss fight</b> · Foes ${alive}`;
-    else line = `<b>Wave ${Math.max(1, Math.min(a.waves.length, run.waveIdx + 1))}/${a.waves.length}</b> · Foes ${alive}`;
+    else if (run.room) {
+      const n = a.rooms.length, rt = run.room.type, head = `<b>Room ${run.room.idx + 1}/${n}</b> · `;
+      if (run.phase === 'shrine') line = head + 'Touch the shrine';
+      else if (run.phase === 'roomclear') line = head + 'Door open, go north';
+      else line = head + (rt === 'elite' ? 'Defeat the elite' : rt === 'boss' ? 'Boss room' : 'Clear the room') + ` · Foes ${alive}`;
+    } else line = `<b>Wave ${Math.max(1, Math.min(a.waves.length, run.waveIdx + 1))}/${a.waves.length}</b> · Foes ${alive}`;
     const qs = G.QUESTS.filter((q) => G.questAvailable(p, q) && !(p.quests[q.id] && p.quests[q.id].claimed)).slice(0, 2);
     let html = line;
     qs.forEach((q) => {
@@ -523,11 +559,36 @@
     card.appendChild(acts);
     $('sheet').hidden = false;
   };
-  function closeSheet() {
+  function closeSheet(force) {
+    if (ui.shrineOpen && force !== true) return; // the shrine choice can only be closed by picking a blessing
     $('sheet').hidden = true;
     if (!ui.panel && G.game.run && !G.game.run.finished) G.game.paused = false;
   }
   ui.closeSheet = closeSheet;
+
+  // Rift shrine: pick 1 of 3 blessings
+  ui.shrineChoice = function (opts, onPick) {
+    const card = $('sheet-card');
+    card.innerHTML = '';
+    card.appendChild(el('<div><h4>Rift Shrine</h4><p class="note">Choose a blessing. It lasts until this rift ends.</p></div>'));
+    const list = el('<div class="shrine-opts"></div>');
+    opts.forEach((b) => {
+      const o = el(`<button class="shrine-opt"><b>${esc(b.name)}</b><span>${esc(b.desc)}</span></button>`);
+      o.onclick = () => { ui.shrineOpen = false; closeSheet(true); onPick(b); };
+      list.appendChild(o);
+    });
+    card.appendChild(list);
+    ui.shrineOpen = true;
+    $('sheet').hidden = false;
+    G.input.reset();
+  };
+  // full-screen fade used between rift rooms
+  ui.fade = function (out, done) {
+    let f = document.getElementById('fade');
+    if (!f) { f = document.createElement('div'); f.id = 'fade'; document.body.appendChild(f); }
+    f.classList.toggle('on', !!out);
+    if (done) setTimeout(done, 320);
+  };
 
   ui.confirm = function (msg, onYes, o) {
     o = o || {};

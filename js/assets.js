@@ -97,6 +97,10 @@
     struct: P.tex + 'TX Struct.png',
     props: P.tex + 'Extra/TX Props with Shadow.png',
     plants: P.tex + 'Extra/TX Plant with Shadow.png',
+    // Undead Tileset (CraftPix, free): the undead dungeon ground, ground details and an atlas of its objects
+    udGround: 'assets/Undead Tileset (CraftPix)/Ground_rocks.png',
+    udDetails: 'assets/Undead Tileset (CraftPix)/Details.png',
+    udObj: 'assets/Undead Tileset (CraftPix)/ud_objects.png',
   };
 
   // ---- Prop atlas: [sheet, sx, sy, sw, sh, anchorX, anchorY, colliderRadius]
@@ -321,6 +325,73 @@
   G.ASSET_PATHS = P;
   G.SHEETS = SHEETS;
   G.TEX = TEX;
+  // Undead dungeon objects (packed from the pack's Objects_separately, 'shadow1' versions)
+  Object.assign(PROPS, {
+    udGrave1: ["udObj",  17,  314,  16,  18,  8,  17,  5],
+    udGrave2: ["udObj",  34,  314,  15,  18,  6,  17,  5],
+    udGrave3: ["udObj",  0,  314,  16,  19,  8,  18,  5],
+    udGrave4: ["udObj",  494,  284,  16,  21,  8,  20,  5],
+    udGrave9: ["udObj",  64,  284,  16,  28,  9,  27,  5],
+    udGrave10: ["udObj",  308,  284,  21,  23,  8,  22,  6],
+    udGrave11: ["udObj",  330,  284,  24,  23,  9,  22,  6],
+    udGrave14: ["udObj",  245,  284,  18,  24,  10,  23,  5],
+    udGrave16: ["udObj",  198,  284,  18,  25,  11,  24,  5],
+    udGrave17: ["udObj",  264,  284,  18,  24,  10,  23,  5],
+    udRock1: ["udObj",  426,  114,  57,  56,  30,  55,  18],
+    udRock2: ["udObj",  0,  239,  45,  44,  14,  43,  14],
+    udRock3: ["udObj",  337,  239,  34,  33,  19,  32,  11],
+    udRock4: ["udObj",  135,  284,  26,  27,  8,  26,  0],
+    udRock5: ["udObj",  66,  314,  15,  16,  7,  15,  0],
+    udRuin1: ["udObj",  151,  0,  80,  95,  37,  94,  20],
+    udRuin2: ["udObj",  173,  114,  79,  62,  49,  61,  20],
+    udRuin3: ["udObj",  0,  184,  55,  54,  29,  53,  12],
+    udRuin4: ["udObj",  383,  184,  47,  46,  15,  45,  10],
+    udRuin5: ["udObj",  411,  284,  29,  22,  17,  21,  0],
+    udDeadTree1: ["udObj",  232,  0,  63,  89,  39,  88,  7],
+    udDeadTree2: ["udObj",  0,  114,  59,  69,  22,  68,  7],
+    udDeadTree3: ["udObj",  431,  184,  46,  45,  27,  44,  5],
+    udTree1: ["udObj",  407,  0,  59,  74,  26,  73,  8],
+    udTree2: ["udObj",  123,  114,  49,  63,  23,  62,  7],
+    udTree3: ["udObj",  103,  239,  32,  41,  16,  40,  5],
+    udLog: ["udObj",  136,  239,  84,  39,  39,  38,  10],
+    udStump2: ["udObj",  417,  239,  23,  32,  12,  31,  6],
+    udStump3: ["udObj",  0,  284,  30,  29,  15,  28,  5],
+    udStump4: ["udObj",  441,  239,  41,  31,  20,  30,  0],
+    udStump6: ["udObj",  355,  284,  30,  23,  14,  22,  0],
+    udSkulls: ["udObj",  183,  184,  71,  51,  28,  50,  16],
+    udSkullDoor: ["udObj",  351,  184,  31,  47,  15,  46,  11],
+    udLich: ["udObj",  0,  0,  150,  113,  70,  112,  40],
+    udCrystal1: ["udObj",  255,  184,  46,  50,  19,  49,  9],
+    udCrystal2: ["udObj",  264,  239,  39,  36,  18,  35,  7],
+    udCrystal3: ["udObj",  217,  284,  27,  25,  14,  24,  0],
+    udCrystal4: ["udObj",  82,  314,  13,  14,  6,  13,  0],
+    udArm1: ["udObj",  253,  114,  61,  62,  44,  61,  8],
+    udArm2: ["udObj",  380,  114,  45,  57,  17,  56,  6],
+    udArm3: ["udObj",  56,  184,  31,  53,  16,  52,  0],
+    udArm4: ["udObj",  74,  239,  28,  43,  13,  42,  0],
+    udBones1: ["udObj",  441,  284,  26,  22,  9,  21,  0],
+    udBones2: ["udObj",  96,  314,  15,  13,  7,  12,  0],
+    udBones3: ["udObj",  468,  284,  25,  22,  16,  21,  0],
+    udBones4: ["udObj",  31,  284,  32,  29,  16,  28,  0],
+    udBones5: ["udObj",  81,  284,  22,  28,  8,  27,  0],
+    udBones6: ["udObj",  302,  184,  48,  48,  14,  47,  9],
+    udBones8: ["udObj",  46,  239,  27,  44,  16,  43,  0],
+    udBones9: ["udObj",  60,  114,  31,  64,  11,  63,  5],
+    udBones10: ["udObj",  92,  114,  30,  64,  20,  63,  5],
+    udBones11: ["udObj",  372,  239,  44,  33,  38,  32,  0],
+    udBones13: ["udObj",  304,  239,  32,  34,  6,  33,  0],
+    udBones16: ["udObj",  283,  284,  24,  24,  16,  23,  0],
+    udPlant1: ["udObj",  315,  114,  64,  58,  31,  57,  0],
+    udPlant2: ["udObj",  221,  239,  42,  37,  18,  36,  0],
+    udPlant3: ["udObj",  104,  284,  30,  28,  15,  27,  0],
+    udPlant4: ["udObj",  50,  314,  15,  17,  8,  16,  0],
+    udThorn1: ["udObj",  296,  0,  110,  80,  55,  79,  0],
+    udThorn2: ["udObj",  88,  184,  94,  53,  49,  52,  0],
+    udThorn3: ["udObj",  386,  284,  24,  23,  11,  22,  0],
+    udThorn5: ["udObj",  162,  284,  35,  27,  4,  26,  0]
+  });
+  // ground decals inside Details.png: L = grey cracks, roots, stones and crystals; R = beige pebbles (path edges)
+  G.UD_DECALS = {"L": [[0, 0, 31, 31], [34, 2, 26, 27], [128, 14, 16, 20], [65, 16, 15, 15], [145, 16, 14, 17], [82, 18, 12, 12], [162, 18, 12, 14], [99, 19, 9, 10], [86, 30, 32, 26], [160, 30, 32, 26], [0, 33, 32, 26], [30, 33, 14, 14], [66, 33, 14, 14], [38, 40, 32, 26], [129, 40, 33, 58], [94, 61, 36, 37], [2, 62, 32, 26], [67, 69, 26, 21], [30, 72, 32, 39], [170, 73, 14, 14], [180, 98, 9, 11], [89, 100, 13, 9], [121, 100, 13, 9], [159, 100, 9, 8], [8, 106, 16, 13], [64, 106, 16, 13], [147, 108, 13, 9], [132, 110, 9, 8], [172, 111, 10, 17], [41, 113, 16, 13], [82, 115, 13, 9], [99, 115, 9, 8], [115, 122, 9, 8], [50, 126, 14, 22], [68, 126, 14, 22], [89, 126, 14, 22], [131, 127, 10, 17], [9, 132, 14, 22], [155, 135, 10, 17], [179, 135, 10, 17], [32, 140, 14, 22], [118, 140, 14, 22], [3, 158, 10, 17], [68, 158, 9, 11], [147, 158, 9, 13], [56, 159, 10, 17], [30, 160, 10, 16], [19, 161, 10, 15], [116, 161, 9, 13], [126, 161, 9, 13], [94, 163, 9, 11], [164, 165, 9, 11], [85, 167, 9, 9]], "R": [[384, 0, 31, 31], [418, 2, 26, 27], [512, 14, 16, 20], [449, 16, 15, 15], [529, 16, 14, 17], [466, 18, 12, 12], [546, 18, 12, 14], [483, 19, 9, 10], [564, 31, 12, 13], [424, 33, 16, 15], [464, 33, 16, 15], [537, 33, 14, 13], [391, 41, 16, 15], [449, 41, 16, 15], [489, 42, 14, 13], [513, 43, 14, 13], [434, 46, 16, 15], [529, 46, 14, 13], [465, 49, 14, 13], [414, 51, 16, 15], [545, 53, 14, 13], [564, 53, 12, 13], [487, 62, 11, 10], [435, 66, 11, 10], [471, 67, 11, 10], [562, 67, 12, 10], [450, 72, 11, 10], [494, 72, 11, 10], [395, 74, 11, 10], [522, 74, 12, 10], [419, 75, 11, 10], [548, 75, 12, 10], [434, 78, 11, 10], [562, 78, 12, 10], [459, 83, 11, 10], [498, 83, 12, 10], [483, 88, 11, 10], [470, 94, 12, 10], [521, 94, 9, 9], [430, 99, 12, 10], [454, 99, 12, 10], [500, 99, 9, 9], [542, 99, 9, 9], [569, 99, 7, 9], [394, 100, 12, 10], [418, 104, 12, 10], [478, 104, 12, 10], [526, 104, 9, 9], [436, 110, 8, 8], [555, 111, 10, 17], [389, 116, 8, 8], [398, 116, 8, 8], [426, 116, 8, 8], [452, 122, 14, 26], [434, 126, 14, 22], [473, 126, 14, 22], [515, 127, 10, 17], [393, 132, 14, 22], [539, 135, 10, 17], [563, 135, 10, 17], [416, 140, 14, 22], [502, 140, 14, 22], [387, 158, 10, 17], [452, 158, 9, 11], [531, 158, 9, 13], [440, 159, 10, 17], [414, 160, 10, 16], [403, 161, 10, 15], [500, 161, 9, 13], [510, 161, 9, 13], [478, 163, 9, 11], [564, 163, 9, 11], [548, 165, 9, 11], [469, 167, 9, 9]]};
   G.PROPS = PROPS;
   G.FX = FX;
   G.ARROW = ARROW;
@@ -373,7 +444,7 @@
         if (!im || k.includes('~')) return;
         // only the sheets the Shadow Monarch's soldiers and afterimages use get copies (saves memory on phones)
         // (the Shadow Monarch's afterimages are made from his own sword-less sheets)
-        const styles = /^(knight|sam)_/.test(k) ? ['shadow'] : /^adv_/.test(k) ? ['shadow'] : [];
+        const styles = /^knight_/.test(k) ? ['shadow', 'iron'] : /^sam_/.test(k) ? ['shadow', 'cursed'] : /^adv_/.test(k) ? ['shadow'] : []; // iron = Oathbound Knight, cursed = Cursed Samurai
         styles.forEach((style) => {
           const src = /^adv_/.test(k) && images['sheet:jw_' + k.slice(4)] ? images['sheet:jw_' + k.slice(4)] : im;
           images['sheet:' + k + '~' + style] = tintSheet(src, style);
@@ -454,10 +525,11 @@
       const d = mk(), dg = d.getContext('2d');
       dg.drawImage(im, 0, 0); dg.globalCompositeOperation = 'source-atop'; dg.fillStyle = 'rgba(16,8,30,0.84)'; dg.fillRect(0, 0, d.width, d.height);
       g.drawImage(d, 0, 0);
-    } else { // monarch: keep the sprite's detail, shift it to cold purple-black
+    } else { // keep the sprite's detail, shift its colours: monarch = cold purple-black, iron = dark steel, cursed = sickly green
+      const T = { monarch: ['#8e98c6', 'rgba(14,6,30,0.18)'], iron: ['#77808f', 'rgba(8,10,18,0.3)'], cursed: ['#a6cc96', 'rgba(16,34,8,0.22)'] }[style] || ['#8e98c6', 'rgba(14,6,30,0.18)'];
       g.drawImage(im, 0, 0);
-      g.globalCompositeOperation = 'multiply'; g.fillStyle = '#8e98c6'; g.fillRect(0, 0, c.width, c.height);
-      g.globalCompositeOperation = 'source-atop'; g.fillStyle = 'rgba(14,6,30,0.18)'; g.fillRect(0, 0, c.width, c.height);
+      g.globalCompositeOperation = 'multiply'; g.fillStyle = T[0]; g.fillRect(0, 0, c.width, c.height);
+      g.globalCompositeOperation = 'source-atop'; g.fillStyle = T[1]; g.fillRect(0, 0, c.width, c.height);
       g.globalCompositeOperation = 'destination-in'; g.drawImage(im, 0, 0);
     }
     return c;

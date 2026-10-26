@@ -15,7 +15,10 @@
 | Combat style | Auto-attack sword swings, plus 4 bar skills and an ultimate (5th button) |
 | Colour rule | Only yellow and black lightning. Yellow is Thunder Effect 02 plus yellow Gigapack sheets, gold-tinted at load (`warm`). Black is the same sheets darkened at load (`dark`), with a 1 px yellow outline. Icons use CSS tones `gold` and `dark`. No new art. |
 
-## Skills (8: 6 actives, 2 passives, max rank 5)
+## Skills (8: 6 actives, 2 passives, max rank 10)
+
+Max rank raised from 5 to 10 on 2026-10-26 (world expansion, level cap 100). Ranks 6 to 10 unlock at player levels 40 / 55 / 70 / 85 / 100 and keep adding the same per-rank bonuses below. No skill code changed.
+
 
 | Skill | Unlock | Kind | Requires | MP | CD | Core numbers |
 |---|---|---|---|---|---|---|

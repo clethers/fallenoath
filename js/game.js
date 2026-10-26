@@ -121,13 +121,15 @@
   game.startArea = function (areaId) {
     const area = G.AREAS.find((a) => a.id === areaId);
     if (!area) return false;
-    const map = G.buildArea(area);
+    const roomDef = area.rooms ? Object.assign({ idx: 0 }, area.rooms[0]) : null; // Rift: a chain of rooms
+    const map = G.buildArea(area, roomDef);
     const run = {
       area, map, player: makePlayer(map), enemies: [], effects: [], texts: [], projectiles: [], drops: [], hazards: [],
       spawnQueue: [], waveIdx: -1, waveDelay: 1.2, phase: 'waves', time: 0, bossSpawned: false, boss: null,
       rewards: { xp: 0, gold: 0, items: [], levels: 0, kills: 0 }, cam: { x: 0, y: map.H }, shake: 0, finished: false, endWave: 0,
-      clearT: 0, chestOpened: false, banner: null, timers: [], zones: [],
+      clearT: 0, chestOpened: false, banner: null, timers: [], zones: [], room: roomDef,
     };
+    if (roomDef && roomDef.type === 'shrine') run.phase = 'shrine';
     run.map.props.forEach((pr) => pr.torch && fx(run, pr.torch, pr.x, pr.y - 30, { loop: true, fps: 10 }));
     if (G.profile.path === 'shadow') { // the Shadow Monarch steps out of a shadow portal (portal sound peaks 0.15s in, the portal at ~0.33s)
       fx(run, 'portalVoid', run.player.x, run.player.y - 14, { important: true });
@@ -141,7 +143,7 @@
     game.run = run;
     game.paused = false;
     G.ui.onRunStart(run);
-    G.ui.banner(area.name, area.endless ? 'Survive as long as you can' : 'Defeat every wave');
+    G.ui.banner(area.name, area.endless ? 'Survive as long as you can' : roomDef ? roomTitle(run) : 'Defeat every wave');
     return true;
   };
 
@@ -216,6 +218,10 @@
     if (e.status.vuln) dmg = Math.round(dmg * (1 + e.status.vuln.amt));
     if (e.status.presence) dmg = Math.round(dmg * (1 + e.status.presence.amt)); // Shadow Monarch: Monarch's Presence
     if (e.block > 0) { dmg = Math.max(1, Math.round(dmg * 0.15)); text(run, e.x, e.y - 50, 'BLOCKED', '#9fd0ff'); }
+    else if (e.def.guard && e.state !== 'attack' && (run.player.x - e.x) * (e.face || 1) > 0) { // Oathbound Knight: its shield takes part of a hit from the front
+      dmg = Math.max(1, Math.round(dmg * (1 - e.def.guard)));
+      if (!e.guardTxt || run.time - e.guardTxt > 0.8) { e.guardTxt = run.time; text(run, e.x, e.y - 50, 'GUARD', '#9fd0ff'); }
+    }
     e.hp -= dmg;
     e.flash = 0.12;
     text(run, e.x, e.y - (e.boss ? 56 : 30), String(dmg), o.crit ? '#ffd54a' : o.skill ? '#8fdcff' : '#ffffff', o.crit);
@@ -368,7 +374,7 @@
 
   game.canAct = () => {
     const r = game.run;
-    return r && !game.paused && !r.player.dead && (r.phase === 'waves' || r.phase === 'boss' || r.phase === 'cleared');
+    return r && !game.paused && !r.player.dead && (r.phase === 'waves' || r.phase === 'boss' || r.phase === 'cleared' || r.phase === 'roomclear' || r.phase === 'shrine') && !r.transition;
   };
 
   function startAttack(run) {
@@ -1174,19 +1180,88 @@
       G.ui.banner('Wave ' + n, n % 5 === 0 ? 'A champion approaches!' : 'Enemies incoming');
       return;
     }
-    if (run.waveIdx < area.waves.length) {
-      area.waves[run.waveIdx].forEach(([id, n]) => { for (let i = 0; i < n; i++) run.spawnQueue.push({ id, level: area.level + Math.floor(run.waveIdx / 2), delay: 0.35 }); });
-      G.ui.banner('Wave ' + (run.waveIdx + 1) + ' / ' + area.waves.length, '');
-    } else if (area.boss && !run.bossSpawned) {
+    const room = run.room, waves = room ? room.waves || [] : area.waves;
+    const bossId = room ? (room.type === 'boss' ? room.boss || area.boss : null) : area.boss;
+    if (run.waveIdx < waves.length) {
+      waves[run.waveIdx].forEach(([id, n, mod]) => { for (let i = 0; i < n; i++) run.spawnQueue.push({ id, level: area.level + Math.floor(run.waveIdx / 2) + (room ? Math.floor(room.idx / 2) : 0), delay: mod ? 0.8 : 0.35, elite: mod || undefined }); });
+      if (room && room.type === 'elite' && run.waveIdx === 0) run.spawnQueue.push({ id: room.elite, level: area.level + 1, delay: 0.6, elite: room.mod || 'fast', at: { x: run.map.W / 2, y: 130 } });
+      G.ui.banner(room && room.type === 'elite' && run.waveIdx === 0 ? 'Elite' : 'Wave ' + (run.waveIdx + 1) + ' / ' + waves.length, room && room.type === 'elite' && run.waveIdx === 0 ? 'Defeat it to take the boss key' : '');
+    } else if (bossId && !run.bossSpawned) {
       run.bossSpawned = true; run.phase = 'boss';
-      run.spawnQueue.push({ id: area.boss, level: area.level + 1, delay: 1.0, at: { x: run.map.W / 2, y: area.theme === 'shrine' ? 190 : 150 } });
-      G.ui.banner('BOSS', G.ENEMIES[area.boss].name);
+      run.spawnQueue.push({ id: bossId, level: area.level + 1, delay: 1.0, at: { x: run.map.W / 2, y: area.theme === 'shrine' ? 190 : 150 } });
+      G.ui.banner('BOSS', G.ENEMIES[bossId].name);
     } else {
       areaCleared(run);
     }
   }
 
+  // ================================================================ Rift rooms
+  function roomTitle(run) {
+    const r = run.room, n = run.area.rooms.length;
+    return 'Room ' + (r.idx + 1) + ' / ' + n + ' · ' + { fight: 'Clear the room', elite: 'Elite', shrine: 'Shrine', boss: 'Boss' }[r.type];
+  }
+  // an elite: a stronger copy of a normal enemy with a modifier (its own def copy, so the base enemy is untouched)
+  function makeElite(run, e, modId) {
+    const m = G.ELITE_MODS[modId] || G.ELITE_MODS.fast;
+    e.def = Object.assign({}, e.def, { name: m.label + ' ' + e.def.name, scale: e.def.scale * m.scale, speed: e.def.speed * m.speed, radius: Math.round(e.def.radius * m.scale) });
+    e.r = e.def.radius; e.maxHp = e.hp = Math.round(e.hp * m.hp); e.atk *= m.atk; e.xp *= 3; e.gold = [e.gold[0] * 3, e.gold[1] * 3];
+    e.elite = modId; e.phase2 = true; // no boss enrage for elites
+    e.boss = true; run.boss = e; G.ui.bossBar(e); // show its health bar like a boss
+  }
+  function roomCleared(run) {
+    if (run.phase === 'roomclear') return;
+    run.phase = 'roomclear';
+    const d = run.map.door;
+    if (d) d.open = true;
+    if (run.room.type === 'elite') { G.ui.toast('Boss key obtained', 'quest'); text(run, run.player.x, run.player.y - 46, 'BOSS KEY', '#ffd54a', true); }
+    G.ui.banner('Room cleared', 'The rift door is open');
+    G.sfx('shPortal', { minGap: 0, vol: 0.5 });
+  }
+  function useAltar(run) {
+    const a = run.map.altar;
+    if (!a || a.used) return;
+    a.used = true;
+    const pool = G.SHRINE_BUFFS.slice(), opts = [];
+    while (opts.length < 3 && pool.length) opts.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+    game.paused = true;
+    G.ui.shrineChoice(opts, (b) => {
+      game.paused = false;
+      const pl = run.player;
+      if (b.buff) Object.assign(pl.buffs, b.buff);
+      if (b.heal) { pl.hp = Math.min(pl.stats.maxHp, pl.hp + pl.stats.maxHp * b.heal); pl.mp = Math.min(pl.stats.maxMp, pl.mp + pl.stats.maxMp * b.heal); }
+      if (b.potions) { G.addConsumable(G.profile, 'hpPotion', b.potions); G.addConsumable(G.profile, 'mpPotion', b.potions); }
+      fx(run, 'lightBurst', a.x, a.y - 10, { scale: 0.8 });
+      text(run, pl.x, pl.y - 46, b.name, '#9fd8ff', true);
+      roomCleared(run);
+    });
+  }
+  // walk through the open door: fade out, build the next room, fade in
+  function enterNextRoom(run) {
+    if (run.transition) return;
+    run.transition = true;
+    const area = run.area, idx = run.room.idx + 1;
+    G.ui.fade(true, () => {
+      if (game.run !== run) return;
+      const room = Object.assign({ idx }, area.rooms[idx]);
+      const map = G.buildArea(area, room);
+      // anything left on the floor is picked up on the way out
+      run.drops.forEach((d) => { d.t = 1; d.x = run.player.x; d.y = run.player.y; }); collectDrops(run);
+      run.room = room; run.map = map;
+      run.enemies = []; run.projectiles = []; run.hazards = []; run.zones = []; run.drops = []; run.spawnQueue = []; run.texts = [];
+      run.effects = run.effects.filter((e) => e.follow === run.player);
+      run.waveIdx = -1; run.waveDelay = 1.2; run.bossSpawned = false; run.boss = null; G.ui.bossBar(null);
+      run.phase = room.type === 'shrine' ? 'shrine' : 'waves'; run.clearT = 0; run.chestOpened = false;
+      const pl = run.player; pl.x = map.start.x; pl.y = map.start.y; pl.dash = null; pl.dir = 'up';
+      run.cam.y = map.H;
+      map.props.forEach((pr) => pr.torch && fx(run, pr.torch, pr.x, pr.y - 30, { loop: true, fps: 10 }));
+      run.transition = false;
+      G.ui.banner(area.name, roomTitle(run));
+      G.ui.fade(false);
+    });
+  }
+
   function areaCleared(run) {
+    if (run.room && run.room.type !== 'boss') { roomCleared(run); return; }
     if (run.phase === 'cleared' || run.phase === 'victory') return;
     run.phase = 'cleared'; run.clearT = 0;
     const pl = run.player;
@@ -1322,7 +1397,7 @@
     if (run.phase === 'waves' || run.phase === 'boss') {
       if (run.spawnQueue.length) {
         run.spawnQueue[0].delay -= dt;
-        if (run.spawnQueue[0].delay <= 0) { const s = run.spawnQueue.shift(); spawnEnemy(run, s.id, s.level, s.at); }
+        if (run.spawnQueue[0].delay <= 0) { const s = run.spawnQueue.shift(); const e = spawnEnemy(run, s.id, s.level, s.at); if (e && s.elite) makeElite(run, e, s.elite); }
       } else if (!run.enemies.some((e) => !e.dead)) {
         run.waveDelay -= dt;
         if (run.waveDelay <= 0) { run.waveDelay = 1.6; nextWave(run); }
@@ -1351,6 +1426,10 @@
     updateEffects(run, dt);
     for (let i = run.texts.length - 1; i >= 0; i--) { const t = run.texts[i]; t.t += dt; t.y -= dt * 22; if (t.t > 0.9) run.texts.splice(i, 1); }
     if (run.shake > 0) run.shake = Math.max(0, run.shake - dt * 18);
+
+    // ---- Rift rooms: the shrine altar and the door
+    if (run.phase === 'shrine' && run.map.altar && !pl.dead && dist(run.map.altar, pl) < 30) useAltar(run);
+    if (run.phase === 'roomclear' && run.map.door && run.map.door.open && !pl.dead && Math.abs(pl.x - run.map.door.x) < 18 && pl.y < run.map.door.y + 16) enterNextRoom(run);
 
     // ---- end states
     if (run.phase === 'cleared') {
@@ -1396,6 +1475,31 @@
     return 'adv_' + st + '_' + pl.dir;
   }
 
+  // the rift door: a swirling portal, dim and barred while sealed, bright violet once open
+  function drawRiftDoor(ctx, d, t) {
+    const x = d.x, y = d.y - 18, o = d.open;
+    ctx.save();
+    const g = ctx.createRadialGradient(x, y, 2, x, y, 22);
+    g.addColorStop(0, o ? 'rgba(235,210,255,0.95)' : 'rgba(90,60,80,0.75)');
+    g.addColorStop(0.55, o ? 'rgba(150,80,255,0.75)' : 'rgba(50,30,45,0.7)');
+    g.addColorStop(1, 'rgba(40,10,80,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.ellipse(x, y, 16, 22, 0, 0, Math.PI * 2); ctx.fill();
+    ctx.strokeStyle = o ? 'rgba(210,170,255,0.9)' : 'rgba(140,110,120,0.6)'; ctx.lineWidth = 1;
+    for (let k = 0; k < 3; k++) { const a = t * (o ? 3 : 0.8) + k * 2.1; ctx.beginPath(); ctx.ellipse(x, y, 12 - k * 3, 17 - k * 4, 0, a, a + 2.2); ctx.stroke(); }
+    if (!o) { // bars across a sealed door
+      ctx.strokeStyle = 'rgba(30,24,30,0.9)'; ctx.lineWidth = 2;
+      for (let k = -1; k <= 1; k++) { ctx.beginPath(); ctx.moveTo(x + k * 7, y - 20); ctx.lineTo(x + k * 7, y + 20); ctx.stroke(); }
+    }
+    ctx.restore();
+  }
+  function drawAltarGlow(ctx, a, t) {
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const r = 26 + 3 * Math.sin(t * 3), g = ctx.createRadialGradient(a.x, a.y, 2, a.x, a.y, r);
+    g.addColorStop(0, 'rgba(140,200,255,0.45)'); g.addColorStop(1, 'rgba(60,120,255,0)');
+    ctx.fillStyle = g; ctx.beginPath(); ctx.arc(a.x, a.y, r, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
   game.render = function (ctx) {
     const run = game.run || game.ensureShowcase();
     const V = G.view;
@@ -1412,6 +1516,8 @@
     const map = run.map;
     ctx.drawImage(map.ground, 0, 0);
     for (const d of map.deco) if (d.floor || d.top || d.key === 'wallFront') G.drawDeco(ctx, d);
+    if (map.door) drawRiftDoor(ctx, map.door, run.time || 0);
+    if (map.altar && !map.altar.used) drawAltarGlow(ctx, map.altar, run.time || 0);
 
     // ground effects
     for (const e of run.effects) if (e.ground) drawEffect(ctx, e);

@@ -117,6 +117,10 @@
       if (buffs.atk) s.atk *= 1 + buffs.atk;
       if (buffs.atkSpeed) s.atkSpeed += buffs.atkSpeed;
       if (buffs.speed) s.moveSpeed *= 1 + buffs.speed;
+      // Rift shrine blessings
+      if (buffs.riftAtk) s.atk *= 1 + buffs.riftAtk;
+      if (buffs.riftDef) s.def *= 1 + buffs.riftDef;
+      if (buffs.riftSpd) { s.atkSpeed += buffs.riftSpd; s.moveSpeed *= 1 + buffs.riftSpd; }
     }
     // Shadow Monarch: Quicksilver (move speed; basic attacks only for damage / swing speed)
     s.basicMult = 1;
@@ -132,6 +136,7 @@
     const tr = G.passiveRank(p, 'training'); if (tr) { s.atk *= 1 + tr * G.SKILLS.training.atk; s.maxHp *= 1 + tr * G.SKILLS.training.hp; } // Endless Training
     const er = G.passiveRank(p, 'sixeyes'); if (er) s.crit += er * G.SKILLS.sixeyes.crit;
     const rr = G.passiveRank(p, 'rct'); if (rr) s.potionMult += rr * G.SKILLS.rct.potion;
+    s.dmgReduce = clamp(s.dmgReduce || 0, 0, 0.5); // damage reduction never above 50%
     s.crit = clamp(s.crit, 0, 0.75);
     s.atkSpeed = clamp(s.atkSpeed, 0.5, 3);
     s.maxHp = Math.max(1, Math.round(s.maxHp));
@@ -290,8 +295,9 @@
     p.gm = true;
     p.level = C.MAX_LEVEL; p.xp = 0;
     p.gold = 999999;
-    const pts = (C.MAX_LEVEL - 1) * C.ATTR_POINTS_PER_LEVEL; // 87 at level 30
-    p.attrs = { str: 30, vit: 30, int: 15, agi: pts - 75 };
+    const pts = (C.MAX_LEVEL - 1) * C.ATTR_POINTS_PER_LEVEL; // 297 at level 100
+    const str = Math.round(pts * 0.35), vit = Math.round(pts * 0.35), int = Math.round(pts * 0.12);
+    p.attrs = { str, vit, int, agi: pts - str - vit - int };
     p.attrPoints = 0;
     G.choosePath(p, p.path);
     G.AREAS.forEach((a) => (p.areas[a.id] = { unlocked: true, cleared: 0 }));
@@ -332,6 +338,8 @@
     if (!sk || sk.path !== p.path) return 'Not part of your path';
     if ((p.skills[k] || 0) >= G.SKILL_MAX_RANK) return 'Max rank';
     if (sk.unlock > p.level) return 'Requires level ' + sk.unlock;
+    const next = (p.skills[k] || 0) + 1;
+    if (G.RANK_LEVEL[next] && p.level < G.RANK_LEVEL[next]) return 'Rank ' + next + ' requires level ' + G.RANK_LEVEL[next];
     if (sk.req && !(p.skills[sk.req] > 0)) return 'Learn ' + G.SKILLS[sk.req].name + ' first';
     if (p.skillPoints <= 0) return 'No skill points';
     return '';
@@ -404,6 +412,15 @@
       const s = raw.areas[a.id];
       if (s && typeof s === 'object') p.areas[a.id] = { unlocked: !!s.unlocked || a.id === 'courtyard', cleared: Math.floor(num(s.cleared, 0, 0, 1e6)) };
     });
+    // world expansion (20 areas in order): an area is open if it was cleared or it comes right after the furthest cleared one
+    if (!raw.gm) {
+      let far = 0;
+      G.AREAS.forEach((a, i) => { if (p.areas[a.id] && p.areas[a.id].cleared > 0) far = Math.max(far, i + 1); });
+      G.AREAS.forEach((a, i) => {
+        const st = p.areas[a.id] || (p.areas[a.id] = { unlocked: false, cleared: 0 });
+        st.unlocked = i <= far || st.cleared > 0;
+      });
+    }
     p.bestWave = Math.floor(num(raw.bestWave, 0, 0, 1e5));
     p.shop = { stock: [], seed: 0 };
     if (raw.shop && Array.isArray(raw.shop.stock)) p.shop.stock = raw.shop.stock.map(sanitizeItem).filter((i) => i && i.kind === 'gear').slice(0, 6);
@@ -417,6 +434,8 @@
     if (!(raw.v >= 2)) p.settings.autoAttack = true; // v2: auto-attack became the default
     p.created = num(raw.created, Date.now(), 0, 1e15);
     p.gm = raw.gm === true;
+    if (p.gm && p.level < C.MAX_LEVEL) { p.attrPoints += (C.MAX_LEVEL - p.level) * C.ATTR_POINTS_PER_LEVEL; p.level = C.MAX_LEVEL; p.xp = 0; } // GM saves follow the level cap
+    if (p.gm) G.AREAS.forEach((a) => { const st = p.areas[a.id] || (p.areas[a.id] = { unlocked: true, cleared: 0 }); st.unlocked = true; }); // GM: every area open, including new ones
     if (p.gm) { // GM accounts always have the whole tree maxed (also picks up newly added skills)
       G.SKILL_ORDER.forEach((k) => { if (G.SKILLS[k].path === p.path) p.skills[k] = G.SKILL_MAX_RANK; });
       p.skillPoints = 0;

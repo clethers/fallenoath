@@ -10,7 +10,7 @@
     SAVE_KEY: 'fallenoath_save_v1',
     VIEW_WIDTH: 216, // world pixels visible across the screen width
     TILE: 16,
-    MAX_LEVEL: 30,
+    MAX_LEVEL: 100,
     INVENTORY_SIZE: 30,
     ATTR_POINTS_PER_LEVEL: 3,
     SKILL_POINTS_PER_LEVEL: 1,
@@ -204,7 +204,9 @@
       desc: 'ULTIMATE. Domain Expansion: a starry void swallows the area. Every enemy inside is frozen, overloaded with endless information, then takes heavy damage.' },
   };
   G.SKILL_ORDER = Object.keys(G.SKILLS);
-  G.SKILL_MAX_RANK = 5;
+  G.SKILL_MAX_RANK = 10;
+  // ranks above 5 need a player level (rank 6 at Lv 40 ... rank 10 at Lv 100)
+  G.RANK_LEVEL = { 6: 40, 7: 55, 8: 70, 9: 85, 10: 100 };
   G.RESPEC_COST = (level) => 100 * level;
   G.pathSkill = (path, slot) => (G.PATHS[path] ? Object.keys(G.SKILLS).find((k) => G.SKILLS[k].path === path && G.SKILLS[k].slot === slot) : null);
   // action bar: 4 chosen active skills (p.slots) + the ultimate on its own 5th button
@@ -243,37 +245,101 @@
     kobold: { name: 'Kobold Skirmisher', anim: { idle: 'kobold_idle', walk: 'kobold_run', run: 'kobold_run', attack: 'kobold_attack', heavy: 'kobold_attack', hurt: 'kobold_idle', death: 'kobold_idle' }, ax: 52, ay: 90, scale: 0.5, hgt: 61, radius: 6, hp: 26, atk: 7, def: 1, speed: 58, range: 16, cd: 1.1, hit: 2, xp: 10, gold: [2, 5], ai: 'melee' },
     necro: { name: 'Morvath the Necromancer', anim: { idle: 'nc_stand', walk: 'nc_run', run: 'nc_run', attack: 'nc_atk1', heavy: 'nc_atk2', cast: 'nc_atk3', hurt: 'nc_hurt', death: 'nc_death' }, ax: 81, ay: 115, scale: 0.85, hgt: 52, radius: 10, hp: 480, atk: 16, def: 6, speed: 30, range: 22, cd: 2.4, hit: 6, keep: 110, xp: 220, gold: [90, 130], ai: 'necro', boss: true },
     shSamurai: { name: 'Shadow Samurai', anim: { idle: 'sam_idle', walk: 'sam_run', run: 'sam_run', attack: 'sam_attack1', heavy: 'sam_attack1', hurt: 'sam_hurt' }, ax: 46, ay: 81, scale: 1.3, radius: 7, hp: 1, atk: 10, def: 2, speed: 44, range: 24, cd: 1.1, hit: 3, xp: 0, gold: [0, 0], ai: 'melee', summon: true },
+    bruteCaptain: { name: 'Brute Captain', anim: TD(3), dir4: true, hgt: 32, ax: 32, ay: 46, scale: 1.55, radius: 12, hp: 300, atk: 17, def: 7, speed: 30, range: 22, cd: 1.8, hit: 4, heavy: true, xp: 90, gold: [30, 50], ai: 'melee', boss: true, drops: { tusk: 1 } },
+    cursedSam: { name: 'Cursed Samurai', anim: { idle: 'sam_idle~cursed', walk: 'sam_run~cursed', run: 'sam_run~cursed', attack: 'sam_attack1~cursed', heavy: 'sam_attack1~cursed', hurt: 'sam_hurt~cursed', death: 'sam_hurt~cursed' }, ax: 46, ay: 81, scale: 1.25, radius: 7, hp: 48, atk: 11, def: 3, speed: 50, range: 22, cd: 1.1, hit: 3, xp: 20, gold: [4, 9], ai: 'melee' },
+    oathKnight: { name: 'Oathbound Knight', anim: { idle: 'knight_idle~iron', walk: 'knight_walk~iron', run: 'knight_run~iron', attack: 'knight_attack1~iron', heavy: 'knight_attack2~iron', hurt: 'knight_hurt~iron', death: 'knight_death~iron', block: 'knight_block~iron' }, ax: 54, ay: 83, scale: 1.05, radius: 9, hp: 110, atk: 16, def: 8, speed: 26, range: 24, cd: 1.9, hit: 4, heavy: true, guard: 0.5, xp: 36, gold: [7, 15], ai: 'melee' },
     knight: { name: 'Sir Varric, the Fallen', anim: KN_ANIM, ax: 54, ay: 83, scale: 1.3, radius: 12, hp: 1600, atk: 30, def: 14, speed: 40, range: 30, cd: 1.6, hit: 4, xp: 1000, gold: [400, 500], ai: 'knight', boss: true },
   };
 
   // ------------------------------------------------------------------ AREAS
-  G.AREAS = [
-    {
-      id: 'courtyard', name: 'Mossy Courtyard', level: 1, theme: 'grass', w: 18, h: 30, seed: 11,
-      desc: 'Overgrown grounds outside the old keep. Orc raiders have made camp here.',
-      waves: [[['orc', 3]], [['orc', 5]], [['orc', 4], ['brute', 1]]],
-    },
-    {
-      id: 'graveyard', name: 'Whispering Graveyard', level: 3, theme: 'graves', w: 18, h: 32, seed: 23,
-      desc: 'Kobolds and deserters prowl the tombs, and the necromancer Morvath raises demons from the graves.',
-      waves: [[['kobold', 3], ['archer', 1]], [['archer', 3], ['kobold', 3]], [['demon', 2], ['archer', 2]], [['orc', 3], ['demon', 2], ['kobold', 2]]], boss: 'necro',
-    },
-    {
-      id: 'ruins', name: 'Sunken Ruins', level: 6, theme: 'ruins', w: 20, h: 34, seed: 37,
-      desc: 'Crumbling halls where the orc warlord Grukk gathers his horde.',
-      waves: [[['orc', 4], ['kobold', 2]], [['brute', 2], ['archer', 3]], [['orc', 5], ['brute', 2], ['kobold', 2]]], boss: 'warlord',
-    },
-    {
-      id: 'shrine', name: 'Shrine of the Fallen', level: 9, theme: 'shrine', w: 20, h: 34, seed: 53,
-      desc: 'The sealed shrine where a cursed knight still guards his broken oath.',
-      waves: [[['archer', 4], ['brute', 2], ['demon', 2]], [['orc', 5], ['demon', 3], ['archer', 3]]], boss: 'knight',
-    },
-    {
-      id: 'trial', name: 'Endless Trial', level: 10, theme: 'trial', w: 20, h: 30, seed: 71, endless: true,
-      desc: 'An arena of endless waves. Enemies grow stronger each wave; a boss appears every 5th wave.',
-      waves: [],
-    },
+  // ------------------------------------------------------------------ WORLD: 4 regions, 20 areas (see docs/WORLD_SPEC.md)
+  G.REGIONS = [
+    { id: 'vale', name: 'Emberhold Vale', levels: [1, 15], desc: 'Green hills around the last village, overrun by orc raiders.' },
+    { id: 'deadlands', name: 'The Deadlands', levels: [15, 40], desc: 'Graves, bones and poison where the necromancer raises the dead.' },
+    { id: 'ruins', name: 'Sunken Ruins', levels: [40, 65], desc: 'The drowned halls where Grukk the Warlord gathers his horde.' },
+    { id: 'fallen', name: 'Shrine of the Fallen', levels: [65, 100], desc: 'The cursed road to the shrine of the knight who broke his oath.' },
   ];
+  // a wave entry is [enemy, count] or [enemy, count, eliteModifier] ('fast' = Swift, 'tough' = Hulking)
+  G.AREAS = [
+    // ---- Emberhold Vale
+    { id: 'courtyard', region: 'vale', name: 'Mossy Courtyard', level: 1, theme: 'grass', w: 18, h: 30, seed: 11,
+      desc: 'Overgrown grounds outside the old keep. Orc raiders have made camp here.',
+      waves: [[['orc', 3]], [['orc', 5]], [['orc', 4], ['brute', 1]]] },
+    { id: 'millroad', region: 'vale', name: 'Old Mill Road', level: 3, theme: 'grass', w: 18, h: 32, seed: 113,
+      desc: 'The road to the old mill. Kobolds raid anyone who travels it.',
+      waves: [[['orc', 3], ['kobold', 2]], [['kobold', 4], ['orc', 2]], [['orc', 4], ['kobold', 3]]] },
+    { id: 'thornwood', region: 'vale', name: 'Thornwood Edge', level: 6, theme: 'grass', w: 18, h: 32, seed: 127,
+      desc: 'Where the forest begins. Deserter archers hide among the trees.',
+      waves: [[['kobold', 3], ['archer', 2]], [['archer', 3], ['kobold', 3]], [['kobold', 3], ['archer', 2], ['kobold', 1, 'fast']]] },
+    { id: 'banditcamp', region: 'vale', name: 'Bandit Camp', level: 9, theme: 'grass', w: 20, h: 32, seed: 131,
+      desc: 'Deserters and orcs share the spoils of the raids.',
+      waves: [[['archer', 3], ['orc', 3]], [['brute', 2], ['archer', 2]], [['orc', 5], ['brute', 1], ['archer', 3]]] },
+    { id: 'keepgate', region: 'vale', name: 'Keep Gate', level: 12, theme: 'grass', w: 18, h: 30, seed: 137,
+      desc: 'The broken gate of the old keep, held by the Brute Captain.',
+      waves: [[['orc', 5], ['archer', 2]], [['brute', 2], ['orc', 3], ['archer', 2]]], boss: 'bruteCaptain' },
+    // ---- The Deadlands
+    { id: 'graveyard', region: 'deadlands', name: 'Whispering Graveyard', level: 15, theme: 'undead', w: 18, h: 32, seed: 23,
+      desc: 'Kobolds and deserters prowl the tombs while the dead stir below.',
+      waves: [[['kobold', 3], ['archer', 1]], [['archer', 3], ['kobold', 3]], [['demon', 2], ['archer', 2]], [['orc', 3], ['demon', 2], ['kobold', 2]]] },
+    { id: 'bonefields', region: 'deadlands', name: 'Bone Fields', level: 20, theme: 'undead', w: 20, h: 32, seed: 211,
+      desc: 'An old battlefield. The bones here do not stay buried.',
+      waves: [[['demon', 3], ['kobold', 2]], [['demon', 3], ['kobold', 3]], [['demon', 2], ['kobold', 2], ['demon', 1, 'tough']]] },
+    { id: 'toxicmire', region: 'deadlands', name: 'Toxic Mire', level: 25, theme: 'undead', w: 18, h: 34, seed: 223,
+      desc: 'Green poison seeps from the ground, and demons hunt in the fog.',
+      waves: [[['demon', 3], ['archer', 2]], [['archer', 4], ['demon', 2]], [['demon', 4], ['archer', 3]]] },
+    { id: 'bonehollow', region: 'deadlands', name: 'Hollow of the Bone King', level: 30, theme: 'undead', landmark: 'udLich', w: 20, h: 32, seed: 227,
+      desc: 'A hollow beneath a giant crowned skeleton. Cursed samurai guard it.',
+      waves: [[['cursedSam', 2], ['demon', 2]], [['cursedSam', 3], ['demon', 2]], [['demon', 3], ['cursedSam', 1, 'fast']]] },
+    { id: 'crypt', region: 'deadlands', name: "Morvath's Crypt", level: 35, theme: 'undead', w: 18, h: 32, seed: 229,
+      desc: 'The necromancer Morvath raises demons from the graves.',
+      waves: [[['demon', 3], ['kobold', 3]], [['demon', 3], ['archer', 2], ['cursedSam', 1]]], boss: 'necro' },
+    // ---- Sunken Ruins
+    { id: 'causeway', region: 'ruins', name: 'Ruined Causeway', level: 40, theme: 'ruins', w: 20, h: 34, seed: 311,
+      desc: 'A broken stone road into the drowned halls.',
+      waves: [[['orc', 4], ['kobold', 3]], [['archer', 3], ['orc', 3]], [['orc', 5], ['kobold', 3], ['archer', 2]]] },
+    { id: 'sunkenhalls', region: 'ruins', name: 'Sunken Halls', level: 45, theme: 'ruins', w: 20, h: 34, seed: 313,
+      desc: 'Flooded halls full of the horde\'s brutes.',
+      waves: [[['brute', 2], ['archer', 3]], [['brute', 3], ['orc', 3]], [['brute', 2], ['archer', 2], ['brute', 1, 'tough']]] },
+    { id: 'warcamp', region: 'ruins', name: 'Warcamp', level: 50, theme: 'ruins', w: 20, h: 34, seed: 317,
+      desc: 'Grukk\'s war camp, loud with drums and full of orcs.',
+      waves: [[['orc', 6], ['archer', 2]], [['brute', 2], ['orc', 4]], [['orc', 5], ['brute', 2], ['archer', 3]]] },
+    { id: 'vault', region: 'ruins', name: 'Collapsed Vault', level: 55, theme: 'ruins', w: 20, h: 34, seed: 331,
+      desc: 'A treasure vault caved in long ago. Something still guards it.',
+      waves: [[['cursedSam', 3], ['brute', 1]], [['brute', 2], ['cursedSam', 3]], [['cursedSam', 2], ['brute', 1, 'tough']]] },
+    { id: 'ruins', region: 'ruins', name: "Grukk's Throne", level: 60, theme: 'ruins', w: 20, h: 34, seed: 37,
+      desc: 'The orc warlord Grukk holds his horde together with a shard of the broken oath.',
+      waves: [[['orc', 4], ['kobold', 2]], [['brute', 2], ['archer', 3]], [['orc', 5], ['brute', 2], ['kobold', 2]]], boss: 'warlord' },
+    // ---- Shrine of the Fallen
+    { id: 'approach', region: 'fallen', name: 'Fallen Approach', level: 65, theme: 'undead', dark: true, w: 18, h: 32, seed: 411,
+      desc: 'The cursed road begins. Samurai and demons walk it.',
+      waves: [[['cursedSam', 3], ['demon', 2]], [['demon', 3], ['cursedSam', 3]], [['cursedSam', 4], ['demon', 3]]] },
+    { id: 'oathpath', region: 'fallen', name: "Oathbreaker's Path", level: 72, theme: 'undead', dark: true, w: 18, h: 34, seed: 419,
+      desc: 'Knights who followed Varric still march here, bound by his broken oath.',
+      waves: [[['oathKnight', 2], ['archer', 2]], [['oathKnight', 2], ['archer', 3]], [['archer', 3], ['oathKnight', 1, 'tough']]] },
+    { id: 'brokenvows', region: 'fallen', name: 'Hall of Broken Vows', level: 80, theme: 'undead', dark: true, w: 20, h: 34, seed: 421,
+      desc: 'A hall of shattered statues where the oathbound gather.',
+      waves: [[['oathKnight', 2], ['cursedSam', 2]], [['cursedSam', 3], ['oathKnight', 2]], [['oathKnight', 3], ['cursedSam', 3]]] },
+    { id: 'shrine', region: 'fallen', name: 'Shrine of the Fallen', level: 90, theme: 'shrine', w: 20, h: 34, seed: 53,
+      desc: 'The sealed shrine where the cursed knight still guards his broken oath.',
+      waves: [[['oathKnight', 2], ['demon', 2], ['archer', 2]], [['cursedSam', 3], ['oathKnight', 2], ['archer', 3]]], boss: 'knight' },
+    { id: 'trial', region: 'fallen', name: 'Endless Trial', level: 90, theme: 'trial', w: 20, h: 30, seed: 71, endless: true,
+      desc: 'An arena of endless waves. Enemies grow stronger each wave; a boss appears every 5th wave.',
+      waves: [] },
+  ];
+
+  // Rift shrine rooms: pick 1 of 3 blessings that last until the rift ends
+  G.SHRINE_BUFFS = [
+    { id: 'might', name: 'Might', desc: '+15% attack for this rift', buff: { riftAtk: 0.15 } },
+    { id: 'ward', name: 'Ward', desc: '+25% defense for this rift', buff: { riftDef: 0.25 } },
+    { id: 'haste', name: 'Haste', desc: '+10% attack and move speed for this rift', buff: { riftSpd: 0.1 } },
+    { id: 'renewal', name: 'Renewal', desc: 'Restore 50% HP and MP now', heal: 0.5 },
+    { id: 'supplies', name: 'Supplies', desc: '+1 Health Potion and +1 Mana Potion', potions: 1 },
+  ];
+  // elite modifiers for elite rooms
+  G.ELITE_MODS = {
+    fast: { label: 'Swift', hp: 3, atk: 1.3, speed: 1.45, scale: 1.2 },
+    tough: { label: 'Hulking', hp: 4.5, atk: 1.4, speed: 0.9, scale: 1.35 },
+  };
 
   // ------------------------------------------------------------------ ITEMS
   G.RARITY = [
