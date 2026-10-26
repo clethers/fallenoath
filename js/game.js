@@ -296,7 +296,7 @@
     if (pl.invuln > 0) return;
     o = o || {};
     const r = rollDamage(src.atk, mult, pl.stats.def, 0, 1);
-    if (pl.stats.dmgReduce) { r.dmg = Math.max(1, Math.round(r.dmg * (1 - pl.stats.dmgReduce))); fx(run, 'sparkleBlue', pl.x, pl.y - 16, { scale: 0.5, fps: 30 }); } // Infinity
+    if (pl.stats.dmgReduce) { r.dmg = Math.max(1, Math.round(r.dmg * (1 - pl.stats.dmgReduce))); if (G.profile.path === 'limitless') fx(run, 'sparkleBlue', pl.x, pl.y - 16, { scale: 0.5, fps: 30 }); } // Infinity shimmer (Gojo only)
     pl.hp -= r.dmg;
     pl.invuln = 0.35; pl.flash = 0.25; pl.lastHit = run.time;
     text(run, pl.x, pl.y - 34, String(r.dmg), '#ff6b6b');

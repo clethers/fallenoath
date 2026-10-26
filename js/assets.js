@@ -14,6 +14,7 @@
     jw: 'assets/Jin-Woo (edited FREE Adventurer)/', // the Adventurer with the sword removed, black hair and coat, purple eyes
     zen: 'assets/Zenitsu (edited FREE Adventurer)/', // Storm Blade: yellow hair and haori, katana sheathed at the hip
     asta: 'assets/Asta (edited FREE Adventurer)/', // ash hair, headband, black outfit, giant black sword
+    luffy: 'assets/Luffy (edited FREE Adventurer)/', // the Adventurer with the sword removed: straw hat, red vest, blue shorts
     knight: 'assets/FREE_Knight 2D Pixel Art v1.2/Sprites/',
     samurai: 'assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/',
     tiny: 'assets/Tiny RPG Character Asset Pack -Demo Soldier&Orc/',
@@ -35,6 +36,11 @@
     SHEETS['zen_run_' + d] = { src: P.zen + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['zen_atk1_' + d] = { src: P.zen + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['zen_atk2_' + d] = { src: P.zen + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
+    // Rubber Brawler hero: same frames as the Adventurer, drawn as 'adv_*~luffy'
+    SHEETS['luffy_idle_' + d] = { src: P.luffy + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['luffy_run_' + d] = { src: P.luffy + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['luffy_atk1_' + d] = { src: P.luffy + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['luffy_atk2_' + d] = { src: P.luffy + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
     // Anti-Magic Knight hero: same frames as the Adventurer, drawn as 'adv_*~asta'
     SHEETS['asta_idle_' + d] = { src: P.asta + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['asta_run_' + d] = { src: P.asta + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
@@ -376,9 +382,9 @@
       });
       // the Limitless Sorcerer's own hero sheets stand in for the Adventurer's ('adv_idle_down~gojo' = 'gojo_idle_down')
       Object.keys(SHEETS).forEach((k) => {
-        const m = /^(gojo|jw|zen|asta)_/.exec(k);
+        const m = /^(gojo|jw|zen|asta|luffy)_/.exec(k);
         if (!m || k.includes('~') || !images['sheet:' + k]) return;
-        const a = 'adv_' + k.slice(m[0].length) + '~' + { gojo: 'gojo', jw: 'jinwoo', zen: 'zenitsu', asta: 'asta' }[m[1]];
+        const a = 'adv_' + k.slice(m[0].length) + '~' + { gojo: 'gojo', jw: 'jinwoo', zen: 'zenitsu', asta: 'asta', luffy: 'luffy' }[m[1]];
         images['sheet:' + a] = images['sheet:' + k]; SHEETS[a] = Object.assign({}, SHEETS[k]);
       });
       Object.keys(FX).forEach((k) => {

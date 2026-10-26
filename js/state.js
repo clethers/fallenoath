@@ -125,6 +125,9 @@
     // Limitless Sorcerer passives
     s.dmgReduce = 0; s.potionMult = 1;
     const ir = G.passiveRank(p, 'infinity'); if (ir) s.dmgReduce = ir * G.SKILLS.infinity.reduce;
+    const lr = G.passiveRank(p, 'rubber'); if (lr) s.dmgReduce = lr * G.SKILLS.rubber.reduce; // Rubber Body
+    const g2 = G.passiveRank(p, 'gearsecond'); if (g2) { s.atkSpeed += g2 * G.SKILLS.gearsecond.aspd; s.moveSpeed *= 1 + g2 * G.SKILLS.gearsecond.speed; } // Gear Second
+    const hk = G.passiveRank(p, 'haki'); if (hk) s.crit += hk * G.SKILLS.haki.crit; // Armament Haki
     const ar = G.passiveRank(p, 'antibody'); if (ar) s.dmgReduce = ar * G.SKILLS.antibody.reduce; // Anti-Magic Body
     const tr = G.passiveRank(p, 'training'); if (tr) { s.atk *= 1 + tr * G.SKILLS.training.atk; s.maxHp *= 1 + tr * G.SKILLS.training.hp; } // Endless Training
     const er = G.passiveRank(p, 'sixeyes'); if (er) s.crit += er * G.SKILLS.sixeyes.crit;
