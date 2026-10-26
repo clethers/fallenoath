@@ -644,3 +644,35 @@ h1, h2, h3, h4, h5 { font-weight: 700; }
   .hero-feature > p { font-size: 13px; line-height: 1.35; }
   .hf-skills span { padding: 3px 7px; }
 }
+
+/* profile menu: tap your hero plate (world map) or face (in game) */
+.profile-btn { position: relative; border: 0; background: none; color: inherit; text-align: left; padding: 0; font: inherit; cursor: pointer; }
+.profile-btn:active { transform: scale(.98); }
+.hud-face { border: 0; padding: 0; background: none; cursor: pointer; }
+.badge.dot { min-width: 0; width: 12px; height: 12px; padding: 0; border-radius: 50%; top: -2px; right: auto; left: 34px; box-shadow: 0 0 0 2px #140f2e; }
+.hud-face .badge.dot { left: auto; right: -2px; top: -2px; }
+.menu-card { width: min(340px, 100%); display: flex; flex-direction: column; gap: 14px; }
+.menu-head { display: flex; align-items: center; gap: 12px; }
+.menu-head canvas { width: 52px; height: 52px; border-radius: 50%; image-rendering: pixelated; flex: none;
+  background: radial-gradient(circle, var(--hero), color-mix(in srgb, var(--hero) 22%, #000)); box-shadow: 0 0 0 3px #1c1440, 0 0 0 5px var(--hero); }
+.menu-head h4 { margin: 0; color: #ffc23d; }
+.menu-head p { margin: 2px 0 0; font-size: 13px; font-weight: 800; color: color-mix(in srgb, var(--hero) 55%, #fff); }
+.menu-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.menu-tile { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; min-height: 84px; border: 0;
+  clip-path: var(--cut6); background: linear-gradient(180deg, #3a2c78, #2a1d5a); box-shadow: inset 0 -4px 0 #1a1240; color: var(--ink); font-weight: 900; font-size: 14px; }
+.menu-tile svg { width: 28px; height: 28px; color: #ffc23d; }
+.menu-tile:active { transform: translateY(2px); box-shadow: inset 0 -1px 0 #1a1240; }
+.menu-tile .badge { top: 6px; right: 8px; }
+/* with the menu row gone, the tracker and buffs move up */
+.tracker, .buffs { top: calc(76px + var(--safe-t)); }
+.bossbar { top: calc(120px + var(--safe-t)); }
+
+/* Recommended (auto-allocate) row, skill tree spacing, next-area button */
+.pts-row { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin: 0 0 8px; }
+.pts-row .note { margin: 0; flex: 1; min-width: 0; }
+.btn.rec-btn { flex: none; min-height: 36px; padding: 0 14px; font-size: 14px; color: #3a1a00; background: linear-gradient(180deg, #ffd96a, #ffaa2a); box-shadow: inset 0 -3px 0 #b86a00; }
+.btn.rec-btn:disabled { color: #8a80b0; background: #2f2160; box-shadow: none; }
+.tree { margin-bottom: 46px; }
+.node:not(.passive) .rk { top: -6px; bottom: auto; right: -8px; }
+.btn.next-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
+.btn.next-btn small { display: block; max-width: 100%; font-size: 12px; font-weight: 800; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

@@ -51,33 +51,26 @@
     <!-- Hub / world map -->
     <section id="screen-hub" class="screen">
       <header class="hub-top">
-        <div class="plate">
-          <div class="lv" id="hub-lv">1</div>
+        <button class="plate profile-btn" id="hub-profile" aria-label="Open menu">
+          <div class="lv" id="hub-lv">1</div><b class="badge dot" id="badge-profile"></b>
           <div class="plate-info">
             <div class="plate-name"><span id="hub-name">Adventurer</span> <b class="gm-tag" id="hub-gm" hidden>GM</b></div>
             <div class="bar xp"><i id="hub-xp"></i></div>
             <div class="tiny muted" id="hub-xp-text"></div>
           </div>
-        </div>
+        </button>
         <div class="gold" id="hub-gold">0</div>
       </header>
       <div class="hub-row"><h2 class="hub-title">World map</h2><button class="btn small gm-switch" id="hub-switch" hidden>Switch Character</button></div>
       <div class="area-list" id="area-list"></div>
-      <nav class="hub-nav">
-        <button class="nav-btn" data-open="hero"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/></svg><span>Hero</span><b class="badge" id="badge-hero"></b></button>
-        <button class="nav-btn" data-open="bag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 8h12l-1 13H7z"/><path d="M9 8V6a3 3 0 016 0v2"/></svg><span>Bag</span></button>
-        <button class="nav-btn" data-open="skills"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg><span>Skills</span><b class="badge" id="badge-skills"></b></button>
-        <button class="nav-btn" data-open="quests"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 3h10l3 3v15H6z"/><path d="M9 9h7M9 13h7M9 17h4"/></svg><span>Quests</span><b class="badge" id="badge-quests"></b></button>
-        <button class="nav-btn" data-open="shop"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9l2-5h14l2 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/></svg><span>Shop</span></button>
-        <button class="nav-btn" data-open="settings"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/></svg><span>Settings</span></button>
-      </nav>
+      
     </section>
 
     <!-- In-game HUD -->
     <section id="hud" class="screen">
       <header class="hud-top">
         <div class="plate">
-          <div class="hud-face"><canvas id="hud-face" width="52" height="52"></canvas><b id="hud-lv">1</b></div>
+          <button class="hud-face" id="hud-profile" aria-label="Open menu"><canvas id="hud-face" width="52" height="52"></canvas><b id="hud-lv">1</b><i class="badge dot" id="hbadge-profile"></i></button>
           <div class="plate-info">
             <div class="bar hp"><i id="hud-hp"></i><span id="hud-hp-text"></span></div>
             <div class="bar mp"><i id="hud-mp"></i><span id="hud-mp-text"></span></div>
@@ -89,14 +82,7 @@
           <button class="icon-btn" id="btn-pause" aria-label="Pause">II</button>
         </div>
       </header>
-      <nav class="hud-menu">
-        <button data-open="hero">Hero<b class="badge" id="hbadge-hero"></b></button>
-        <button data-open="bag">Bag</button>
-        <button data-open="skills">Skills<b class="badge" id="hbadge-skills"></b></button>
-        <button data-open="quests">Quests<b class="badge" id="hbadge-quests"></b></button>
-        <button data-open="map">Map</button>
-        <button data-open="settings">Settings</button>
-      </nav>
+      
       <div class="tracker" id="tracker"></div>
       <div class="buffs" id="buffs"></div>
       <div class="bossbar" id="bossbar" hidden>

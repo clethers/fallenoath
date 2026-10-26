@@ -157,7 +157,49 @@
     set('badge-hero', p.attrPoints); set('hbadge-hero', p.attrPoints);
     set('badge-skills', sk); set('hbadge-skills', sk);
     set('badge-quests', q); set('hbadge-quests', q);
+    ui.badgeCounts = { hero: p.attrPoints, skills: sk, quests: q };
+    const total = (p.attrPoints > 0) + (sk > 0) + (q > 0); // a dot on the profile when anything needs attention
+    ['badge-profile', 'hbadge-profile'].forEach((id) => { const e = $(id); if (e) e.classList.toggle('on', total > 0); });
   };
+
+  // ------------------------------------------------------------ profile menu (tap your hero plate or face)
+  const MENU_ICONS = {
+    hero: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>',
+    bag: '<path d="M6 8h12l-1 13H7z"/><path d="M9 8V6a3 3 0 016 0v2"/>',
+    skills: '<path d="M13 2L4 14h7l-1 8 9-12h-7z"/>',
+    quests: '<path d="M6 3h10l3 3v15H6z"/><path d="M9 9h7M9 13h7M9 17h4"/>',
+    shop: '<path d="M3 9l2-5h14l2 5"/><path d="M4 9v11h16V9"/><path d="M9 20v-6h6v6"/>',
+    map: '<path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/>',
+    settings: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2"/>',
+  };
+  ui.profileMenu = function () {
+    const p = G.profile;
+    if (!p) return;
+    const inRun = !!(G.game.run && !G.game.run.finished);
+    const P = G.PATHS[p.path];
+    const items = [['hero', 'Hero'], ['bag', 'Bag'], ['skills', 'Skills'], ['quests', 'Quests'], inRun ? ['map', 'World map'] : ['shop', 'Shop'], ['settings', 'Settings']];
+    const card = $('sheet-card');
+    card.innerHTML = '';
+    card.classList.add('menu-card');
+    const head = el(`<div class="menu-head"><canvas width="104" height="104"></canvas><div><h4>${esc(p.gm ? 'Game Master' : 'Adventurer')}</h4><p>Level ${p.level}${P ? ' ' + esc(P.name) : ''}</p></div></div>`);
+    card.appendChild(head); ui.drawFace(head.querySelector('canvas'), p.path);
+    const grid = el('<div class="menu-grid"></div>');
+    const counts = ui.badgeCounts || {};
+    items.forEach(([key, label]) => {
+      const b = document.createElement('button');
+      b.className = 'menu-tile';
+      b.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${MENU_ICONS[key]}</svg><span>${label}</span>` +
+        (counts[key] > 0 ? `<b class="badge on">${counts[key]}</b>` : '');
+      b.onclick = () => { closeMenu(); ui.open(key); };
+      grid.appendChild(b);
+    });
+    card.appendChild(grid);
+    const close = btn('Close', 'ghost', () => closeMenu());
+    card.appendChild(close);
+    $('sheet').hidden = false;
+    if (G.game.run) { G.game.paused = true; G.input.reset(); }
+  };
+  function closeMenu() { $('sheet-card').classList.remove('menu-card'); closeSheet(); }
 
   // ------------------------------------------------------------ hub
   const thumbs = {};
@@ -455,7 +497,11 @@
     body.appendChild(el(`<div class="card"><div class="row"><div class="grow"><div class="bar xp"><i style="transform:scaleX(${p.level >= C.MAX_LEVEL ? 1 : Math.min(1, p.xp / need)})"></i></div></div>
       <span class="tiny muted">${p.level >= C.MAX_LEVEL ? 'MAX' : fmt(p.xp) + ' / ' + fmt(need) + ' XP'}</span></div></div>`));
     body.appendChild(el(`<div class="section-title">Attributes</div>`));
-    const pts = el(`<div class="note" style="margin-bottom:6px">Unspent points: <b style="color:var(--gold-2)">${p.attrPoints}</b> (gain ${C.ATTR_POINTS_PER_LEVEL} per level)</div>`);
+    const pts = el(`<div class="pts-row"><div class="note">Unspent points: <b style="color:var(--gold-2)">${p.attrPoints}</b> (gain ${C.ATTR_POINTS_PER_LEVEL} per level)</div></div>`);
+    pts.appendChild(btn('Recommended', 'small rec-btn', () => {
+      const n = G.autoAttrs(G.profile); if (!n) return;
+      syncRunStats(); G.save(); ui.updateBadges(); ui.renderPanel(); ui.toast(n + ' point' + (n > 1 ? 's' : '') + ' spent for your hero', 'good');
+    }, p.attrPoints <= 0));
     body.appendChild(pts);
     const st = el('<div class="stack"></div>');
     Object.keys(C.ATTR).forEach((k) => {
@@ -571,7 +617,7 @@
   // ---- item detail sheet
   ui.itemSheet = function (it, ctx) {
     const p = G.profile, card = $('sheet-card');
-    card.innerHTML = '';
+    card.innerHTML = ''; card.classList.remove('menu-card');
     const acts = el('<div class="sheet-actions"></div>');
     if (it.kind === 'gear') {
       const r = G.rarityOf(it);
@@ -635,7 +681,7 @@
   // Rift shrine: pick 1 of 3 blessings
   ui.shrineChoice = function (opts, onPick) {
     const card = $('sheet-card');
-    card.innerHTML = '';
+    card.innerHTML = ''; card.classList.remove('menu-card');
     card.appendChild(el('<div><h4>Rift Shrine</h4><p class="note">Choose a blessing. It lasts until this rift ends.</p></div>'));
     const list = el('<div class="shrine-opts"></div>');
     opts.forEach((b) => {
@@ -659,7 +705,7 @@
   ui.confirm = function (msg, onYes, o) {
     o = o || {};
     const card = $('sheet-card');
-    card.innerHTML = '';
+    card.innerHTML = ''; card.classList.remove('menu-card');
     card.appendChild(el(`<div><h4>${esc(o.title || 'Are you sure?')}</h4><p class="note" style="font-size:14px;color:var(--ink)">${esc(msg)}</p></div>`));
     const acts = el('<div class="sheet-actions"></div>');
     acts.appendChild(btn(o.no || 'Cancel', 'ghost', closeSheet));
@@ -677,6 +723,12 @@
     const path = G.PATHS[p.path];
     body.appendChild(el(`<div class="path-head" style="--pc:${path.color}"><div class="skill-ico big" style='${G.fxIconStyle(path.icon[0], path.icon[1], 58, path.icon[2])}'></div>
       <div class="grow"><div class="path-name">${esc(path.name)}</div><div class="note">${esc(path.element)} · Skill points: <b style="color:var(--gold-2)">${p.skillPoints}</b> (1 per level)</div></div></div>`));
+    { const r = el('<div class="pts-row"><div class="note">Spend points on the best picks for this hero</div></div>');
+      r.appendChild(btn('Recommended', 'small rec-btn', () => {
+        const n = G.autoSkills(G.profile); if (!n) return;
+        G.save(); ui.refreshSkillButtons(); ui.updateBadges(); ui.renderPanel(); ui.toast(n + ' skill point' + (n > 1 ? 's' : '') + ' spent', 'good');
+      }, !learnableSkills() || p.skillPoints <= 0));
+      body.appendChild(r); }
     // action bar preview: 4 chosen skills + ultimate
     G.fixSlots(p);
     const bar = el('<div class="bar-preview"></div>');
@@ -724,7 +776,7 @@
   function skillSheet(k) {
     const p = G.profile, sk = G.SKILLS[k], rank = p.skills[k] || 0, card = $('sheet-card');
     const block = G.skillBlock(p, k);
-    card.innerHTML = '';
+    card.innerHTML = ''; card.classList.remove('menu-card');
     card.appendChild(el(`<div><div class="row"><div class="skill-ico" style='${G.fxIconStyle(sk.icon[0], sk.icon[1], 54, sk.icon[2])}'></div><div class="grow">
       <h4>${esc(sk.name)}</h4><div class="rar muted">${sk.ult ? 'Ultimate' : sk.kind === 'passive' ? 'Passive' : 'Active'} · Rank ${rank}/${G.SKILL_MAX_RANK} · Unlocks at Lv ${sk.unlock}</div></div></div>
       <p class="note" style="font-size:14px;color:var(--ink)">${esc(sk.desc)}</p>
@@ -955,8 +1007,17 @@
     }
     if (claimable()) body.appendChild(el(`<p class="note" style="color:var(--gold-2)">You have ${claimable()} quest reward(s) to claim in the Journal.</p>`));
     const acts = el('<div class="sheet-actions" style="margin-top:14px"></div>');
-    acts.appendChild(btn('Retry', '', () => { const id = run.area.id; ui.close(true); G.game.exitToHub(); G.game.startArea(id); }));
-    acts.appendChild(btn('World Map', 'primary', () => { ui.close(true); G.game.exitToHub(); ui.show('hub'); }));
+    const toMap = () => { ui.close(true); G.game.exitToHub(); ui.show('hub'); };
+    const ai = G.AREAS.findIndex((a) => a.id === run.area.id), next = win && ai >= 0 ? G.AREAS[ai + 1] : null;
+    const nextOpen = next && p.areas[next.id] && p.areas[next.id].unlocked;
+    if (win) {
+      acts.appendChild(btn('World Map', nextOpen ? '' : 'primary', toMap));
+      if (nextOpen) { const nb = btn('', 'primary next-btn', () => { ui.close(true); G.game.exitToHub(); G.game.startArea(next.id); });
+        nb.innerHTML = `Next area<small>${esc(next.name)}</small>`; nb.setAttribute('aria-label', 'Next area: ' + next.name); acts.appendChild(nb); }
+    } else {
+      acts.appendChild(btn('Retry', '', () => { const id = run.area.id; ui.close(true); G.game.exitToHub(); G.game.startArea(id); }));
+      acts.appendChild(btn('World Map', 'primary', toMap));
+    }
     body.appendChild(acts);
     $('panel-title').textContent = '';
   };

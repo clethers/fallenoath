@@ -333,6 +333,36 @@
     return true;
   };
   // can this node be ranked up right now? returns '' if yes, otherwise the reason
+  // Recommended: spend every attribute point toward the hero's ratio
+  G.autoAttrs = function (p) {
+    const w = G.REC_ATTRS[p.path] || { str: 1, vit: 1, int: 1, agi: 1 };
+    const keys = Object.keys(G.CONFIG ? G.CONFIG.ATTR : w).filter((k) => w[k] > 0);
+    const wsum = keys.reduce((a, k) => a + w[k], 0);
+    let n = 0;
+    while (p.attrPoints > 0) {
+      const total = keys.reduce((a, k) => a + p.attrs[k], 0) + 1;
+      let best = keys[0], gap = -Infinity;
+      keys.forEach((k) => { const g = (w[k] / wsum) * total - p.attrs[k]; if (g > gap) { gap = g; best = k; } });
+      p.attrs[best]++; p.attrPoints--; n++;
+    }
+    return n;
+  };
+  // Recommended: learn new skills first, then rank evenly (ultimate, then actives, then passives on ties)
+  G.autoSkills = function (p) {
+    const P = G.PATHS[p.path]; if (!P) return 0;
+    const own = G.SKILL_ORDER.filter((k) => G.SKILLS[k].path === p.path);
+    const pri = (k) => { const sk = G.SKILLS[k]; return sk.ult ? 0 : sk.kind === 'passive' ? 2 : 1; };
+    let n = 0;
+    while (p.skillPoints > 0) {
+      const c = own.filter((k) => !G.skillBlock(p, k));
+      if (!c.length) break;
+      c.sort((a, b) => (p.skills[a] || 0) - (p.skills[b] || 0) || pri(a) - pri(b) || G.SKILLS[a].unlock - G.SKILLS[b].unlock);
+      const k = c[0]; p.skills[k] = (p.skills[k] || 0) + 1; p.skillPoints--; n++;
+    }
+    if (n) G.fixSlots(p);
+    return n;
+  };
+
   G.skillBlock = function (p, k) {
     const sk = G.SKILLS[k];
     if (!sk || sk.path !== p.path) return 'Not part of your path';

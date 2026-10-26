@@ -204,6 +204,14 @@
       desc: 'ULTIMATE. Domain Expansion: a starry void swallows the area. Every enemy inside is frozen, overloaded with endless information, then takes heavy damage.' },
   };
   G.SKILL_ORDER = Object.keys(G.SKILLS);
+  // Recommended attribute split per hero (weights; the Recommended button aims for this ratio)
+  G.REC_ATTRS = {
+    storm: { str: 4, agi: 3, vit: 2, int: 1 },
+    shadow: { str: 4, agi: 3, int: 2, vit: 1 },
+    antimagic: { str: 5, vit: 3, agi: 2, int: 0 },
+    gomu: { str: 4, vit: 4, agi: 2, int: 0 },
+    limitless: { int: 5, vit: 2, agi: 2, str: 1 },
+  };
   G.SKILL_MAX_RANK = 10;
   // ranks above 5 need a player level (rank 6 at Lv 40 ... rank 10 at Lv 100)
   G.RANK_LEVEL = { 6: 40, 7: 55, 8: 70, 9: 85, 10: 100 };

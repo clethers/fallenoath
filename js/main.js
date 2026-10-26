@@ -134,6 +134,7 @@
 
   // ------------------------------------------------------------ buttons
   document.querySelectorAll('[data-open]').forEach((b) => b.addEventListener('click', () => G.ui.open(b.dataset.open)));
+  ['hub-profile', 'hud-profile'].forEach((id) => $(id) && $(id).addEventListener('click', () => G.ui.profileMenu()));
   $('btn-pause').addEventListener('click', () => G.game.run && !G.game.run.finished && G.ui.open('pause'));
   $('panel-close').addEventListener('click', () => G.ui.close());
   $('modal').addEventListener('click', (e) => { if (e.target === $('modal')) G.ui.close(); });
