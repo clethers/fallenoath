@@ -604,3 +604,43 @@ h1, h2, h3, h4, h5 { font-weight: 700; }
 .price { color: #ffc23d; font-weight: 900; }
 .reward { color: #ffd96a; font-weight: 800; }
 .note { font-weight: 700; }
+
+/* hero picker: a row of faces and one card for the picked hero (no scrolling) */
+.class-list { gap: 14px; }
+.hero-tabs { display: flex; justify-content: space-between; gap: 6px; padding: 4px 2px; }
+.hero-tab { width: 58px; height: 58px; padding: 0; border: 0; border-radius: 50%; overflow: hidden; flex: none;
+  background: radial-gradient(circle, var(--cc), color-mix(in srgb, var(--cc) 20%, #000)); box-shadow: 0 0 0 3px #140f2e, 0 0 0 5px color-mix(in srgb, var(--cc) 40%, #2a2050); opacity: .72; transition: opacity .15s, box-shadow .15s; }
+.hero-tab canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.hero-tab.on { opacity: 1; box-shadow: 0 0 0 3px #140f2e, 0 0 0 6px var(--cc), 0 0 22px var(--cc); }
+.hero-feature { clip-path: var(--cut); padding: 16px 16px 18px; display: flex; flex-direction: column; gap: 12px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 30%, #241a4a) 0%, #241a4a 42%, #1c1440 100%); }
+.hf-top { display: flex; align-items: center; gap: 14px; }
+.hf-top canvas.hero { width: 128px; height: 140px; flex: none; image-rendering: pixelated;
+  background: radial-gradient(55% 50% at 50% 58%, var(--cc) 0%, color-mix(in srgb, var(--cc) 18%, transparent) 60%, transparent 76%); }
+.hf-name { display: flex; flex-direction: column; align-items: flex-start; gap: 5px; min-width: 0; }
+.hf-name .tag { clip-path: var(--cut6); background: var(--cc); color: #120a24; font-size: 11px; font-weight: 900; padding: 2px 9px; }
+.hf-name h3 { margin: 0; font-family: var(--serif); font-weight: 700; font-size: 28px; line-height: 1; color: #fff; text-shadow: 0 3px 0 color-mix(in srgb, var(--cc) 45%, #000); }
+.hf-name .el { font-size: 14px; font-weight: 900; color: color-mix(in srgb, var(--cc) 55%, #fff); }
+.hero-feature > p { margin: 0; font-size: 14px; line-height: 1.45; color: #e4dcff; }
+.hf-skills { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.hf-skills span { display: flex; align-items: center; gap: 8px; clip-path: var(--cut6); background: #2f2160; padding: 5px 8px; font-size: 13px; font-weight: 900; line-height: 1.15; }
+.hf-skills i, .hf-ult i { flex: none; background-repeat: no-repeat; image-rendering: pixelated; filter: var(--icof, none); }
+.hf-skills i { width: 30px; height: 30px; }
+.hf-ult { display: flex; align-items: center; gap: 10px; clip-path: var(--cut6); padding: 7px 10px;
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cc) 45%, #2f2160), #2f2160); }
+.hf-ult i { width: 38px; height: 38px; }
+.hf-ult small { display: block; font-size: 12px; font-weight: 800; color: #e4dcff; }
+.hf-ult b { font-family: var(--serif); font-weight: 500; font-size: 18px; }
+.hero-feature .btn.hf-go { min-height: 56px; color: #fff; text-shadow: 0 2px 0 color-mix(in srgb, var(--cc) 40%, #000);
+  background: linear-gradient(180deg, color-mix(in srgb, var(--cc) 70%, #fff) 0%, var(--cc) 50%, color-mix(in srgb, var(--cc) 70%, #000) 100%);
+  box-shadow: inset 0 -5px 0 color-mix(in srgb, var(--cc) 45%, #000); }
+@media (max-height: 740px) {
+  #screen-class { gap: 8px; }
+  .hero-tabs { padding: 2px; }
+  .hero-tab { width: 52px; height: 52px; }
+  .hero-feature { gap: 9px; padding: 12px 14px 14px; }
+  .hf-top canvas.hero { width: 100px; height: 110px; }
+  .hf-name h3 { font-size: 24px; }
+  .hero-feature > p { font-size: 13px; line-height: 1.35; }
+  .hf-skills span { padding: 3px 7px; }
+}

@@ -55,40 +55,57 @@
     const list = $('class-list');
     list.innerHTML = '';
     const cur = mode === 'switch' && G.profile ? G.profile.path : null;
-    $('class-title-text') && ($('class-title-text').textContent = mode === 'switch' ? 'Switch character' : 'Choose your class');
-    $('class-sub').textContent = mode === 'switch' ? 'GM account: level, gear and progress stay; the new class is maxed out'
-      : mode === 'gm' ? 'GM account: the class you pick is maxed out' : 'One class per save. Pick the one you want to play.';
+    $('class-title-text') && ($('class-title-text').textContent = mode === 'switch' ? 'Switch hero' : 'Choose your hero');
+    $('class-sub').textContent = mode === 'switch' ? 'GM account: level, gear and progress stay; the new hero is maxed out'
+      : mode === 'gm' ? 'GM account: the hero you pick is maxed out' : 'One hero per save.';
+    const ids = Object.keys(G.PATHS);
+    let sel = cur || ids[0];
     const heroes = [];
-    Object.keys(G.PATHS).forEach((id) => {
+    // a row of hero faces to pick from, and one card for the picked hero (fits on one screen)
+    const tabs = el('<div class="hero-tabs" role="tablist"></div>');
+    const feature = el('<div class="hero-feature"></div>');
+    list.appendChild(tabs); list.appendChild(feature);
+    ids.forEach((id) => {
       const P = G.PATHS[id];
-      const sig = P.actives.filter((k) => !G.SKILLS[k].ult).slice(0, 3).concat([G.ultSkill(id)]);
-      const card = el(`<div class="class-card" style="--cc:${P.color}">
-        <canvas class="hero" width="96" height="96"></canvas>
-        <div><h3>${esc(P.name)}</h3><div class="el">${esc(P.element)}</div><p>${esc(P.desc)}</p>
-        <div class="sig">${sig.map((k) => `<span><i style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], 20, G.SKILLS[k].icon[2])}'></i>${esc(G.SKILLS[k].name)}</span>`).join('')}</div></div>
-      </div>`);
-      if (id === 'storm') card.appendChild(el('<b class="tag">LOCKED V1</b>'));
-      if (P.draft) card.appendChild(el('<b class="tag">DRAFT</b>'));
-      if (id === cur) card.classList.add('current');
-      const b = btn(id === cur ? 'Current character' : (mode === 'switch' ? 'Switch to ' : 'Play as ') + P.name, '', () => { heroes.length = 0; onPick(id); }, id === cur);
-      card.appendChild(b);
-      list.appendChild(card);
-      heroes.push({ cv: card.querySelector('canvas'), tint: P.heroTint, sprite: P.heroSprite });
+      const t = document.createElement('button');
+      t.className = 'hero-tab'; t.setAttribute('role', 'tab'); t.setAttribute('aria-label', P.name);
+      t.style.setProperty('--cc', P.color);
+      const cv = document.createElement('canvas'); cv.width = cv.height = 116;
+      t.appendChild(cv); ui.drawFace(cv, id);
+      t.onclick = () => { sel = id; render(); };
+      tabs.appendChild(t);
     });
+    function render() {
+      const P = G.PATHS[sel];
+      [...tabs.children].forEach((t, i) => { const on = ids[i] === sel; t.classList.toggle('on', on); t.setAttribute('aria-selected', on); });
+      const acts = P.actives.filter((k) => !G.SKILLS[k].ult).slice(0, 4), ult = G.ultSkill(sel);
+      const ico = (k, n) => `<i style='${G.fxIconStyle(G.SKILLS[k].icon[0], G.SKILLS[k].icon[1], n, G.SKILLS[k].icon[2])}'></i>`;
+      feature.style.setProperty('--cc', P.color);
+      feature.innerHTML = `<div class="hf-top"><canvas class="hero" width="128" height="140"></canvas>
+          <div class="hf-name">${sel === 'storm' ? '<b class="tag">Locked v1</b>' : P.draft ? '<b class="tag">Draft</b>' : ''}${sel === cur ? '<b class="tag">Current</b>' : ''}
+          <h3>${esc(P.name)}</h3><div class="el">${esc(P.element)}</div></div></div>
+        <p>${esc(P.desc)}</p>
+        <div class="hf-skills">${acts.map((k) => `<span>${ico(k, 30)}${esc(G.SKILLS[k].name)}</span>`).join('')}</div>
+        ${ult ? `<div class="hf-ult">${ico(ult, 38)}<div><small>Ultimate</small><b>${esc(G.SKILLS[ult].name)}</b></div></div>` : ''}`;
+      const b = btn(sel === cur ? 'Current hero' : (mode === 'switch' ? 'Switch to ' : 'Play as ') + P.name, '', () => { heroes.length = 0; onPick(sel); }, sel === cur);
+      b.classList.add('hf-go');
+      feature.appendChild(b);
+      heroes.length = 0;
+      heroes.push({ cv: feature.querySelector('canvas'), tint: P.heroTint, sprite: P.heroSprite });
+    }
+    render();
     $('class-back').onclick = () => { heroes.length = 0; if (onBack) onBack(); else ui.show('title'); };
     ui.show('class');
-    // idle hero preview (the class tint is applied to the same Adventurer sheet the game uses)
+    // idle hero preview of the picked hero (the class tint is applied to the same Adventurer sheet the game uses)
     const t0 = performance.now();
     const tick = () => {
-      if (ui.screen !== 'class' || !heroes.length) return;
+      if (ui.screen !== 'class') return;
       const f = Math.floor((performance.now() - t0) / 125);
       heroes.forEach((h) => {
-        const g = h.cv.getContext('2d');
-        g.clearRect(0, 0, 96, 96); g.imageSmoothingEnabled = false;
-        const own = h.sprite && G.img('sheet:' + h.sprite.prefix + '_stand');
-        if (own) { const sh = G.SHEETS[h.sprite.prefix + '_stand'], k = h.sprite.scale * 2.2; g.drawImage(own, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, 48 - h.sprite.ax * k, 90 - h.sprite.ay * k, sh.fw * k, sh.fh * k); return; }
+        const g = h.cv.getContext('2d'), W = h.cv.width, H = h.cv.height;
+        g.clearRect(0, 0, W, H); g.imageSmoothingEnabled = false;
         const key = G.tintedSheet('adv_idle_down', h.tint), sh = G.SHEETS[key], im = G.img('sheet:' + key);
-        if (im && sh) g.drawImage(im, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, 48 - 47 * 2.4, 48 - 41 * 2.4, sh.fw * 2.4, sh.fh * 2.4);
+        if (im && sh) g.drawImage(im, (f % sh.n) * sh.fw, 0, sh.fw, sh.fh, W / 2 - 47 * 3, H - 6 - 57 * 3, sh.fw * 3, sh.fh * 3);
       });
       requestAnimationFrame(tick);
     };
