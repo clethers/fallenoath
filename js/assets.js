@@ -10,9 +10,10 @@
 
   const P = {
     adv: 'assets/FREE_Adventurer 2D Pixel Art/Sprites/',
-    gojo: 'assets/Gojo (edited FREE Adventurer)/',
-    jw: 'assets/Jin-Woo (edited FREE Adventurer)/',
-    zen: 'assets/Zenitsu (edited FREE Adventurer)/', // Storm Blade: yellow hair and haori, katana sheathed at the hip // the Adventurer with the sword removed, black hair and coat, purple eyes // the Adventurer with the sword removed, white hair, dark outfit
+    gojo: 'assets/Gojo (edited FREE Adventurer)/', // the Adventurer with the sword removed, white hair, dark outfit
+    jw: 'assets/Jin-Woo (edited FREE Adventurer)/', // the Adventurer with the sword removed, black hair and coat, purple eyes
+    zen: 'assets/Zenitsu (edited FREE Adventurer)/', // Storm Blade: yellow hair and haori, katana sheathed at the hip
+    asta: 'assets/Asta (edited FREE Adventurer)/', // ash hair, headband, black outfit, giant black sword
     knight: 'assets/FREE_Knight 2D Pixel Art v1.2/Sprites/',
     samurai: 'assets/FREE_Samurai 2D Pixel Art v1.2/Sprites/',
     tiny: 'assets/Tiny RPG Character Asset Pack -Demo Soldier&Orc/',
@@ -34,6 +35,11 @@
     SHEETS['zen_run_' + d] = { src: P.zen + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['zen_atk1_' + d] = { src: P.zen + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['zen_atk2_' + d] = { src: P.zen + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
+    // Anti-Magic Knight hero: same frames as the Adventurer, drawn as 'adv_*~asta'
+    SHEETS['asta_idle_' + d] = { src: P.asta + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['asta_run_' + d] = { src: P.asta + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['asta_atk1_' + d] = { src: P.asta + 'ATTACK 1/attack1_' + d + '.png', fw: 96, fh: 80 };
+    SHEETS['asta_atk2_' + d] = { src: P.asta + 'ATTACK 2/attack2_' + d + '.png', fw: 96, fh: 80 };
     // Shadow Monarch hero: same frames as the Adventurer, drawn as 'adv_*~jinwoo'
     SHEETS['jw_idle_' + d] = { src: P.jw + 'IDLE/idle_' + d + '.png', fw: 96, fh: 80 };
     SHEETS['jw_run_' + d] = { src: P.jw + 'RUN/run_' + d + '.png', fw: 96, fh: 80 };
@@ -285,6 +291,13 @@
     impPurple3: Object.assign(gp('Impacts', 'symmetrical_impact_003', 'large_yellow', 96, 96, 7), { tint: { mode: 'lum', color: '#b06bff' } }),
     // item icons: one 32x32 strip picked from free icon packs (assets/Item Icons/CREDITS.txt); frame order = G.ITEM_ICON
     items: { src: 'assets/Item Icons/items.png', fw: 32, fh: 32, n: 17 },
+    // ---- Anti-Magic Knight (Asta): black anti-magic with a red edge
+    amSlash: Object.assign(gp('Impacts', 'directional_impact_002', 'large_white', 140, 50, 7), { dark: true, rim: '#e8202e' }),
+    amCut: Object.assign(gp('Impacts', 'directional_impact_002', 'small_white', 70, 25, 7), { dark: true, rim: '#e8202e' }),
+    amShock: Object.assign(gp('Impacts', 'symmetrical_impact_004', 'large_yellow', 96, 96, 8), { dark: true, rim: '#e8202e' }),
+    amBurst: Object.assign(gp('Lightning', 'lightning_burst_002', 'large_violet', 64, 64, 9), { dark: true, rim: '#e8202e' }),
+    amSmoke: Object.assign(gp('Smoke Bursts', 'directional_smoke_burst_001', 'large_white', 64, 64, 21), { dark: true, rim: '#e8202e' }),
+    amAura: Object.assign(gp('Lightning', 'lightning_aura_002', 'large_blue', 96, 96, 16), { dark: true, rim: '#e8202e' }),
     // Thunder Effect 02 (strips)
     thunderStrike: { src: P.thunder + 'Thunder Strike/Thunderstrike wo blur.png', fw: 64, fh: 64, n: 13, warm: 'mul' },
     thunderSplash: { src: P.thunder + 'Thunder Splash/Thunder splash wo blur.png', fw: 48, fh: 48, n: 14, warm: 'mul' },
@@ -363,9 +376,9 @@
       });
       // the Limitless Sorcerer's own hero sheets stand in for the Adventurer's ('adv_idle_down~gojo' = 'gojo_idle_down')
       Object.keys(SHEETS).forEach((k) => {
-        const m = /^(gojo|jw|zen)_/.exec(k);
+        const m = /^(gojo|jw|zen|asta)_/.exec(k);
         if (!m || k.includes('~') || !images['sheet:' + k]) return;
-        const a = 'adv_' + k.slice(m[0].length) + '~' + { gojo: 'gojo', jw: 'jinwoo', zen: 'zenitsu' }[m[1]];
+        const a = 'adv_' + k.slice(m[0].length) + '~' + { gojo: 'gojo', jw: 'jinwoo', zen: 'zenitsu', asta: 'asta' }[m[1]];
         images['sheet:' + a] = images['sheet:' + k]; SHEETS[a] = Object.assign({}, SHEETS[k]);
       });
       Object.keys(FX).forEach((k) => {

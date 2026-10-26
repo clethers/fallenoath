@@ -125,6 +125,8 @@
     // Limitless Sorcerer passives
     s.dmgReduce = 0; s.potionMult = 1;
     const ir = G.passiveRank(p, 'infinity'); if (ir) s.dmgReduce = ir * G.SKILLS.infinity.reduce;
+    const ar = G.passiveRank(p, 'antibody'); if (ar) s.dmgReduce = ar * G.SKILLS.antibody.reduce; // Anti-Magic Body
+    const tr = G.passiveRank(p, 'training'); if (tr) { s.atk *= 1 + tr * G.SKILLS.training.atk; s.maxHp *= 1 + tr * G.SKILLS.training.hp; } // Endless Training
     const er = G.passiveRank(p, 'sixeyes'); if (er) s.crit += er * G.SKILLS.sixeyes.crit;
     const rr = G.passiveRank(p, 'rct'); if (rr) s.potionMult += rr * G.SKILLS.rct.potion;
     s.crit = clamp(s.crit, 0, 0.75);
