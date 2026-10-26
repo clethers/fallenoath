@@ -335,6 +335,37 @@
       waves: [] },
   ];
 
+  // Wave sizes per region: enemies in each wave, the last always 20. Each area keeps its own enemy mix;
+  // counts are scaled to these targets (elites keep their own count). Boss areas fight the same waves, then the boss.
+  // maxAlive caps how many are on screen at once; the rest of the wave walks in as others fall.
+  G.WAVE_PLAN = {
+    vale: { waves: [8, 12, 20], maxAlive: 9 },
+    deadlands: { waves: [10, 12, 15, 20], maxAlive: 11 },
+    ruins: { waves: [12, 14, 16, 20], maxAlive: 12 },
+    fallen: { waves: [12, 14, 16, 18, 20], maxAlive: 12 },
+  };
+  G.AREAS.forEach((a) => {
+    const plan = G.WAVE_PLAN[a.region];
+    if (!plan || a.endless || !a.waves || !a.waves.length) return;
+    const src = a.waves, out = [];
+    plan.waves.forEach((target, i) => {
+      // reuse the area's own waves; extra waves borrow from the middle ones, the last wave is always the area's last
+      const mid = src.length > 1 ? src.slice(0, -1) : src;
+      const base = i === plan.waves.length - 1 ? src[src.length - 1] : mid[i % mid.length];
+      const elites = base.filter((e) => e[2]).map((e) => e.slice());
+      const normal = base.filter((e) => !e[2]);
+      const want = target - elites.reduce((s, e) => s + e[1], 0);
+      const sum = normal.reduce((s, e) => s + e[1], 0) || 1;
+      const raw = normal.map((e) => (e[1] / sum) * want);
+      const got = raw.map((r) => Math.max(1, Math.floor(r)));
+      let left = want - got.reduce((s, n) => s + n, 0);
+      raw.map((r, j) => [r - Math.floor(r), j]).sort((x, y) => y[0] - x[0]).forEach(([, j]) => { if (left > 0) { got[j]++; left--; } });
+      out.push(normal.map((e, j) => [e[0], got[j]]).concat(elites));
+    });
+    a.waves = out;
+    a.maxAlive = plan.maxAlive;
+  });
+
   // Rift shrine rooms: pick 1 of 3 blessings that last until the rift ends
   G.SHRINE_BUFFS = [
     { id: 'might', name: 'Might', desc: '+15% attack for this rift', buff: { riftAtk: 0.15 } },

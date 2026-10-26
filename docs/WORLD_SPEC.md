@@ -137,3 +137,14 @@ The Wanderer stays neutral for now (as decided); class lines can come later.
 1. Area names and level spacing in section 2: OK, or changes?
 2. The two new enemies (Cursed Samurai, Oathbound Knight) from the free Samurai and Knight packs: OK? The Hero Knight pack (Sven Thole) in your folder could be a third one.
 3. Keep the current journal quests (moved to Maren), or rewrite them around the 4 regions?
+
+## Wave sizes (2026-10-26)
+Set in `G.WAVE_PLAN` (js/data.js). Every area's final wave has 20 enemies; earlier waves build up to it.
+| Region | Waves | Enemies per wave | Total | On screen at once |
+|---|---|---|---|---|
+| Emberhold Vale | 3 | 8, 12, 20 | 40 | 9 |
+| The Deadlands | 4 | 10, 12, 15, 20 | 57 | 11 |
+| Sunken Ruins | 4 | 12, 14, 16, 20 | 62 | 12 |
+| Shrine of the Fallen | 5 | 12, 14, 16, 18, 20 | 80 | 12 |
+Each area keeps its own enemy mix; counts are scaled to these targets and elites keep their own count. Boss areas play all waves, then the boss.
+When the screen limit is reached, the rest of the wave waits and walks in as enemies fall.

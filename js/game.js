@@ -1395,7 +1395,10 @@
 
     // ---- spawns & waves
     if (run.phase === 'waves' || run.phase === 'boss') {
-      if (run.spawnQueue.length) {
+      const cap = run.area.maxAlive || 99, alive = run.spawnQueue.length ? run.enemies.reduce((n, e) => n + (e.dead ? 0 : 1), 0) : 0;
+      if (run.spawnQueue.length && alive >= cap && run.phase === 'waves') {
+        // screen is full: hold the rest of the wave until some fall
+      } else if (run.spawnQueue.length) {
         run.spawnQueue[0].delay -= dt;
         if (run.spawnQueue[0].delay <= 0) { const s = run.spawnQueue.shift(); const e = spawnEnemy(run, s.id, s.level, s.at); if (e && s.elite) makeElite(run, e, s.elite); }
       } else if (!run.enemies.some((e) => !e.dead)) {
