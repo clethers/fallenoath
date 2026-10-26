@@ -38,6 +38,9 @@
     if (r) run.player.mp = Math.min(run.player.stats.maxMp, run.player.mp + sk.mp * r * G.SKILLS.sixeyes.mpSave);
   }
   const handX = (pl) => pl.x + ((K.DIRV[pl.dir] || [1, 0])[0]) * 8;
+  // code-drawn shapes: coloured shock rings, gravity streaks, the Hollow Purple scar, Blink afterimages
+  function shape(run, o) { o.t0 = run.time; (run.goFx || (run.goFx = [])).push(o); return o; }
+  const COL = { blue: ['120,190,255', '30,90,255'], red: ['255,120,110', '210,20,20'], purple: ['210,150,255', '120,40,230'] };
 
   // ---------------------------------------------------------------- skills
   const CAST = {
@@ -59,7 +62,8 @@
       G.sfx('shCharge', { minGap: 0, vol: 0.6, rate: 1.3 });
       K.schedule(run, 0.12, () => {
         if (!live(run)) return;
-        K.fx(run, 'chargeBlue', ox, oy, { scale: 0.55, fps: 22, loop: true, dur: PULL });
+        K.fx(run, 'chargeBlue', ox, oy, { scale: 0.95, fps: 22, loop: true, dur: PULL });
+        shape(run, { kind: 'gravity', x: ox, y: oy, r: sk.radius, life: PULL, c: 'blue', lines: Array.from({ length: 14 }, (_, i) => ({ a: (i / 14) * Math.PI * 2, off: Math.random() })) });
         G.sfx('shLift', { minGap: 0, vol: 0.7, rate: 1.2 });
       });
       const caught = K.enemiesNear(run, ox, oy + 10, sk.radius);
@@ -72,13 +76,14 @@
           if (d > want && !e.boss) { const s = Math.min(d - want, 3.2 + d * 0.06); e.x += dx / d * s; e.y += dy / d * s; G.collide(run.map, e, e.r || 6); }
         });
         if (k % 6 === 0) {
-          caught.forEach((e) => { if (K.alive(e)) { strike(run, e, sk.tick, { stop: 0.01 }); K.fx(run, 'sparkleBlue', e.x, K.bodyY(e), { scale: 0.4, fps: 30 }); } });
+          caught.forEach((e) => { if (K.alive(e)) { strike(run, e, sk.tick, { stop: 0.01 }); K.fx(run, 'sparkleBlue', e.x, K.bodyY(e), { scale: 0.7, fps: 30 }); } });
           G.sfx('slashHit', { minGap: 0, vol: 0.3, rate: 1.4 });
         }
       });
       K.schedule(run, 0.12 + PULL, () => {
         if (!live(run)) return;
-        K.fx(run, 'impBlue2', ox, oy, { scale: 0.7, fps: 26, important: true });
+        K.fx(run, 'impBlue2', ox, oy, { scale: 1.25, fps: 26, important: true });
+        shape(run, { kind: 'ring', x: ox, y: oy + 10, r0: 10, r1: sk.radius, life: 0.4, c: 'blue', w: 4 });
         caught.forEach((e) => { if (K.alive(e)) strike(run, e, mult, { stop: 0.06 }); });
         G.sfx('shBlast', { minGap: 0, vol: 0.7, rate: 1.2 });
         K.shake(run, 4);
@@ -97,17 +102,19 @@
       const fx0 = () => pl.x + Math.cos(a) * 12, fy0 = () => pl.y - 14 + Math.sin(a) * 6;
       K.swing(run, 1, 1.0, false);
       G.sfx('shCharge', { minGap: 0, vol: 0.6, rate: 1.5 });
-      K.fx(run, 'chargeRed', fx0(), fy0(), { scale: 0.28, fps: 30 });
+      K.fx(run, 'chargeRed', fx0(), fy0(), { scale: 0.5, fps: 30 });
       run.goGlow = { t0: run.time, t1: run.time + 0.32, hx: fx0, hy: fy0, c: 'red' };
       K.schedule(run, 0.34, () => {
         if (!live(run)) return;
         K.swing(run, 0, 2.4, false);
         G.voice('heavy', { minGap: 0 });
         const bx = fx0(), by = fy0();
-        K.fx(run, 'lightBurstRed', bx, by, { scale: 0.35, fps: 30, rot: a });
-        K.fx(run, 'coneRed', bx + Math.cos(a) * 34, by + Math.sin(a) * 34, { scale: 1.3, fps: 18, rot: a + Math.PI / 2, important: true });
-        K.fx(run, 'boomRed', bx + Math.cos(a) * 42, by + Math.sin(a) * 30, { scale: 0.75, fps: 24, important: true });
-        K.schedule(run, 0.05, () => { if (live(run)) K.fx(run, 'impRed6', bx + Math.cos(a) * 60, by + Math.sin(a) * 44, { scale: 0.6, fps: 24 }); });
+        K.fx(run, 'lightBurstRed', bx, by, { scale: 0.6, fps: 30, rot: a });
+        K.fx(run, 'coneRed', bx + Math.cos(a) * 58, by + Math.sin(a) * 50, { scale: 1.6, fps: 18, rot: a + Math.PI / 2, important: true });
+        K.fx(run, 'boomRed', bx + Math.cos(a) * 52, by + Math.sin(a) * 38, { scale: 1.2, fps: 24, important: true });
+        K.schedule(run, 0.05, () => { if (live(run)) K.fx(run, 'impRed6', bx + Math.cos(a) * 74, by + Math.sin(a) * 54, { scale: 1, fps: 24 }); });
+        shape(run, { kind: 'cone', x: bx, y: by, a, r: sk.range, spread: sk.cone, life: 0.35, c: 'red' });
+        shape(run, { kind: 'ring', x: bx, y: by + 14, r0: 8, r1: sk.range * 0.7, life: 0.35, c: 'red', w: 4 });
         G.sfx('shBlast', { minGap: 0 }); G.sfx('impact', { minGap: 0, vol: 0.6 });
         K.shake(run, 7);
         K.enemiesNear(run, pl.x, pl.y, sk.range).forEach((e) => {
@@ -117,7 +124,7 @@
           if (e.boss) return;
           const ea = Math.atan2(e.y - pl.y, e.x - pl.x), push = sk.knock - K.dist(e, pl) * 0.3;
           for (let k = 1; k <= 10; k++) K.schedule(run, k * 0.025, () => { if (e.dead) return; const s = push / 10 * (1.4 - k * 0.08); e.x += Math.cos(ea) * s; e.y += Math.sin(ea) * s; G.collide(run.map, e, e.r || 6); });
-          K.schedule(run, 0.27, () => { if (live(run)) K.fx(run, 'boomRed', e.x, e.y - 10, { scale: 0.35, fps: 26 }); });
+          K.schedule(run, 0.27, () => { if (live(run)) K.fx(run, 'boomRed', e.x, e.y - 10, { scale: 0.6, fps: 26 }); });
         });
       });
       return true;
@@ -138,15 +145,19 @@
       pl.castLock = 0.12; pl.invuln = Math.max(pl.invuln, 0.35);
       G.sfx('shTeleport', { minGap: 0, vol: 0.7, rate: 1.3 });
       G.voice('dodge', { minGap: 0 });
-      K.fx(run, 'chargeBlue', ox, oy - 14, { scale: 0.35, fps: 40 });
-      K.fx(run, 'sparkleBlue', ox, oy - 14, { scale: 0.6, fps: 30 });
+      K.fx(run, 'chargeBlue', ox, oy - 14, { scale: 0.6, fps: 40 });
+      K.fx(run, 'sparkleBlue', ox, oy - 14, { scale: 1, fps: 30 });
+      shape(run, { kind: 'ghost', x: ox, y: oy, dir: pl.dir, life: 0.45 });
+      shape(run, { kind: 'ring', x: ox, y: oy - 2, r0: 6, r1: 30, life: 0.3, c: 'blue', w: 3, flat: true });
       pl.shSink = true;
       K.schedule(run, 0.06, () => {
         if (!live(run)) return;
         pl.x = ox + Math.cos(a) * sk.dist; pl.y = oy + Math.sin(a) * sk.dist; G.collide(run.map, pl, pl.r);
         if (t && K.alive(t)) K.faceToward(pl, t.x, t.y);
-        K.fx(run, 'impBlue3', pl.x, pl.y - 14, { scale: 0.4, fps: 30 });
-        K.fx(run, 'sparkleBlue', pl.x, pl.y - 14, { scale: 0.6, fps: 30 });
+        K.fx(run, 'impBlue3', pl.x, pl.y - 14, { scale: 0.8, fps: 30 });
+        K.fx(run, 'sparkleBlue', pl.x, pl.y - 14, { scale: 1, fps: 30 });
+        shape(run, { kind: 'streak', x0: ox, y0: oy - 14, x1: pl.x, y1: pl.y - 14, life: 0.25, c: 'blue' });
+        shape(run, { kind: 'ring', x: pl.x, y: pl.y - 2, r0: 30, r1: 6, life: 0.25, c: 'blue', w: 3, flat: true });
         K.schedule(run, 0.06, () => { pl.shSink = false; });
       });
       return true;
@@ -165,29 +176,31 @@
       G.voice('ult', { minGap: 0 });
       G.sfx('shCharge', { minGap: 0, vol: 0.8 });
       run.goDim = { t0: run.time, dur: 1.6, peak: 0.45 };
-      K.fx(run, 'chargeBlue', cx() + px * 14, cy() + py * 10, { scale: 0.3, fps: 26, loop: true, dur: 0.42 });
-      K.fx(run, 'chargeRed', cx() - px * 14, cy() - py * 10, { scale: 0.3, fps: 26, loop: true, dur: 0.42 });
+      K.fx(run, 'chargeBlue', cx() + px * 20, cy() + py * 14, { scale: 0.55, fps: 26, loop: true, dur: 0.42 });
+      K.fx(run, 'chargeRed', cx() - px * 20, cy() - py * 14, { scale: 0.55, fps: 26, loop: true, dur: 0.42 });
       K.swing(run, 1, 0.9, false);
       const TC = 0.45;
       K.schedule(run, TC, () => {
         if (!live(run)) return;
-        K.fx(run, 'lightBurstBlue', cx(), cy(), { scale: 0.45, fps: 34 });
-        K.fx(run, 'impPurple3', cx(), cy(), { scale: 0.5, fps: 28 });
+        K.fx(run, 'lightBurstBlue', cx(), cy(), { scale: 0.8, fps: 34 });
+        K.fx(run, 'impPurple3', cx(), cy(), { scale: 0.9, fps: 28 });
+        shape(run, { kind: 'ring', x: cx(), y: cy(), r0: 6, r1: 50, life: 0.35, c: 'purple', w: 4 });
         G.sfx('shPortal', { minGap: 0, vol: 0.8 });
       });
       const S = { x: cx(), y: cy(), a, t0: run.time + TC + 0.15, speed: sk.speed, life: sk.life, r: sk.width };
       (run.goSpheres || (run.goSpheres = [])).push(S);
+      shape(run, { kind: 'scar', S, life: TC + 0.15 + sk.life + 0.6, c: 'purple' }); // the line it erases glows, then fades
       const hit = new Set();
       for (let s = 0; s < 16; s++) K.schedule(run, TC + 0.15 + s * 0.05, () => {
         if (!live(run)) return;
         const el = s * 0.05, x = S.x + Math.cos(a) * S.speed * el, y = S.y + Math.sin(a) * S.speed * el;
-        if (s % 2 === 0) K.fx(run, 'sparkVoid', x, y, { scale: 0.45, fps: 28 });
+        if (s % 2 === 0) K.fx(run, 'sparkVoid', x, y, { scale: 0.75, fps: 28 });
         if (s === 0) { G.sfx('shBlast', { minGap: 0 }); G.sfx('finisher', { minGap: 0, vol: 0.5 }); K.shake(run, 6); }
         K.enemiesNear(run, x, y + 12, S.r + 6).forEach((e) => {
           if (hit.has(e)) return;
           hit.add(e);
           strike(run, e, mult, { stop: 0.05 });
-          K.fx(run, 'impPurple3', e.x, K.bodyY(e), { scale: 0.45, fps: 26 });
+          K.fx(run, 'impPurple3', e.x, K.bodyY(e), { scale: 0.75, fps: 26 });
           K.shake(run, 3);
         });
       });
@@ -211,7 +224,7 @@
       };
       K.schedule(run, 0.25, () => {
         if (!live(run)) return;
-        K.fx(run, 'impBlue2', cx, cy - 12, { scale: 0.7, fps: 22, important: true });
+        K.fx(run, 'impBlue2', cx, cy - 12, { scale: 1.1, fps: 22, important: true });
         G.sfx('shPortal', { minGap: 0 }); G.sfx('shShadow', { minGap: 0, vol: 0.8 }); K.shake(run, 6);
       });
       K.schedule(run, 0.5, () => {
@@ -233,6 +246,75 @@
   };
 
   // ---------------------------------------------------------------- drawing
+  function drawShapes(run, out) {
+    const list = run.goFx;
+    if (!list || !list.length) return;
+    const now = run.time, pl = run.player;
+    for (let i = list.length - 1; i >= 0; i--) {
+      const o = list[i], el = now - o.t0;
+      if (el > o.life) { list.splice(i, 1); continue; }
+      const u = el / o.life, fade = Math.min(1, (1 - u) / 0.35), C = COL[o.c] || COL.blue;
+      if (o.kind === 'ring') {
+        const r = o.r0 + (o.r1 - o.r0) * (1 - Math.pow(1 - u, 2));
+        out.push({ y: o.flat ? -1e9 : o.y + 6, t: 5, draw: (ctx) => {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fade;
+          ctx.beginPath(); ctx.ellipse(o.x, o.y, r, r * (o.flat ? 0.5 : 0.75), 0, 0, Math.PI * 2);
+          ctx.strokeStyle = `rgba(${C[1]},0.8)`; ctx.lineWidth = (o.w || 3) + 3; ctx.stroke();
+          ctx.strokeStyle = `rgba(${C[0]},1)`; ctx.lineWidth = o.w || 3; ctx.stroke();
+          ctx.restore();
+        } });
+      } else if (o.kind === 'gravity') { // streaks spiralling into the point of Blue
+        out.push({ y: o.y + 30, t: 5, draw: (ctx) => {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round';
+          o.lines.forEach((ln) => {
+            const p = (now * 1.8 + ln.off) % 1, d0 = o.r * (1 - p), d1 = Math.max(4, d0 - 18), tw = 0.9 * (1 - p);
+            ctx.strokeStyle = `rgba(${C[0]},${0.85 * p * fade})`; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(o.x + Math.cos(ln.a + tw) * d0, o.y + Math.sin(ln.a + tw) * d0 * 0.7);
+            ctx.lineTo(o.x + Math.cos(ln.a + tw + 0.35) * d1, o.y + Math.sin(ln.a + tw + 0.35) * d1 * 0.7); ctx.stroke();
+          });
+          const g = ctx.createRadialGradient(o.x, o.y, 2, o.x, o.y, 26);
+          g.addColorStop(0, `rgba(${C[0]},${0.6 * fade})`); g.addColorStop(1, `rgba(${C[1]},0)`);
+          ctx.fillStyle = g; ctx.beginPath(); ctx.arc(o.x, o.y, 26, 0, Math.PI * 2); ctx.fill();
+          ctx.restore();
+        } });
+      } else if (o.kind === 'cone') { // the red blast wedge
+        out.push({ y: o.y + 40, t: 5, draw: (ctx) => {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter';
+          const r = o.r * (0.4 + 0.6 * Math.min(1, u * 3));
+          const g = ctx.createRadialGradient(o.x, o.y, 4, o.x, o.y, r);
+          g.addColorStop(0, `rgba(${C[0]},${0.7 * fade})`); g.addColorStop(1, `rgba(${C[1]},0)`);
+          ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(o.x, o.y); ctx.arc(o.x, o.y, r, o.a - o.spread, o.a + o.spread); ctx.closePath(); ctx.fill();
+          ctx.restore();
+        } });
+      } else if (o.kind === 'streak') {
+        out.push({ y: Math.max(o.y0, o.y1) + 14, t: 5, draw: (ctx) => {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.globalAlpha = fade; ctx.lineCap = 'round';
+          ctx.beginPath(); ctx.moveTo(o.x0, o.y0); ctx.lineTo(o.x1, o.y1);
+          ctx.strokeStyle = `rgba(${C[1]},0.7)`; ctx.lineWidth = 8 * (1 - u) + 2; ctx.stroke();
+          ctx.strokeStyle = `rgba(${C[0]},1)`; ctx.lineWidth = 3 * (1 - u) + 1; ctx.stroke();
+          ctx.restore();
+        } });
+      } else if (o.kind === 'ghost') { // Blink: a fading blue afterimage where Gojo stood
+        out.push({ y: o.y - 0.2, t: 5, draw: (ctx) => {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter';
+          K.drawSheet(ctx, G.tintedSheet('adv_idle_' + o.dir, 'gojo'), 0, o.x, o.y, 46, 57, 1, false, 0.6 * fade);
+          ctx.restore();
+        } });
+      } else if (o.kind === 'scar') { // Hollow Purple: the erased line glows behind the sphere
+        const S = o.S, sel = Math.max(0, Math.min(S.life, now - S.t0));
+        if (now < S.t0) continue;
+        const x1 = S.x + Math.cos(S.a) * S.speed * sel, y1 = S.y + Math.sin(S.a) * S.speed * sel;
+        const tail = now - S.t0 > S.life ? 1 - (now - S.t0 - S.life) / 0.6 : 1;
+        out.push({ y: Math.max(S.y, y1) + 30, t: 5, draw: (ctx) => {
+          ctx.save(); ctx.globalCompositeOperation = 'lighter'; ctx.lineCap = 'round'; ctx.globalAlpha = Math.max(0, tail);
+          ctx.beginPath(); ctx.moveTo(S.x, S.y); ctx.lineTo(x1, y1);
+          ctx.strokeStyle = `rgba(${C[1]},0.55)`; ctx.lineWidth = S.r * 1.6; ctx.stroke();
+          ctx.strokeStyle = `rgba(${C[0]},0.7)`; ctx.lineWidth = S.r * 0.6; ctx.stroke();
+          ctx.restore();
+        } });
+      }
+    }
+  }
   function drawGlow(run, out) { // the hand lights up (blue or red)
     const g = run.goGlow;
     if (!g) return;
@@ -343,6 +425,7 @@
       drawDim(run, out);
       drawGlow(run, out);
       drawSpheres(run, out);
+      drawShapes(run, out);
     },
   };
 })();
