@@ -1575,7 +1575,7 @@
       const k = 'adv_' + (pl.spin ? 'atk1_' : 'atk2_') + pl.dir;
       const n = (G.SHEETS[k] && G.SHEETS[k].n) || 8;
       const f = pl.spin ? 2 + (Math.floor(run.time * 30) % 3) : Math.min(n - 1, 1 + Math.floor((pl.dash.t / pl.dash.dur) * 4));
-      drawSheet(ctx, G.tintedSheet(k, heroTint()), f, pl.x, pl.y, 46, 57, 1, false, (pl.dash ? (pl.flashing ? 0.35 : 0.85) : 1) * (pl.stealth ? 0.4 : 1));
+      drawSheet(ctx, G.tintedSheet(k, heroTint()), f, pl.x, pl.y - (pl.liftY || 0), 46, 57, 1, false, (pl.dash ? (pl.flashing ? 0.35 : 0.85) : 1) * (pl.stealth ? 0.4 : 1));
       return;
     }
     const key = playerSheet(pl);
@@ -1588,7 +1588,7 @@
     if (pl.dead) alpha = Math.max(0, 1 - run.endT * 1.6);
     else if (pl.flash > 0 && Math.floor(pl.flash * 30) % 2 === 0) alpha = 0.45;
     if (pl.stealth || pl.shSink) alpha *= 0.4; // Stealth / Shadow Fang: the hero fades into the shadows
-    drawSheet(ctx, G.tintedSheet(key, heroTint()), frame, pl.x, pl.y, 46, 57, 1, false, alpha);
+    drawSheet(ctx, G.tintedSheet(key, heroTint()), frame, pl.x, pl.y - (pl.liftY || 0), 46, 57, 1, false, alpha);
   }
 
   // 4-direction sprites: rows are down, up, left, right. Face the hero (or away while feared); the dead keep their last row.
