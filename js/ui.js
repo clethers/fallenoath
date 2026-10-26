@@ -19,11 +19,35 @@
     });
     ui.screen = name;
     document.getElementById('app').classList.toggle('screen-hub-mode', name !== 'hud');
+    const P = G.profile && G.PATHS[G.profile.path]; // the current hero tints the interface
+    document.getElementById('app').style.setProperty('--hero', P ? P.color : '#ffc23d');
     if (name === 'hub') ui.refreshHub();
     if (name === 'title') {
       $('btn-continue').disabled = !G.hasSave();
+      drawTitleHeroes();
     }
   };
+
+  // a hero's face (the idle sprite, head and shoulders) on a small canvas
+  ui.drawFace = function (cv, pathId) {
+    const P = G.PATHS[pathId];
+    if (!cv || !P) return;
+    const g = cv.getContext('2d'), S = cv.width;
+    g.clearRect(0, 0, S, S); g.imageSmoothingEnabled = false;
+    const key = G.tintedSheet('adv_idle_down', P.heroTint), sh = G.SHEETS[key], im = G.img('sheet:' + key);
+    if (!im || !sh) return;
+    const k = (S / 96) * 3.1;
+    g.drawImage(im, 0, 0, sh.fw, sh.fh, S / 2 - 47 * k, S * 0.56 - 40 * k, sh.fw * k, sh.fh * k);
+  };
+  function drawTitleHeroes() {
+    const box = $('title-heroes');
+    if (!box || box.childElementCount) return;
+    Object.keys(G.PATHS).forEach((id) => {
+      const cv = document.createElement('canvas'); cv.width = cv.height = 108;
+      cv.style.setProperty('--c', G.PATHS[id].color); cv.title = G.PATHS[id].name;
+      box.appendChild(cv); ui.drawFace(cv, id);
+    });
+  }
 
   // ------------------------------------------------------------ class select (New Game / GM)
   // mode: 'new' or 'gm'; onPick(pathId)
@@ -143,6 +167,27 @@
     return c;
   }
 
+  // a strip of the region's first area map, behind its banner (built once, copied canvas-to-canvas)
+  const regionArts = {};
+  function regionArt(r) {
+    if (!regionArts[r.id]) {
+      const area = G.AREAS.find((a) => a.region === r.id && !a.endless);
+      const c = document.createElement('canvas'); c.width = 320; c.height = 96;
+      if (area) {
+        const map = G.buildArea(area), g = c.getContext('2d');
+        g.imageSmoothingEnabled = false;
+        const s = 320 / map.W, oy = -150;
+        g.setTransform(s, 0, 0, s, 0, oy * s);
+        g.drawImage(map.ground, 0, 0);
+        map.props.slice().sort((p, q) => p.y - q.y).forEach((pr) => G.drawProp(g, pr.key, pr.x, pr.y));
+      }
+      regionArts[r.id] = c;
+    }
+    const c = document.createElement('canvas'); c.width = 320; c.height = 96; c.className = 'art';
+    c.getContext('2d').drawImage(regionArts[r.id], 0, 0);
+    return c;
+  }
+
   function areaCard(a) {
     const p = G.profile;
     const st = p.areas[a.id];
@@ -195,13 +240,15 @@
       sec.className = 'region' + (unlockedAny ? '' : ' locked');
       if (!unlockedAny) {
         const prev = G.REGIONS[G.REGIONS.indexOf(r) - 1], boss = prev && G.AREAS.filter((a) => a.region === prev.id && a.boss).pop();
-        sec.innerHTML = `<div class="region-head"><div><h3>${esc(r.name)}</h3><p>Lv ${r.levels[0]} to ${r.levels[1]} · ${boss ? 'Defeat ' + esc(G.ENEMIES[boss.boss].name) + ' to unlock' : 'Locked'}</p></div><span class="region-lock">Locked</span></div>`;
+        sec.innerHTML = `<div class="region-head"><div><h3>${esc(r.name)}</h3><p>Lv ${r.levels[0]} to ${r.levels[1]}. ${boss ? 'Defeat ' + esc(G.ENEMIES[boss.boss].name) + ' to unlock' : 'Locked'}</p></div><span class="region-lock">Locked</span></div>`;
+        sec.firstChild.style.setProperty('--rc', r.color); sec.firstChild.prepend(regionArt(r));
         list.appendChild(sec); return;
       }
       const isOpen = ui.regionOpen[r.id] != null ? ui.regionOpen[r.id] : r === newest;
       const head = document.createElement('button');
       head.className = 'region-head';
-      head.innerHTML = `<div><h3>${esc(r.name)}</h3><p>Lv ${r.levels[0]} to ${r.levels[1]} · ${cleared} / ${areas.length} cleared</p></div><span class="region-arrow">${isOpen ? '▾' : '▸'}</span>`;
+      head.innerHTML = `<div><h3>${esc(r.name)}</h3><p>Lv ${r.levels[0]} to ${r.levels[1]}, ${cleared} of ${areas.length} cleared</p></div><span class="region-arrow">${isOpen ? '▾' : '▸'}</span>`;
+      head.style.setProperty('--rc', r.color); head.prepend(regionArt(r));
       head.onclick = () => { ui.regionOpen[r.id] = !isOpen; ui.refreshHub(); };
       sec.appendChild(head);
       if (isOpen) {
@@ -225,6 +272,8 @@
 
   ui.onRunStart = function (run) {
     ui.cache = {};
+    ui.drawFace($('hud-face'), G.profile.path);
+    document.getElementById('app').style.setProperty('--hero', (G.PATHS[G.profile.path] || {}).color || '#ffc23d');
     ui.bossBar(null);
     ui.refreshSkillButtons();
     $('hud').classList.toggle('lefty', !!G.profile.settings.leftHanded);
@@ -394,7 +443,7 @@
     const st = el('<div class="stack"></div>');
     Object.keys(C.ATTR).forEach((k) => {
       const a = C.ATTR[k];
-      const row = el(`<div class="attr-row"><div class="grow"><div class="name">${a.name}</div><div class="desc">${a.desc}</div></div><div class="val">${p.attrs[k]}</div></div>`);
+      const row = el(`<div class="attr-row a-${k}"><div class="grow"><div class="name">${a.name}</div><div class="desc">${a.desc}</div></div><div class="val">${p.attrs[k]}</div></div>`);
       const plus = document.createElement('button');
       plus.className = 'plus'; plus.textContent = '+'; plus.disabled = p.attrPoints <= 0;
       plus.setAttribute('aria-label', 'Add ' + a.name);

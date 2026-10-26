@@ -254,10 +254,10 @@
   // ------------------------------------------------------------------ AREAS
   // ------------------------------------------------------------------ WORLD: 4 regions, 20 areas (see docs/WORLD_SPEC.md)
   G.REGIONS = [
-    { id: 'vale', name: 'Emberhold Vale', levels: [1, 15], desc: 'Green hills around the last village, overrun by orc raiders.' },
-    { id: 'deadlands', name: 'The Deadlands', levels: [15, 40], desc: 'Graves, bones and poison where the necromancer raises the dead.' },
-    { id: 'ruins', name: 'Sunken Ruins', levels: [40, 65], desc: 'The drowned halls where Grukk the Warlord gathers his horde.' },
-    { id: 'fallen', name: 'Shrine of the Fallen', levels: [65, 100], desc: 'The cursed road to the shrine of the knight who broke his oath.' },
+    { id: 'vale', color: '#2a8a30', name: 'Emberhold Vale', levels: [1, 15], desc: 'Green hills around the last village, overrun by orc raiders.' },
+    { id: 'deadlands', color: '#0e786e', name: 'The Deadlands', levels: [15, 40], desc: 'Graves, bones and poison where the necromancer raises the dead.' },
+    { id: 'ruins', color: '#1e468c', name: 'Sunken Ruins', levels: [40, 65], desc: 'The drowned halls where Grukk the Warlord gathers his horde.' },
+    { id: 'fallen', color: '#9a1c3a', name: 'Shrine of the Fallen', levels: [65, 100], desc: 'The cursed road to the shrine of the knight who broke his oath.' },
   ];
   // a wave entry is [enemy, count] or [enemy, count, eliteModifier] ('fast' = Swift, 'tough' = Hulking)
   G.AREAS = [

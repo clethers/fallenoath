@@ -402,21 +402,33 @@
   G.img = (key) => images[key];
   G.assetFailures = failed;
 
+  // one image, retried up to 3 times (phones on mobile data sometimes drop requests)
   function load(key, src, optional) {
     return new Promise((res) => {
-      const im = new Image();
-      im.onload = () => {
-        images[key] = im;
-        res();
+      let tries = 0;
+      const attempt = () => {
+        const im = new Image();
+        im.onload = () => {
+          images[key] = im;
+          res();
+        };
+        im.onerror = () => {
+          if (optional) return res(); // optional art (e.g. private test sprites) may be absent
+          if (++tries < 3 && !/^data:/.test(src)) { setTimeout(attempt, 400 * tries); return; }
+          failed.push(src);
+          console.warn('[assets] missing:', src);
+          res();
+        };
+        im.src = /^data:/.test(src) ? src : encodeURI(src) + (tries ? (src.includes('?') ? '&' : '?') + 'retry=' + tries : '');
       };
-      im.onerror = () => {
-        if (optional) return res(); // optional art (e.g. private test sprites) may be absent
-        failed.push(src);
-        console.warn('[assets] missing:', src);
-        res();
-      };
-      im.src = encodeURI(src);
+      attempt();
     });
+  }
+  // run jobs a few at a time instead of hundreds at once
+  function pool(jobs, size, run) {
+    let i = 0;
+    const next = () => (i < jobs.length ? run(jobs[i++]).then(next) : Promise.resolve());
+    return Promise.all(Array.from({ length: Math.min(size, jobs.length) }, next));
   }
 
   G.loadAssets = function (onProgress) {
@@ -425,13 +437,11 @@
     Object.keys(TEX).forEach((k) => jobs.push(['tex:' + k, TEX[k]]));
     Object.keys(FX).forEach((k) => jobs.push(['fx:' + k, FX[k].src]));
     let done = 0;
-    return Promise.all(
-      jobs.map(([k, s, o]) =>
-        load(k, s, o).then(() => {
-          done++;
-          onProgress && onProgress(done / jobs.length);
-        })
-      )
+    return pool(jobs, 12, ([k, s, o]) =>
+      load(k, s, o).then(() => {
+        done++;
+        onProgress && onProgress(done / jobs.length);
+      })
     ).then(() => {
       // derive frame counts for character sheets from their real widths
       Object.keys(SHEETS).forEach((k) => {
