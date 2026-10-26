@@ -676,3 +676,7 @@ h1, h2, h3, h4, h5 { font-weight: 700; }
 .node:not(.passive) .rk { top: -6px; bottom: auto; right: -8px; }
 .btn.next-btn { display: flex; flex-direction: column; align-items: center; justify-content: center; line-height: 1.1; }
 .btn.next-btn small { display: block; max-width: 100%; font-size: 12px; font-weight: 800; opacity: .9; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Hide scroll bars everywhere (scrolling still works by touch, wheel and drag) */
+html, body, * { scrollbar-width: none; -ms-overflow-style: none; }
+*::-webkit-scrollbar { display: none; width: 0; height: 0; }
